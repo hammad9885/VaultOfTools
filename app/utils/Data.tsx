@@ -1,115 +1,94 @@
 
-export interface Category {
-  icon: string;
-  name: string;
-  count: string;
-  color: string;
-}
+import {
+  FaPenNib,
+  FaImage,
+  FaCode,
+  FaVideo,
+  FaChartBar,
+  FaMicrophone,
+  FaUsers,
+  FaGavel,
+  FaHeartbeat,
+  FaSchool,
+  FaBullhorn,
+  FaRobot,
+} from "react-icons/fa";
+import ClaudeAi from "../components/icons/ClaudeAi";
+import Midjourney from "../components/icons/Midjourney";
+import Cursor from "../components/icons/Cursor";
+import Perplexity from "../components/icons/Perplexity";
+import type { Category, Tool, TrendingItem, QuickFilter, Stat } from "../types/types";
 
-export interface Tool {
-  icon: string;
-  iconBg: string;
-  name: string;
-  tagline: string;
-  desc: string;
-  tags: string[];
-  pricing: string;
-  pricingClass: string;
-  rating: number;
-  reviews: string;
-  updated: string;
-  sponsored: boolean;
-  stars: number;
-}
-
-export interface TrendingItem {
-  rank: number;
-  icon: string;
-  name: string;
-  change: string;
-  bg: string;
-  up: boolean;
-}
-
-export interface QuickFilter {
-  icon: string;
-  label: string;
-}
-
-export interface Stat {
-  num: string;
-  lbl: string;
-}
 
 export const categories: Category[] = [
   {
-    icon: "ti-writing",
+    icon: FaPenNib,
     name: "Writing",
     count: "312 tools",
     color: "bg-violet-50 text-violet-600",
   },
   {
-    icon: "ti-photo-ai",
+    icon: FaImage,
     name: "Image Gen",
     count: "248 tools",
     color: "bg-pink-50 text-pink-600",
   },
   {
-    icon: "ti-code",
+    icon: FaCode,
     name: "Coding",
     count: "195 tools",
     color: "bg-blue-50 text-blue-600",
   },
   {
-    icon: "ti-video",
+    icon: FaVideo,
     name: "Video AI",
     count: "167 tools",
     color: "bg-red-50 text-red-600",
   },
   {
-    icon: "ti-chart-bar",
+    icon: FaChartBar,
     name: "Analytics",
     count: "143 tools",
     color: "bg-amber-50 text-amber-600",
   },
   {
-    icon: "ti-microphone",
+    icon: FaMicrophone,
     name: "Voice & Audio",
     count: "121 tools",
     color: "bg-teal-50 text-teal-600",
   },
   {
-    icon: "ti-users",
+    icon: FaUsers,
     name: "Sales & CRM",
     count: "98 tools",
     color: "bg-green-50 text-green-600",
   },
   {
-    icon: "ti-gavel",
+    icon: FaGavel,
     name: "Legal AI",
     count: "74 tools",
     color: "bg-orange-50 text-orange-600",
   },
   {
-    icon: "ti-heart-rate-monitor",
+    icon: FaHeartbeat,
     name: "Healthcare",
     count: "63 tools",
     color: "bg-rose-50 text-rose-600",
   },
   {
-    icon: "ti-school",
+    icon: FaSchool,
     name: "Education",
     count: "118 tools",
     color: "bg-cyan-50 text-cyan-600",
   },
   {
-    icon: "ti-speakerphone",
+    icon: FaBullhorn,
     name: "Marketing",
     count: "204 tools",
     color: "bg-indigo-50 text-indigo-600",
   },
   {
-    icon: "ti-robot",
+    icon: FaRobot,
     name: "Agents & Auto",
     count: "89 tools",
     color: "bg-purple-50 text-purple-600",
@@ -118,8 +97,9 @@ export const categories: Category[] = [
 
 export const featuredTools: Tool[] = [
   {
-    icon: "ti-message-chatbot",
-    iconBg: "bg-emerald-100 text-emerald-600",
+    icon: ClaudeAi,
+    iconBg: "bg-emerald-100",
+    iconColor: "",
     name: "Claude",
     tagline: "AI assistant by Anthropic",
     desc: "Next-generation AI for complex reasoning, analysis, coding, and nuanced conversation.",
@@ -130,11 +110,13 @@ export const featuredTools: Tool[] = [
     reviews: "2.1k",
     updated: "Updated today",
     sponsored: true,
+    iconSize: 22,
     stars: 5,
   },
   {
-    icon: "ti-brush",
-    iconBg: "bg-blue-100 text-blue-600",
+    icon: Midjourney,
+    iconBg: "bg-blue-100",
+    iconColor: "",
     name: "Midjourney",
     tagline: "AI image generation",
     desc: "Create stunning artwork from text prompts. Industry-leading quality for designers and creators.",
@@ -143,13 +125,15 @@ export const featuredTools: Tool[] = [
     pricingClass: "bg-purple-50 text-purple-600 border border-purple-200",
     rating: 4.7,
     reviews: "8.3k",
+    iconSize: 36,
     updated: "Updated 2d ago",
     sponsored: false,
     stars: 4,
   },
   {
-    icon: "ti-brand-vscode",
-    iconBg: "bg-violet-100 text-violet-600",
+    icon: Cursor,
+    iconBg: "bg-violet-100",
+    iconColor: "",
     name: "Cursor AI",
     tagline: "AI-first code editor",
     desc: "The VS Code fork that understands your entire codebase. Ship 10x faster with AI pair programming.",
@@ -160,11 +144,13 @@ export const featuredTools: Tool[] = [
     reviews: "5.7k",
     updated: "Updated today",
     sponsored: false,
+    iconSize: 22,
     stars: 5,
   },
   {
-    icon: "ti-search",
-    iconBg: "bg-amber-100 text-amber-600",
+    icon: Perplexity,
+    iconBg: "bg-amber-100",
+    iconColor: "",
     name: "Perplexity AI",
     tagline: "AI-powered search engine",
     desc: "Real-time AI search with citations. Research faster than ever with source-backed answers.",
@@ -173,6 +159,7 @@ export const featuredTools: Tool[] = [
     pricingClass: "bg-emerald-50 text-emerald-600 border border-emerald-200",
     rating: 4.6,
     reviews: "4.2k",
+    iconSize: 22,
     updated: "Pricing updated",
     sponsored: false,
     stars: 4,

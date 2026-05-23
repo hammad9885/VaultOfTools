@@ -1,6 +1,18 @@
 "use client";
 
-const Cursor = ({ size = 100, className = "" }) => {
+import React from "react";
+
+interface CursorProps {
+  size?: number | string;
+  color?: string;
+  className?: string;
+}
+
+const Cursor = ({
+  size = 100,
+  color = "currentColor",
+  className = "",
+}: CursorProps) => {
   return (
     <svg
       role="img"
@@ -8,7 +20,7 @@ const Cursor = ({ size = 100, className = "" }) => {
       viewBox="0 0 24 24"
       width={size}
       height={size}
-      fill="currentColor"
+      fill={color}
       className={className}
     >
       <title>Cursor</title>
