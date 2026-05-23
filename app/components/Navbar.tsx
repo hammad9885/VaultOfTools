@@ -17,9 +17,6 @@ import { FaSun, FaMoon } from "react-icons/fa";
 const btnPress =
   "transition-[transform,box-shadow] duration-120 ease-in-out hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(14,165,233,0.18)] active:translate-y-0 active:scale-[0.97] active:shadow-none";
 
-const btnPrimary =
-  "transition-[transform,box-shadow] duration-120 ease-in-out hover:-translate-y-px hover:shadow-[0_6px_18px_rgba(14,165,233,0.35)] active:scale-[0.96] active:shadow-none";
-
 function ThemeToggle() {
   const { isDark, toggleTheme, mounted } = useTheme();
 
@@ -88,9 +85,7 @@ function Navbar() {
           : "translate-y-[-110%] opacity-0 pointer-events-none"
       }`}
     >
-      <nav
-        className={`flex items-center justify-between gap-4 h-17 px-6 md:px-8 backdrop-blur-xl border-b transition-shadow duration-300 bg-white/95 border-sky-100 dark:bg-slate-900/95 dark:border-slate-700/60 ${scrolledShadow}`}
-      >
+      <nav className="relative isolate flex items-center justify-between gap-4 h-17 px-6 md:px-8 backdrop-blur-xl border-b transition-shadow duration-300 bg-white/95 border-sky-100 dark:bg-slate-900/95 dark:border-slate-700/60">
         <Link
           href="/"
           className="flex items-center gap-2 shrink-0 no-underline group [&:hover_.logo-icon]:rotate-15 [&:hover_.logo-icon]:scale-[1.08]"
@@ -106,42 +101,45 @@ function Navbar() {
           </span>
         </Link>
 
-        <ul className="hidden lg:flex items-center gap-1 list-none">
+        <ul className="hidden lg:flex items-center list-none">
           {navLinks.map((item) => (
-            <li key={item.label} className="relative group">
-              <Link
-                href={item.href}
-                className={`flex items-center gap-2 text-[13.5px] px-3 py-2 rounded-lg transition-all no-underline ${
-                  item.active
-                    ? "text-sky-600 font-semibold"
-                    : "text-slate-500 hover:text-sky-600"
-                }`}
-              >
-                {item.icon && <span className="text-[16px]">{item.icon}</span>}
-                {item.label}
-              </Link>
+            <li key={item.label} className="relative group z-[2000]">
+  <Link
+    href={item.href}
+    className={`flex items-center gap-2 text-[12px] px-1 py-2 rounded-lg transition-all no-underline ${
+      item.active
+        ? "text-sky-600 font-semibold"
+        : "text-slate-500 hover:text-sky-600"
+    }`}
+  >
+    {item.icon && <span className="text-[16px]">{item.icon}</span>}
+    {item.label}
+  </Link>
 
-              {item.children && (
-                <div className="absolute left-0 top-full mt-2 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-2">
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.label}
-                        href={child.href}
-                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition-all no-underline"
-                      >
-                        {child.icon && (
-                          <span className="text-[15px] opacity-80">
-                            {child.icon}
-                          </span>
-                        )}
-                        {child.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </li>
+  {/* ✅ DROPDOWN FIXED */}
+  {item.children && (
+<div className="absolute left-0 top-full pt-2 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[9999]">
+  
+  <div className="bg-white dark:bg-slate-900 opacity-100 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-2">   
+        {item.children.map((child) => (
+          <Link
+            key={child.label}
+            href={child.href}
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition-all no-underline"
+          >
+            {child.icon && (
+              <span className="text-[15px]">
+                {child.icon}
+              </span>
+            )}
+            {child.label}
+          </Link>
+        ))}
+
+      </div>
+    </div>
+  )}
+</li>
           ))}
         </ul>
 
@@ -173,14 +171,6 @@ function Navbar() {
           >
             <i className="ti ti-user text-sm" />
             Sign in
-          </button>
-
-          <button
-            className={`flex items-center gap-1.5 text-[13px] font-semibold text-white bg-linear-to-r from-sky-500 to-blue-500 px-4 py-1.75 h-10.5 rounded-xl shrink-0 cursor-pointer whitespace-nowrap shadow-md shadow-sky-200 ${btnPrimary}`}
-          >
-            <i className="ti ti-plus text-sm" />
-            <span className="hidden sm:inline">Submit Tool</span>
-            <span className="sm:hidden">Submit</span>
           </button>
 
           <button
@@ -247,12 +237,6 @@ function Navbar() {
             >
               <i className="ti ti-user text-sm" />
               Sign in
-            </button>
-            <button
-              className={`flex-1 flex items-center justify-center gap-1.5 text-[13px] font-semibold text-white bg-linear-to-r from-sky-500 to-blue-500 py-2.5 rounded-xl cursor-pointer shadow-md shadow-sky-200 ${btnPrimary}`}
-            >
-              <i className="ti ti-plus text-sm" />
-              Submit Tool
             </button>
           </div>
         </div>
