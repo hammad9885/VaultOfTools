@@ -18,39 +18,42 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"featured" | "trending">(
     "featured",
   );
+
   const [liveTools, setLiveTools] = useState<PHProduct[]>([]);
   const [loadingTrending, setLoadingTrending] = useState(false);
   const [trendingError, setTrendingError] = useState(false);
 
-useEffect(() => {
-  if (activeTab !== "trending") return;
+  const [query, setQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const fetchTrending = async () => {
-    setLoadingTrending(true);
-    setTrendingError(false);
+  useEffect(() => {
+    if (activeTab !== "trending") return;
 
-    try {
-      const res = await axios("/api/trending");
-      const data = await res.data;
+    const fetchTrending = async () => {
+      setLoadingTrending(true);
+      setTrendingError(false);
 
-      setLiveTools(data);
-    }catch {
-  setTrendingError(true);
-    } finally {
-      setLoadingTrending(false);
-    }
-  };
+      try {
+        const res = await axios("/api/trending");
+        const data = await res.data;
+        setLiveTools(data);
+      } catch {
+        setTrendingError(true);
+      } finally {
+        setLoadingTrending(false);
+      }
+    };
 
-  fetchTrending();
-}, [activeTab]);
+    fetchTrending();
+  }, [activeTab]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans transition-colors duration-300">
       <section className="relative pt-32 pb-16 px-6 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-b from-white via-slate-50 to-slate-100 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 pointer-events-none" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-175 h-87.5 bg-linear-to-br from-emerald-200/50 via-teal-100/40 to-sky-100/30 dark:from-emerald-900/20 dark:via-teal-900/15 dark:to-sky-900/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-10 left-1/4 w-72 h-72 bg-violet-100/40 dark:bg-violet-900/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-10 right-1/4 w-64 h-64 bg-amber-100/30 dark:bg-amber-900/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-b from-white via-slate-50/70 to-slate-100 dark:from-slate-950 dark:via-slate-950/60 dark:to-slate-900 pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-175 h-87.5 bg-linear-to-br from-emerald-200/55 via-teal-100/35 to-sky-100/25 dark:from-emerald-900/25 dark:via-teal-900/15 dark:to-sky-900/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-10 left-1/4 w-72 h-72 bg-teal-100/25 dark:bg-teal-900/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-10 right-1/4 w-64 h-64 bg-sky-100/20 dark:bg-sky-900/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10">
           <div className="inline-flex items-center gap-2 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 px-3 py-1.5 rounded-full mb-6">
@@ -78,10 +81,25 @@ useEffect(() => {
             />
             <input
               type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
               placeholder="Try: 'AI tools for legal research'..."
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const el = document.getElementById("tools-section");
+                  el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              }}
               className="flex-1 bg-transparent border-none outline-none text-sm text-slate-800 dark:text-slate-200 py-3.5 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              aria-label="Search tools"
             />
-            <button className="bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-5 py-2 m-1.5 rounded-lg transition-colors">
+            <button
+              onClick={() => {
+                const el = document.getElementById("tools-section");
+                el?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-5 py-2 m-1.5 rounded-lg transition-colors"
+            >
               Search
             </button>
           </div>
@@ -115,6 +133,17 @@ useEffect(() => {
               </div>
             ))}
           </div>
+
+          {(query.trim() || selectedCategory) && (
+            <div className="mt-6">
+              <div className="text-xs text-slate-600 dark:text-slate-300">
+                Showing results for{" "}
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                  {selectedCategory ? selectedCategory : query.trim()}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -125,6 +154,10 @@ useEffect(() => {
           </h2>
           <a
             href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              setSelectedCategory(null);
+            }}
             className="flex items-center gap-1 text-sm text-slate-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
           >
             All 89 categories{" "}
@@ -135,10 +168,21 @@ useEffect(() => {
           {categories.map((cat) => {
             const { bg, text } = splitColor(cat.color);
             const Icon = cat.icon;
+            const isActive = selectedCategory === cat.name;
             return (
-              <div
+              <button
                 key={cat.name}
-                className="flex flex-col gap-2 p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm cursor-pointer transition-all hover:-translate-y-0.5"
+                type="button"
+                onClick={() => {
+                  setSelectedCategory(cat.name);
+                  const el = document.getElementById("tools-section");
+                  el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className={`flex flex-col gap-2 p-4 text-left bg-white dark:bg-slate-900 border rounded-xl cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:focus:ring-emerald-700 ${
+                  isActive
+                    ? "border-emerald-300 dark:border-emerald-700 shadow-md"
+                    : "border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
+                }`}
               >
                 <div
                   className={`w-9 h-9 rounded-lg flex items-center justify-center ${bg} dark:opacity-80 shrink-0`}
@@ -151,14 +195,14 @@ useEffect(() => {
                 <span className="text-xs text-slate-400 dark:text-slate-500">
                   {cat.count}
                 </span>
-              </div>
+              </button>
             );
           })}
         </div>
       </section>
 
-      <section className="px-6 pb-10">
-        <div className="flex gap-3 mb-6">
+      <section className="px-6 pb-10" id="tools-section">
+        <div className="flex gap-3 mb-6 items-center flex-wrap">
           <button
             onClick={() => setActiveTab("featured")}
             className={`px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all duration-200 ${
@@ -180,10 +224,40 @@ useEffect(() => {
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             Trending
           </button>
+
+          {(query.trim() || selectedCategory) && (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery("");
+                setSelectedCategory(null);
+              }}
+              className="ml-auto text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-900/40 hover:bg-white dark:hover:bg-slate-900 transition-colors"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
+
         {activeTab === "featured" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {featuredTools.map((tool) => (
+            {featuredTools
+              .filter((tool) => {
+                const q = query.trim().toLowerCase();
+                const matchesQuery = !q
+                  ? true
+                  : [tool.name, tool.tagline, tool.desc, ...tool.tags]
+                      .join(" ")
+                      .toLowerCase()
+                      .includes(q);
+
+                const matchesCategory = !selectedCategory
+                  ? true
+                  : [tool.tags.join(" "), tool.name].join(" ").toLowerCase().includes(selectedCategory.toLowerCase());
+
+                return matchesQuery && matchesCategory;
+              })
+              .map((tool) => (
               <div
                 key={tool.name}
                 className="relative flex flex-col gap-3 p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-md dark:hover:shadow-slate-900 cursor-pointer transition-all hover:-translate-y-0.5 overflow-hidden"

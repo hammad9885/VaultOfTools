@@ -6,7 +6,7 @@ import ClaudeAi from "./icons/ClaudeAi";
 import Runway from "./icons/Runway";
 import Perplexity from "./icons/Perplexity";
 import Cursor from "./icons/Cursor";
-import { useRouter } from "next/navigation";
+import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import "../assets/css/Navbar.css";
 import { useTheme } from "../hooks/useTheme";
@@ -49,16 +49,50 @@ function ThemeToggle() {
 
 function Navbar() {
   const [visible, setVisible] = useState(true);
-  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const lastScrollY = useRef(0);
   const { isDark, mounted } = useTheme();
-  const router = useRouter();
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const searchWrapRef = useRef<HTMLDivElement | null>(null);
+
+  const closeSearch = () => {
+    setSearchOpen(false);
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      closeSearch();
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!searchWrapRef.current) return;
+      if (searchWrapRef.current.contains(e.target as Node)) return;
+      closeSearch();
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeSearch();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
-      setScrolled(currentY > 20);
       if (currentY < 60) {
         setVisible(true);
       } else if (currentY > lastScrollY.current + 8) {
@@ -73,9 +107,18 @@ function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const scrolledShadow = scrolled
-    ? "shadow-[0_2px_20px_rgba(0,0,0,0.4),0_1px_4px_rgba(0,0,0,0.3)]"
-    : "";
+  const results = (() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [] as { label: string; website?: string; href: string }[];
+
+    // Local matches using featured tools + trending data shape (no API call from navbar)
+    // We'll route to home with query param. Home already filters by `query`.
+    // We only need labels for dropdown UI.
+    return ["Claude", "Cursor AI", "Perplexity AI", "Midjourney"].filter((name) => name.toLowerCase().includes(q)).map((name) => ({
+      label: name,
+      href: `/?q=${encodeURIComponent(name)}`,
+    }));
+  })();
 
   return (
     <div
@@ -104,42 +147,37 @@ function Navbar() {
         <ul className="hidden lg:flex items-center list-none">
           {navLinks.map((item) => (
             <li key={item.label} className="relative group z-[2000]">
-  <Link
-    href={item.href}
-    className={`flex items-center gap-2 text-[12px] px-1 py-2 rounded-lg transition-all no-underline ${
-      item.active
-        ? "text-sky-600 font-semibold"
-        : "text-slate-500 hover:text-sky-600"
-    }`}
-  >
-    {item.icon && <span className="text-[16px]">{item.icon}</span>}
-    {item.label}
-  </Link>
+              <Link
+                href={item.href}
+                className={`flex items-center gap-2 text-[12px] px-1 py-2 rounded-lg transition-all no-underline ${
+                  item.active
+                    ? "text-sky-600 font-semibold"
+                    : "text-slate-500 hover:text-sky-600"
+                }`}
+              >
+                {item.icon && <span className="text-[16px]">{item.icon}</span>}
+                {item.label}
+              </Link>
 
-  {/* ✅ DROPDOWN FIXED */}
-  {item.children && (
-<div className="absolute left-0 top-full pt-2 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[9999]">
-  
-  <div className="bg-white dark:bg-slate-900 opacity-100 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-2">   
-        {item.children.map((child) => (
-          <Link
-            key={child.label}
-            href={child.href}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition-all no-underline"
-          >
-            {child.icon && (
-              <span className="text-[15px]">
-                {child.icon}
-              </span>
-            )}
-            {child.label}
-          </Link>
-        ))}
-
-      </div>
-    </div>
-  )}
-</li>
+              {item.children && (
+                <div className="absolute left-0 top-full pt-2 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[9999]">
+                  <div className="bg-white dark:bg-slate-900 opacity-100 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-2">
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.label}
+                        href={child.href}
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition-all no-underline"
+                      >
+                        {child.icon && (
+                          <span className="text-[15px]">{child.icon}</span>
+                        )}
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </li>
           ))}
         </ul>
 
@@ -165,13 +203,25 @@ function Navbar() {
 
           <ThemeToggle />
 
-          <button
-            onClick={() => router.push("/signin")}
-            className={`hidden md:flex items-center gap-1.5 text-[13px] px-3.5 py-1.75 rounded-lg border whitespace-nowrap cursor-pointer shadow-sm text-sky-600 hover:text-sky-700 border-sky-200 bg-white hover:bg-sky-50 dark:text-sky-400 dark:hover:text-sky-300 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 ${btnPress}`}
-          >
-            <i className="ti ti-user text-sm" />
-            Sign in
-          </button>
+          <Show when="signed-out">
+            <SignInButton mode="modal">
+             <button className={`hidden md:flex items-center gap-1.5 text-[13px] px-3.5 py-1.75 rounded-lg border whitespace-nowrap cursor-pointer shadow-sm text-sky-600 hover:text-sky-700 border-sky-200 bg-white hover:bg-sky-50 dark:text-sky-400 dark:hover:text-sky-300 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 ${btnPress}`}
+            >
+              <i className="ti ti-user text-sm" />
+              Sign in
+            </button>
+            </SignInButton>
+          </Show>
+
+          <Show when="signed-in">
+            <UserButton
+              appearance={{
+                elements: {
+                  userButtonAvatarBox: "w-9 h-9",
+                },
+              }}
+            />
+          </Show>
 
           <button
             onClick={() => setMobileOpen((p) => !p)}
@@ -232,13 +282,25 @@ function Navbar() {
           </div>
 
           <div className="flex gap-2 mt-1">
-            <button
-              className={`flex-1 flex items-center justify-center gap-1.5 text-[13px] py-2.5 rounded-lg border cursor-pointer text-sky-600 hover:text-sky-700 border-sky-200 bg-white hover:bg-sky-50 dark:text-sky-400 dark:hover:text-sky-300 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 ${btnPress}`}
-            >
-              <i className="ti ti-user text-sm" />
-              Sign in
-            </button>
+            <Show when="signed-out">
+              <SignInButton mode="modal">
+               <button className={`flex-1 flex items-center justify-center gap-1.5 text-[13px] py-2.5 rounded-lg border cursor-pointer shadow-sm text-sky-600 hover:text-sky-700 border-sky-200 bg-white hover:bg-sky-50 dark:text-sky-400 dark:hover:text-sky-300 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 ${btnPress}`}>
+                <i className="ti ti-user text-sm" />
+                Sign in
+              </button>
+              </SignInButton>
+
+            </Show>
+
+            <Show when="signed-in">
+              <UserButton appearance={{
+                elements: {
+                  userButtonAvatarBox: "w-10 h-10",
+                },
+              }} />
+            </Show>
           </div>
+
         </div>
       </div>
 
