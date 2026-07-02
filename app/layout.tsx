@@ -1,0 +1,48 @@
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { Providers } from "./components/providers";
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+export const metadata: Metadata = {
+  // metadataBase: new URL("https://artificialpod.com"),
+  title: {
+    default: "Vault of Tools — Discover the Best AI Tools",
+    template: "%s | Vault of Tools",
+  },
+  description:
+    "Vault of Tools is the curated directory of 2,500+ AI tools. Discover, compare, and review the best AI for any workflow.",
+  keywords: ["AI tools", "AI directory", "best AI tools", "compare AI", "Vault of Tools"],
+  authors: [{ name: "Vault of Tools" }],
+  openGraph: {
+    title: "Vault of Tools — Discover the Best AI Tools",
+    description: "Curated directory of 2,500+ AI tools.",
+    // url: "",
+    siteName: "Vault of Tools",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Vault of Tools",
+    description: "Discover the best AI tools.",
+    site: "@VaultOfTools",
+  },
+  robots: { index: true, follow: true },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-white text-slate-900 font-sans">
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}

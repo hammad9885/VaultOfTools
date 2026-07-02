@@ -1,0 +1,258 @@
+export type BlogPost = {
+  slug: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  coverImage: string;
+  date: string;
+  readTime: string;
+  author: {
+    name: string;
+    avatar: string;
+    role?: string;
+    bio?: string;
+  };
+  featured?: boolean;
+  content?: ContentBlock[];
+};
+
+export type ContentBlock =
+  | { type: "paragraph"; text: string }
+  | { type: "heading"; text: string }
+  | { type: "quote"; text: string; cite?: string }
+  | { type: "image"; src: string; alt: string; caption?: string }
+  | { type: "list"; items: string[] };
+
+export const posts: BlogPost[] = [
+  {
+    slug: "best-ai-image-generators-2026",
+    title: "The 7 Best AI Image Generators in 2026, Ranked and Tested",
+    excerpt:
+      "We spent three weeks generating thousands of images across the top models. Here's what actually held up for realism, speed, and price.",
+    category: "Image Generation",
+    coverImage: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1200&h=630&fit=crop",
+    date: "2026-06-12",
+    readTime: "8 min read",
+    author: {
+      name: "Sara Ahmed",
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+      role: "Editor",
+      bio: "Sara covers generative media tools and has reviewed AI products for five years.",
+    },
+    featured: true,
+    content: [
+      {
+        type: "paragraph",
+        text: "Picking an AI image generator used to come down to one question: which model makes the prettiest pictures? In 2026, that's no longer enough. Speed, pricing, licensing, and how well a model follows a detailed prompt all matter just as much as raw image quality.",
+      },
+      {
+        type: "paragraph",
+        text: "We tested every major generator across the same fifty prompts, covering photorealism, illustration, product mockups, and typography. Below is what stood out.",
+      },
+      { type: "heading", text: "What we tested for" },
+      {
+        type: "list",
+        items: [
+          "Photorealism and lighting accuracy",
+          "Prompt adherence on complex, multi-subject prompts",
+          "Generation speed at standard resolution",
+          "Pricing per image at scale",
+          "Commercial usage rights",
+        ],
+      },
+      {
+        type: "quote",
+        text: "The gap between the top three models has nearly disappeared. The real differentiator now is workflow.",
+        cite: "Internal testing notes",
+      },
+      {
+        type: "paragraph",
+        text: "If you only generate a handful of images a month, almost any tool on this list will satisfy you. The differences show up at volume, where pricing and speed compound fast.",
+      },
+      { type: "heading", text: "Our takeaway" },
+      {
+        type: "paragraph",
+        text: "For most people, the right choice depends less on which model wins a side-by-side comparison and more on whether it fits an existing workflow — design tool plugin, API access, or a simple web app.",
+      },
+    ],
+  },
+  {
+    slug: "ai-coding-assistants-compared",
+    title: "AI Coding Assistants Compared: Which One Actually Saves You Time",
+    excerpt:
+      "Copilot, Cursor, and CodeWhisper all promise faster shipping. We benchmarked real pull requests to see which claims hold up.",
+    category: "Coding",
+    coverImage: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&h=630&fit=crop",
+    date: "2026-06-08",
+    readTime: "6 min read",
+    author: {
+      name: "Hamza Tariq",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+      role: "Contributor",
+      bio: "Hamza is a backend engineer who writes about developer tooling.",
+    },
+    content: [
+      {
+        type: "paragraph",
+        text: "Every AI coding assistant claims to save developers hours each week. To find out if that's true, we tracked three engineers across two sprints, each using a different assistant on the same codebase.",
+      },
+      { type: "heading", text: "Method" },
+      {
+        type: "paragraph",
+        text: "Each engineer worked on comparable tickets — similar complexity, similar scope — while we logged time from ticket assignment to merged pull request.",
+      },
+      {
+        type: "list",
+        items: [
+          "Time to first working draft",
+          "Number of review round-trips",
+          "Bugs caught in code review vs. in production",
+        ],
+      },
+      {
+        type: "paragraph",
+        text: "The biggest time savings showed up not in writing new code, but in understanding unfamiliar parts of the codebase before making a change.",
+      },
+    ],
+  },
+  {
+    slug: "voice-synthesis-2026-state-of-the-art",
+    title: "Voice Synthesis in 2026: How Close Are We to Indistinguishable?",
+    excerpt:
+      "Neural voice models have crossed a quality threshold most listeners can't detect. We talk to the teams building them.",
+    category: "Voice & Audio",
+    coverImage: "https://images.unsplash.com/photo-1589903308904-1010c2294adc?w=1200&h=630&fit=crop",
+    date: "2026-06-03",
+    readTime: "5 min read",
+    author: {
+      name: "Mariam Iqbal",
+      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop",
+      bio: "Mariam writes about audio and voice AI.",
+    },
+    content: [
+      {
+        type: "paragraph",
+        text: "Ask someone to pick the synthetic voice out of a lineup today, and most people get it wrong more often than right. That's a meaningful shift from even two years ago.",
+      },
+      { type: "heading", text: "What changed" },
+      {
+        type: "paragraph",
+        text: "Newer models handle breath, pacing, and emotional inflection far better than earlier text-to-speech systems, which tended to sound flat under any kind of emphasis.",
+      },
+      {
+        type: "paragraph",
+        text: "That progress brings real concerns alongside the convenience — particularly around consent and misuse — which most major providers are now addressing with stricter identity verification before cloning a voice.",
+      },
+    ],
+  },
+  {
+    slug: "ai-productivity-tools-small-teams",
+    title: "10 AI Productivity Tools That Are Actually Worth It for Small Teams",
+    excerpt:
+      "Forget the hype cycle. These are the tools small teams are quietly relying on every day to ship faster.",
+    category: "Productivity",
+    coverImage: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=630&fit=crop",
+    date: "2026-05-29",
+    readTime: "7 min read",
+    author: {
+      name: "Ali Khan",
+      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop",
+      role: "Editor",
+    },
+    content: [
+      {
+        type: "paragraph",
+        text: "Small teams don't have the bandwidth to evaluate every new AI tool that launches. So we asked operators at ten-person startups what they actually kept using past the first week.",
+      },
+      {
+        type: "list",
+        items: [
+          "Meeting notes that auto-summarize into action items",
+          "Inbox triage that drafts replies in your voice",
+          "Lightweight automation for repetitive admin tasks",
+        ],
+      },
+      {
+        type: "paragraph",
+        text: "The pattern across every team we spoke to: the tools that stuck were the ones that disappeared into an existing workflow, rather than asking anyone to adopt a new one.",
+      },
+    ],
+  },
+  {
+    slug: "chatbot-vs-agent-whats-the-difference",
+    title: "Chatbot vs Agent: What's Actually Different in 2026",
+    excerpt:
+      "The terms get used interchangeably, but the underlying architectures — and what they're good for — are not the same thing.",
+    category: "Chatbots",
+    coverImage: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&h=630&fit=crop",
+    date: "2026-05-21",
+    readTime: "4 min read",
+    author: {
+      name: "Sara Ahmed",
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+      role: "Editor",
+    },
+    content: [
+      {
+        type: "paragraph",
+        text: "A chatbot answers what you ask. An agent decides what needs to happen and takes steps to make it happen, often without a person approving each step along the way.",
+      },
+      { type: "heading", text: "Why it matters" },
+      {
+        type: "paragraph",
+        text: "That distinction changes what you should trust each system to do unsupervised, and where a human still needs to stay in the loop.",
+      },
+    ],
+  },
+  {
+    slug: "how-marketers-are-using-ai-2026",
+    title: "How Marketers Are Actually Using AI Tools in 2026",
+    excerpt:
+      "We surveyed 200 marketing teams. The results split sharply between tools that save real hours and tools that just feel productive.",
+    category: "Marketing",
+    coverImage: "https://images.unsplash.com/photo-1432889821006-3149402ab5c1?w=1200&h=630&fit=crop",
+    date: "2026-05-14",
+    readTime: "6 min read",
+    author: {
+      name: "Hamza Tariq",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+      role: "Contributor",
+    },
+    content: [
+      {
+        type: "paragraph",
+        text: "Marketing teams have no shortage of AI tools pitched at them every week. We surveyed 200 teams to find out which categories actually changed how they work.",
+      },
+      {
+        type: "list",
+        items: [
+          "Campaign copy drafts that cut first-draft time in half",
+          "Ad creative variation at a scale manual design couldn't match",
+          "Performance reporting that flags anomalies before a human notices",
+        ],
+      },
+      {
+        type: "paragraph",
+        text: "The clearest signal: teams that saw real gains had already defined their process before adding a tool, rather than hoping the tool would define it for them.",
+      },
+    ],
+  },
+];
+
+export function getAllPosts(): BlogPost[] {
+  return posts;
+}
+
+export function getPostBySlug(slug: string): BlogPost | undefined {
+  return posts.find((p) => p.slug === slug);
+}
+
+export function getRelatedPosts(post: BlogPost, limit = 3): BlogPost[] {
+  return posts
+    .filter((p) => p.slug !== post.slug && p.category === post.category)
+    .slice(0, limit)
+    .concat(
+      posts.filter((p) => p.slug !== post.slug && p.category !== post.category)
+    )
+    .slice(0, limit);
+}
