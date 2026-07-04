@@ -21,11 +21,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  serverExternalPackages: ["mongoose", "bcryptjs", "jsonwebtoken"],
-  webpack: (config) => {
-    config.resolve.symlinks = false;
-    return config;
-  },
+  serverExternalPackages: ["bcryptjs", "jsonwebtoken"],
 };
 
 export default nextConfig;
