@@ -36,12 +36,12 @@ export default function CompareLandingPage() {
     { slug: "perplexity-vs-you", a: "Perplexity", b: "You.com", category: "Search", votes: 987 },
   ]);
   const [alternatives, setAlternatives] = useState([
-    { slug: "chatgpt", name: "ChatGPT", category: "AI Chatbot", altCount: 12 },
-    { slug: "midjourney", name: "Midjourney", category: "Image Generation", altCount: 8 },
-    { slug: "github-copilot", name: "GitHub Copilot", category: "Coding", altCount: 9 },
-    { slug: "notion-ai", name: "Notion AI", category: "Productivity", altCount: 7 },
-    { slug: "jasper", name: "Jasper", category: "AI Writing", altCount: 11 },
-    { slug: "runway", name: "Runway", category: "Video", altCount: 6 },
+    { slug: "chatgpt", name: "ChatGPT", category: "AI Chatbot", altCount: 12, logo: "https://cdn.simpleicons.org/openai/4F46E5" },
+    { slug: "midjourney", name: "Midjourney", category: "Image Generation", altCount: 8, logo: "https://cdn.simpleicons.org/midjourney/4F46E5" },
+    { slug: "github-copilot", name: "GitHub Copilot", category: "Coding", altCount: 9, logo: "https://cdn.simpleicons.org/github/4F46E5" },
+    { slug: "notion-ai", name: "Notion AI", category: "Productivity", altCount: 7, logo: "https://cdn.simpleicons.org/notion/4F46E5" },
+    { slug: "jasper", name: "Jasper", category: "AI Writing", altCount: 11, logo: "https://cdn.simpleicons.org/jasper/4F46E5" },
+    { slug: "runway", name: "Runway", category: "Video", altCount: 6, logo: "https://cdn.simpleicons.org/runway/4F46E5" },
   ]);
   const [filterTabs, setFilterTabs] = useState(["All", "AI Chatbots", "Image Generation", "Coding", "Productivity", "AI Writing", "Video", "Search"]);
   const [howItWorks, setHowItWorks] = useState([
@@ -339,8 +339,14 @@ export default function CompareLandingPage() {
               href={`/alternatives/${alt.slug}`}
               className="group rounded-2xl border border-border bg-card p-5 text-center hover:border-primary/30 hover:shadow-md transition-all"
             >
-              <div className="w-10 h-10 rounded-xl bg-primary-muted text-primary grid place-items-center mx-auto mb-3 group-hover:scale-105 transition-transform">
-                <Sparkles className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-xl bg-primary-muted grid place-items-center mx-auto mb-3 group-hover:scale-105 transition-transform overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={alt.logo || ""}
+                  alt={`${alt.name} logo`}
+                  className="w-6 h-6 object-contain"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                />
               </div>
               <p className="font-semibold text-foreground text-sm truncate">{alt.name}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{alt.altCount} alternatives</p>

@@ -30,6 +30,7 @@ export const consulting = {
     name: "Sarah Kim",
     role: "CTO, TechFlow Inc.",
     quote: "Vault of Tools transformed our approach to AI adoption. We cut our tool costs by 40% while increasing team productivity by 60%. Their consulting team was instrumental in helping us navigate the complex AI landscape.",
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop",
   },
   stat: "500+ Businesses Served",
   faqs: [

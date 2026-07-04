@@ -142,6 +142,7 @@ export default function ConsultingLanding() {
     name: "Sarah Kim",
     role: "CTO, TechFlow Inc.",
     quote: "Vault of Tools completely transformed our tech stack. We cut costs by 40% and doubled our team's productivity within a month.",
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop",
   });
 
   const [stat, setStat] = useState("500+ Businesses Served");
@@ -587,8 +588,17 @@ export default function ConsultingLanding() {
                   &ldquo;{testimonial.quote}&rdquo;
                 </p>
                 <div className="mt-6 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-xs font-bold text-white">
-                    {testimonial.name.split(" ").map((n) => n[0]).join("")}
+                  <div className="relative h-10 w-10">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={testimonial.avatar || ""}
+                      alt={testimonial.name}
+                      className="h-10 w-10 rounded-full object-cover ring-2 ring-white/20"
+                      onError={(e) => { e.currentTarget.style.display = "none"; }}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-xs font-bold text-white pointer-events-none">
+                      {testimonial.name.split(" ").map((n) => n[0]).join("")}
+                    </div>
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-white">

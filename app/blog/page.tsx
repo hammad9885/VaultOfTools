@@ -69,7 +69,7 @@ const catIcons: Record<string, { icon: typeof Cpu; color: string; bg: string }> 
 const iconRegistry: Record<string, any> = {
   Cpu, Star, Zap, TrendingUp, Users, Check, Sparkles,
 };
-type ArticleData = { slug: string; cat: string; title: string; desc: string; date: string; time: string };
+type ArticleData = { slug: string; cat: string; title: string; desc: string; date: string; time: string; coverImage?: string };
 type CategoryData = { name: string; count: number };
 
 const fallbackCategories: CategoryData[] = [
@@ -86,6 +86,7 @@ const fallbackArticles: ArticleData[] = dataPosts.map((p) => ({
   desc: p.excerpt,
   date: new Date(p.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
   time: p.readTime,
+  coverImage: p.coverImage,
 }));
 
 export default function BlogLanding() {
@@ -147,7 +148,7 @@ export default function BlogLanding() {
 
   const displayCategories = categories.length > 0 ? categories : fallbackCategories;
   const displayArticles: ArticleData[] = blogPosts.length > 0
-    ? blogPosts.map((p) => ({ slug: p.slug, cat: p.category, title: p.title, desc: p.excerpt, date: p.date ? new Date(p.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "", time: p.readTime || "" }))
+    ? blogPosts.map((p) => ({ slug: p.slug, cat: p.category, title: p.title, desc: p.excerpt, date: p.date ? new Date(p.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "", time: p.readTime || "", coverImage: p.coverImage }))
     : fallbackArticles;
 
   return (
@@ -315,19 +316,15 @@ export default function BlogLanding() {
                 className="group relative overflow-hidden rounded-3xl border border-[#E5E7EB] bg-white lg:col-span-2 cursor-pointer"
                 style={{ boxShadow: "0 15px 40px rgba(15,23,42,0.08)" }}
               >
-                <div className="relative h-56 w-full sm:h-72 lg:h-80 bg-gradient-to-br from-[#EEF2FF] to-[#F5F3FF] overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="flex gap-3">
-                        <div className="h-16 w-16 rounded-2xl bg-[#4F46E5]/10 flex items-center justify-center"><Cpu className="size-7 text-[#4F46E5]" /></div>
-                        <div className="h-16 w-16 rounded-2xl bg-[#7C3AED]/10 flex items-center justify-center"><Zap className="size-7 text-[#7C3AED]" /></div>
-                        <div className="h-16 w-16 rounded-2xl bg-[#6366F1]/10 flex items-center justify-center"><TrendingUp className="size-7 text-[#6366F1]" /></div>
-                      </div>
-                      <span className="text-sm font-medium text-[#94A3B8]">Featured Article Cover</span>
-                    </div>
-                  </div>
+                <div className="relative h-56 w-full sm:h-72 lg:h-80 bg-[#EEF2FF] overflow-hidden">
+                  <img
+                    src={dataPosts.find(p => p.slug === "best-ai-image-generators-2026")?.coverImage || "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1200&h=630&fit=crop"}
+                    alt="Featured article: AI image generators comparison and review"
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                   <span className="absolute left-5 top-5 inline-flex items-center rounded-lg bg-white/90 px-3 py-1.5 text-xs font-semibold text-[#4F46E5] shadow-sm backdrop-blur-sm">
-                    AI Writing
+                    {dataPosts.find(p => p.slug === "best-ai-image-generators-2026")?.category || "Image Generation"}
                   </span>
                 </div>
 
@@ -475,12 +472,13 @@ export default function BlogLanding() {
                     className="group relative flex flex-col rounded-3xl border border-[#E5E7EB] bg-white overflow-hidden transition-shadow"
                     style={{ boxShadow: "0 15px 40px rgba(15,23,42,0.06)" }}
                   >
-                    {/* Image placeholder */}
-                    <div className="relative h-44 w-full bg-gradient-to-br from-[#EEF2FF] to-[#F5F3FF] flex items-center justify-center overflow-hidden">
-                      <div className="flex gap-2">
-                        <div className="h-8 w-8 rounded-xl bg-[#4F46E5]/10 flex items-center justify-center"><Cpu className="size-4 text-[#4F46E5]" /></div>
-                        <div className="h-8 w-8 rounded-xl bg-[#6366F1]/10 flex items-center justify-center"><Zap className="size-4 text-[#6366F1]" /></div>
-                      </div>
+                    <div className="relative h-44 w-full bg-[#EEF2FF] overflow-hidden">
+                      <img
+                        src={a.coverImage || ""}
+                        alt={`${a.title} cover image`}
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                      />
                     </div>
 
                     <div className="flex flex-1 flex-col p-5">
