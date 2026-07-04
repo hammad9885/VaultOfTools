@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Calendar, Clock, ArrowLeft, ArrowRight, Share2 } from "lucide-react";
 import { SiteNav, SiteFooter } from "../../routes/index";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_APP_URL || "";
 
 interface ContentBlock {
   type: "paragraph" | "heading" | "quote" | "image" | "list";

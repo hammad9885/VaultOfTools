@@ -1,0 +1,41 @@
+import { NextRequest, NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
+import { isDBConnected } from "@/app/lib/config/db";
+import User from "@/app/lib/models/User";
+import memoryStore from "@/app/lib/data/memoryStore";
+
+function signToken(user: any) {
+  return jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET || "default-secret",
+    { expiresIn: "7d" }
+  );
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const { email, password } = await request.json();
+    if (!email || !password) {
+      return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
+    }
+
+    let user;
+    if (isDBConnected()) {
+      user = await User.findOne({ email: email.toLowerCase() });
+      if (!user) return NextResponse.json({ error: "No account found with this email" }, { status: 401 });
+      const valid = await user.comparePassword(password);
+      if (!valid) return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
+    } else {
+      user = await memoryStore.findUserByEmail(email);
+      if (!user) return NextResponse.json({ error: "No account found with this email" }, { status: 401 });
+      const valid = await memoryStore.comparePassword(user, password);
+      if (!valid) return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
+    }
+
+    const token = signToken(user);
+    const profile = isDBConnected() ? user.toProfile() : memoryStore.toProfile(user);
+    return NextResponse.json({ token, user: profile });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+  }
+}
