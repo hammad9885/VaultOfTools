@@ -48,6 +48,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => { cancelled = true; };
   }, []);
 
+  const ctxRefresh = useCallback(async () => {
+    const token = api.getToken();
+    if (!token) { setUser(null); setLoading(false); return; }
+    try {
+      const res = await api.getMe();
+      setUser(res.user);
+    } catch {
+      api.clearToken();
+      setUser(null);
+    }
+    setLoading(false);
+  }, []);
+
   const ctxSignOut = useCallback(async () => {
     api.clearToken();
     setUser(null);
@@ -56,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, signOut: ctxSignOut }}>
+    <AuthContext.Provider value={{ user, loading, refresh: ctxRefresh, signOut: ctxSignOut }}>
       {children}
     </AuthContext.Provider>
   );
