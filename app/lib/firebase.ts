@@ -13,11 +13,19 @@ const firebaseConfig = {
   measurementId: "G-9B9M7BGGTY",
 };
 
+<<<<<<< HEAD
+=======
+// Prevent re-initialization in Next.js hot-reload
+>>>>>>> 527336f (..)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
+<<<<<<< HEAD
+=======
+// Analytics only in browser
+>>>>>>> 527336f (..)
 export const getAnalyticsInstance = async () => {
   if (await isSupported()) {
     return getAnalytics(app);
