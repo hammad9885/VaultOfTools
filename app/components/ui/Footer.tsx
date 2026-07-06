@@ -78,7 +78,7 @@ function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-12 pb-14 border-b border-slate-200 dark:border-slate-800">
           <div className="xl:col-span-2">
             <Link href="/" className="flex items-center gap-2 shrink-0 no-underline group [&:hover_.logo-icon]:rotate-15 [&:hover_.logo-icon]:scale-[1.08]">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <div className="w-11 h-11 rounded-2xl bg-linear-to-br from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
                 <HiMiniBolt className="text-white text-xl" />
               </div>
           <span className="font-bold text-[18px] text-slate-800 dark:text-slate-100 transition-colors duration-150 group-hover:text-sky-500" style={{ fontFamily: "'Syne', sans-serif" }}>
