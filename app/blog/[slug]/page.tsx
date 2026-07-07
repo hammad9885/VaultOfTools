@@ -100,7 +100,7 @@ function Block({ block }: { block: ContentBlock }) {
       return (
         <figure>
           <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-gray-50">
-            <Image src={block.src} alt={block.alt} fill unoptimized className="object-cover" />
+            <Image src={block.src || ""} alt={block.alt || ""} fill unoptimized className="object-cover" />
           </div>
           {block.caption && (
             <figcaption className="mt-2 text-center text-sm text-muted-foreground">
