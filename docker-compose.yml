@@ -1,0 +1,18 @@
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vaultoftools-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=${MONGODB_URI:-mongodb://host.docker.internal:27017/vaultoftools}
+      - JWT_SECRET=${JWT_SECRET:-vault-of-tools-jwt-secret-change-in-production}
+    command: npm run dev
+    init: true

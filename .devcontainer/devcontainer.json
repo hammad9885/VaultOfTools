@@ -1,0 +1,30 @@
+{
+  "name": "VaultOfTools",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:20",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Next.js",
+      "onAutoForward": "openPreview"
+    }
+  },
+  "postCreateCommand": "npm install",
+  "postStartCommand": "echo 'Ready! Run: npm run dev'",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "dsznajder.es7-react-js-snippets",
+        "ms-vscode.vscode-typescript-next"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "typescript.tsdk": "node_modules/typescript/lib"
+      }
+    }
+  },
+  "containerEnv": {
+    "NODE_ENV": "development"
+  }
+}
