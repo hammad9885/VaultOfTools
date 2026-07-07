@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/app/lib/config/db";
 import Submission from "@/app/lib/models/Submission";
 import Tool from "@/app/lib/models/Tool";
 import { authenticate } from "@/app/lib/middleware/auth";
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  await connectDB();
   try {
     const { user } = await authenticate(request);
     if (user.role !== "admin") {

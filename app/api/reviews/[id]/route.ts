@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/app/lib/config/db";
 import Review from "@/app/lib/models/Review";
 import { authenticate } from "@/app/lib/middleware/auth";
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  await connectDB();
   try {
     const { user } = await authenticate(request);
     const { id } = await params;

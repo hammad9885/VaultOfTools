@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/app/lib/config/db";
 import Submission from "@/app/lib/models/Submission";
 import { authenticate } from "@/app/lib/middleware/auth";
 
 export async function POST(request: NextRequest) {
+  await connectDB();
   try {
     const { user } = await authenticate(request);
     const { name, website, category, description, pricing, founderName, companyName, launchYear, email } = await request.json();
@@ -24,6 +26,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  await connectDB();
   try {
     const { user } = await authenticate(request);
     const submissions = await Submission.find({ userId: user._id })

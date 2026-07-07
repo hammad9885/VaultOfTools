@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { connectDB } from "@/app/lib/config/db";
 import Tool from "@/app/lib/models/Tool";
 
 export async function GET() {
+  await connectDB();
   try {
     const categories = await Tool.aggregate([
       { $group: { _id: "$category", count: { $sum: 1 } } },

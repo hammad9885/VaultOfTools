@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/app/lib/config/db";
 import Review from "@/app/lib/models/Review";
 import { authenticate, optionalAuth } from "@/app/lib/middleware/auth";
 
@@ -9,6 +10,7 @@ const SORT_MAP: Record<string, any> = {
 };
 
 export async function GET(request: NextRequest) {
+  await connectDB();
   try {
     const { searchParams } = new URL(request.url);
     const tool = searchParams.get("tool");
@@ -60,6 +62,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  await connectDB();
   try {
     const { user } = await authenticate(request);
     const { toolSlug, toolName, category, rating, text } = await request.json();

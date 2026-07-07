@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/app/lib/config/db";
 import Tool from "@/app/lib/models/Tool";
 
 export async function GET(request: NextRequest) {
+  await connectDB();
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");

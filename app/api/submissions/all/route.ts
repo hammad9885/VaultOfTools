@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/app/lib/config/db";
 import Submission from "@/app/lib/models/Submission";
 import { authenticate } from "@/app/lib/middleware/auth";
 
 export async function GET(request: NextRequest) {
+  await connectDB();
   try {
     const { user } = await authenticate(request);
     if (user.role !== "admin") {
