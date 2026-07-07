@@ -1,5 +1,6 @@
 /** @type {import("next").NextConfig} */
 const nextConfig = {
+  distDir: ".next-dev",
   images: {
     remotePatterns: [
       {
@@ -23,4 +24,4 @@ const nextConfig = {
   serverExternalPackages: ["bcryptjs", "jsonwebtoken"],
 };
 
-export default nextConfig;
+module.exports = nextConfig;
