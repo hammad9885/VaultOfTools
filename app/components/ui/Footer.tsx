@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-
 import { FaXTwitter, FaLinkedinIn, FaGithub, FaDiscord } from "react-icons/fa6";
-
 import { HiMiniBolt } from "react-icons/hi2";
 
 function Footer() {

@@ -15,7 +15,6 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  // metadataBase: new URL("https://artificialpod.com"),
   title: {
     default: "Vault of Tools — Discover the Best AI Tools",
     template: "%s | Vault of Tools",
