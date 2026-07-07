@@ -112,7 +112,7 @@ function Block({ block }: { block: ContentBlock }) {
     case "list":
       return (
         <ul className="list-disc space-y-2 pl-5 text-base leading-relaxed text-gray-700 sm:text-lg">
-          {block.items.map((item, i) => (
+          {block.items?.map((item, i) => (
             <li key={i}>{item}</li>
           ))}
         </ul>

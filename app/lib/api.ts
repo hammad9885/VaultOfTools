@@ -198,7 +198,7 @@ export const api = {
   getNavigation: () =>
     request<StaticNav>("/static/navigation"),
 
-  getCategories: () =>
+  getStaticCategories: () =>
     request<any[]>("/static/categories"),
 
   getCategoryTools: (slug: string) =>

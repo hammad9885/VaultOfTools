@@ -137,50 +137,7 @@ export function SiteNav() {
   );
 }
 
-export function SiteFooter() {
-  return (
-    <footer className="border-t border-border bg-card pt-16 pb-8">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
-          <div className="col-span-2 lg:col-span-2">
-            <span className="text-xl font-bold tracking-tight text-primary">Vault<span className="text-foreground"> of Tools</span></span>
-            <p className="mt-4 max-w-xs text-sm text-muted-foreground">The world largest library of AI tools. Helping you navigate the future of intelligence.</p>
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-foreground">Platform</h3>
-            <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/discover" className="hover:text-primary">Discover</Link></li>
-              <li><Link href="/categories" className="hover:text-primary">Categories</Link></li>
-              <li><Link href="/compare" className="hover:text-primary">Compare</Link></li>
-              <li><Link href="/toolsreview" className="hover:text-primary">Tools reviews</Link></li>
-              <li><Link href="/blog" className="hover:text-primary">Blog</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-foreground">Community</h3>
-            <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/submit" className="hover:text-primary">Submit a Tool</Link></li>
-              <li><Link href="/submit-review" className="hover:text-primary">Write a Review</Link></li>
-              <li><a href="#" className="hover:text-primary">Newsletter</a></li>
-              <li><a href="#" className="hover:text-primary">Blog</a></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-foreground">Company</h3>
-            <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-primary">About</a></li>
-              <li><a href="#" className="hover:text-primary">Privacy</a></li>
-              <li><a href="#" className="hover:text-primary">Terms</a></li>
-            </ul>
-          </div>
-        </div>
-        <div className="mt-12 border-t border-border pt-8 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Vault of Tools. All rights reserved.
-        </div>
-      </div>
-    </footer>
-  );
-}
+
 
 interface ApiTool {
   slug: string; name: string; category: string;
@@ -241,7 +198,7 @@ export function HomePage() {
     api.getHomeComparisons()
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
-          setComparisons(data as typeof fallbackComparisons);
+          setComparisons(data as unknown as typeof fallbackComparisons);
         }
       })
       .catch(() => {});
