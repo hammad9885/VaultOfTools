@@ -6,12 +6,10 @@ import { HiMiniBolt } from "react-icons/hi2";
 
 function Footer() {
   const explore = [
-    { label: "All Tools", href: "/tools" },
-    { label: "Trending AI Tools", href: "/trending" },
-    { label: "New Launches", href: "/new" },
-    { label: "Top Rated", href: "/top-rated" },
-    { label: "Free AI Tools", href: "/free-tools" },
+    { label: "Discover", href: "/discover" },
     { label: "Categories", href: "/categories" },
+    { label: "Compare", href: "/compare" },
+    { label: "Tools reviews", href: "/toolsreview" }
   ];
 
   const resources = [
