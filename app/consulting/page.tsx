@@ -122,11 +122,11 @@ export default function ConsultingLanding() {
   ]);
 
   const [processSteps, setProcessSteps] = useState([
-    { step: "01", title: "Discovery Call" },
-    { step: "02", title: "Business Analysis" },
-    { step: "03", title: "Tool Recommendations" },
-    { step: "04", title: "Implementation Plan" },
-    { step: "05", title: "Ongoing Support" },
+    { step: "01", icon: Search, title: "Discovery Call", desc: "We learn about your business, goals, and current challenges in a free 30-minute consultation." },
+    { step: "02", icon: Cpu, title: "Business Analysis", desc: "Deep dive into your workflows, tech stack, and team requirements to identify opportunities." },
+    { step: "03", icon: Star, title: "Tool Recommendations", desc: "Curated shortlist of AI tools and software tailored to your specific needs and budget." },
+    { step: "04", icon: Layers, title: "Implementation Plan", desc: "Step-by-step rollout plan with timelines, integrations, and team training schedule." },
+    { step: "05", icon: RefreshCw, title: "Ongoing Support", desc: "Continuous monitoring, optimization, and updates to keep your stack performing." },
   ]);
 
   const [whyChooseUs, setWhyChooseUs] = useState([
@@ -471,61 +471,66 @@ export default function ConsultingLanding() {
           </div>
         </section>
 
-        <section className="bg-white px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
-          <div className="mx-auto max-w-7xl text-center">
-            <SectionTag>Process</SectionTag>
-            <h3>How It Works</h3>
-            <SectionSubtitle>A simple and proven process.</SectionSubtitle>
+        <section className="relative bg-white px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-1/4 left-0 h-72 w-72 rounded-full bg-[#4F46E5]/5 blur-[100px]" />
+            <div className="absolute bottom-1/4 right-0 h-72 w-72 rounded-full bg-[#7C3AED]/5 blur-[100px]" />
+          </div>
 
-            <div className="mt-14 flex flex-col items-center gap-0 lg:flex-row lg:gap-0">
-              {processSteps.map((s, i) => (
-                <div key={s.step} className="flex items-center lg:flex-col">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: i * 0.1 }}
-                    className="flex flex-col items-center"
-                  >
-                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#EEF2FF] text-xl font-bold text-[#4F46E5]">
-                      {s.step}
-                    </div>
-                    <p className="mt-3 text-sm font-semibold text-[#0F172A]">
-                      {s.title}
-                    </p>
-                  </motion.div>
+          <div className="relative mx-auto max-w-7xl">
+            <div className="text-center">
+              <SectionTag>Process</SectionTag>
+              <h3 className="mt-4 text-3xl font-bold tracking-tight text-[#0F172A] sm:text-4xl">
+                How It Works
+              </h3>
+              <SectionSubtitle>
+                A simple and proven process.
+              </SectionSubtitle>
+            </div>
 
-                  {/* Arrow between steps */}
-                  {i < 4 && (
+            <div className="relative mt-20">
+              {/* Desktop connecting line */}
+              <div className="hidden lg:block absolute top-12 left-[10%] right-[10%] h-[2px] bg-gradient-to-r from-[#4F46E5]/20 via-[#7C3AED]/40 to-[#4F46E5]/20" />
+
+              <div className="grid gap-8 lg:grid-cols-5 lg:gap-6">
+                {processSteps.map((s, i) => {
+                  const Icon = s.icon;
+                  return (
                     <motion.div
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.4, delay: i * 0.1 + 0.2 }}
-                      className="flex items-center justify-center px-2 text-[#94A3B8] lg:px-4"
+                      key={s.step}
+                      initial={{ opacity: 0, y: 40 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-30px" }}
+                      transition={{ duration: 0.5, delay: i * 0.12 }}
+                      className="relative flex flex-col items-center text-center"
                     >
-                      <svg
-                        className="hidden size-6 lg:block"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
+                      {/* Step number badge */}
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        whileInView={{ scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: i * 0.12 + 0.1, type: "spring", stiffness: 200 }}
+                        className="relative z-10 flex h-24 w-24 items-center justify-center rounded-2xl border-2 border-[#EEF2FF] bg-white shadow-lg shadow-[#4F46E5]/5"
                       >
-                        <path d="M5 12h14m-6-6l6 6-6 6" />
-                      </svg>
-                      <svg
-                        className="block size-5 lg:hidden"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M12 5v14m-6-6l6 6 6-6" />
-                      </svg>
+                        <div className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-[#4F46E5] text-[10px] font-bold text-white shadow-md">
+                          {s.step}
+                        </div>
+                        <Icon className="size-8 text-[#4F46E5]" />
+                      </motion.div>
+
+                      {/* Title */}
+                      <h4 className="mt-5 text-base font-bold text-[#0F172A]">
+                        {s.title}
+                      </h4>
+
+                      {/* Description */}
+                      <p className="mt-2 text-sm leading-relaxed text-[#64748B] max-w-[200px]">
+                        {s.desc}
+                      </p>
                     </motion.div>
-                  )}
-                </div>
-              ))}
+                  );
+                })}
+              </div>
             </div>
           </div>
         </section>
