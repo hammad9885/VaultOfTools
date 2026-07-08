@@ -4,7 +4,9 @@ import Link from "next/link";
 import { Calendar, Clock, ArrowLeft, ArrowRight, Share2 } from "lucide-react";
 import { SiteNav, SiteFooter } from "../../routes/index";
 
-const API_BASE = process.env.NEXT_PUBLIC_APP_URL || "";
+const API_BASE = process.env.NEXT_PUBLIC_APP_URL 
+  ? `${process.env.NEXT_PUBLIC_APP_URL}/api` 
+  : "http://localhost:3000/api";
 
 interface ContentBlock {
   type: "paragraph" | "heading" | "quote" | "image" | "list";
