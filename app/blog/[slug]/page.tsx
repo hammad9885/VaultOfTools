@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Clock, ArrowLeft, ArrowRight, Share2 } from "lucide-react";
 import { SiteNav, SiteFooter } from "../../routes/index";
+import { posts as dataPosts } from "@/app/lib/data/blog";
 
 const API_BASE = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -38,16 +39,8 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
-export async function generateStaticParams() {
-  try {
-    const res = await fetch(`${API_BASE}/api/blog/posts`);
-    if (!res.ok) return [];
-    const data = await res.json();
-    const posts: BlogPost[] = Array.isArray(data) ? data : data.posts || [];
-    return posts.map((post) => ({ slug: post.slug }));
-  } catch {
-    return [];
-  }
+export function generateStaticParams() {
+  return dataPosts.map((post) => ({ slug: post.slug }));
 }
 
 export async function generateMetadata({ params }: Props) {

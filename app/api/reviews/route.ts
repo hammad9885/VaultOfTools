@@ -135,9 +135,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "You already reviewed this tool" }, { status: 400 });
     }
 
-    const review = await memoryStore.createReview({
+    const review = (await memoryStore.createReview({
       toolSlug, toolName, category, userId: user._id, rating, text,
-    });
+    }))!;
 
     const u = await memoryStore.findUserById(user._id);
     return NextResponse.json({
