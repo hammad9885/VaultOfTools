@@ -164,34 +164,36 @@ export default function AIToolsDirectory() {
   };
 
   return (
-    <div className="flex min-h-[600px] font-sans bg-white">
-      <aside className="w-[220px] shrink-0 border-r border-gray-200 py-5 px-3">
-        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3 px-2">
+    <div className="flex flex-col lg:flex-row min-h-[600px] font-sans bg-white">
+      <aside className="w-full lg:w-[220px] lg:shrink-0 lg:border-r border-b lg:border-b-0 border-gray-200 py-3 lg:py-5 px-3 overflow-x-auto lg:overflow-x-visible">
+        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3 px-2 hidden lg:block">
           Most Popular Categories
         </p>
 
-        {categories.map((cat) => {
-          const isActive = cat.key === activeCat;
-          return (
-            <button
-              key={cat.key}
-              onClick={() => handleCategoryClick(cat.key)}
-              className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm mb-0.5 transition-all duration-150 text-left group
-                ${isActive
-                  ? "bg-[#6366F1]/10 text-[#6366F1] font-medium"
-                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-                }`}
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span className={`text-base shrink-0 ${isActive ? "text-[#6366F1]" : "text-gray-400 group-hover:text-gray-600"}`}>
-                  {cat.icon}
-                </span>
-                <span className="truncate text-[12.5px]">{cat.label}</span>
-              </div>
-              {isActive && <FiChevronRight size={13} className="shrink-0 text-[#6366F1]" />}
-            </button>
-          );
-        })}
+        <div className="flex lg:flex-col gap-1 w-max lg:w-auto">
+          {categories.map((cat) => {
+            const isActive = cat.key === activeCat;
+            return (
+              <button
+                key={cat.key}
+                onClick={() => handleCategoryClick(cat.key)}
+                className={`flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-150 text-left group whitespace-nowrap lg:whitespace-normal
+                  ${isActive
+                    ? "bg-[#6366F1]/10 text-[#6366F1] font-medium"
+                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                  }`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className={`text-base shrink-0 ${isActive ? "text-[#6366F1]" : "text-gray-400 group-hover:text-gray-600"}`}>
+                    {cat.icon}
+                  </span>
+                  <span className="truncate text-[12.5px]">{cat.label}</span>
+                </div>
+                {isActive && <FiChevronRight size={13} className="shrink-0 text-[#6366F1] hidden lg:block" />}
+              </button>
+            );
+          })}
+        </div>
       </aside>
 
       <main className="flex-1 min-w-0 flex flex-col">
