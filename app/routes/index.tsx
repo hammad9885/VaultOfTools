@@ -13,6 +13,8 @@ import Image from "next/image";
 import Link from "next/link";
 import AIToolsDirectory, { HeroSection } from "../components/data";
 import { api } from "../lib/api";
+import Footer from "../components/ui/Footer";
+export const SiteFooter = Footer;
 
 type Pricing = "Free" | "Freemium" | "Paid";
 
