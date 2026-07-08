@@ -181,7 +181,7 @@ export default function ConsultingLanding() {
     api.getConsulting().then((data: any) => {
       if (data.heroBadges) setHeroBadges(data.heroBadges.map((b: any) => b.label));
       if (data.services) setServices(data.services.map((s: any) => ({ ...s, icon: iconMap[s.icon] || Cpu })));
-      if (data.processSteps) setProcessSteps(data.processSteps);
+      if (data.processSteps) setProcessSteps(data.processSteps.map((s: any) => ({ ...s, icon: iconMap[s.icon] || Cpu })));
       if (data.whyChooseUs) setWhyChooseUs(data.whyChooseUs.map((w: any) => ({ ...w, icon: iconMap[w.icon] || Star })));
       if (data.testimonial) setTestimonial(data.testimonial);
       if (data.stat) setStat(data.stat);

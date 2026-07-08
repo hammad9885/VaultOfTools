@@ -29,10 +29,12 @@ export default function ToolPage() {
 
   useEffect(() => {
     if (!params.slug) return;
+    let cancelled = false;
     setLoading(true);
     api.getTool(params.slug)
-      .then(setTool)
+      .then((data) => { if (!cancelled) setTool(data); })
       .catch(() => {
+        if (cancelled) return;
         const trend = staticData?.trending || trending;
         const hardcoded = trend.find((t: any) => t.slug === params.slug);
         if (hardcoded) {
@@ -41,8 +43,9 @@ export default function ToolPage() {
           setError(true);
         }
       })
-      .finally(() => setLoading(false));
-  }, [params.slug, staticData]);
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [params.slug]);
 
   if (loading) {
     return (
