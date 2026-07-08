@@ -589,13 +589,15 @@ export default function ConsultingLanding() {
                 </p>
                 <div className="mt-6 flex items-center gap-3">
                   <div className="relative h-10 w-10">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={testimonial.avatar || ""}
-                      alt={testimonial.name}
-                      className="h-10 w-10 rounded-full object-cover ring-2 ring-white/20"
-                      onError={(e) => { e.currentTarget.style.display = "none"; }}
-                    />
+                    {testimonial.avatar ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={testimonial.avatar}
+                        alt={testimonial.name}
+                        className="h-10 w-10 rounded-full object-cover ring-2 ring-white/20"
+                        onError={(e) => { e.currentTarget.style.display = "none"; }}
+                      />
+                    ) : null}
                     <div className="absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-xs font-bold text-white pointer-events-none">
                       {testimonial.name.split(" ").map((n) => n[0]).join("")}
                     </div>

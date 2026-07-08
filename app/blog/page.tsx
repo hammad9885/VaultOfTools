@@ -473,12 +473,14 @@ export default function BlogLanding() {
                     style={{ boxShadow: "0 15px 40px rgba(15,23,42,0.06)" }}
                   >
                     <div className="relative h-44 w-full bg-[#EEF2FF] overflow-hidden">
-                      <img
-                        src={a.coverImage || ""}
-                        alt={`${a.title} cover image`}
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                      />
+                      {a.coverImage ? (
+                        <img
+                          src={a.coverImage}
+                          alt={`${a.title} cover image`}
+                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                        />
+                      ) : null}
                     </div>
 
                     <div className="flex flex-1 flex-col p-5">

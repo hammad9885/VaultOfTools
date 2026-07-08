@@ -75,7 +75,10 @@ export default function ToolPage() {
         </nav>
         <header className="flex flex-col sm:flex-row gap-6 sm:items-center">
           <div className="size-20 overflow-hidden rounded-2xl bg-surface-soft ring-1 ring-black/5 grid place-items-center shrink-0">
-            <Image src={tool.logo || alternativeTrends.find((t: any) => t.slug === tool.slug)?.logo} alt={`${tool.name} logo`} width={64} height={64} className="size-16 object-contain" unoptimized />
+            {(() => {
+              const src = tool.logo || alternativeTrends.find((t: any) => t.slug === tool.slug)?.logo;
+              return src ? <Image src={src} alt={`${tool.name} logo`} width={64} height={64} className="size-16 object-contain" unoptimized /> : null;
+            })()}
           </div>
           <div className="flex-1">
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">{tool.name}</h1>
