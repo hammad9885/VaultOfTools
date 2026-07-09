@@ -150,15 +150,12 @@ export default function AIToolsDirectory() {
     { key: "recent",  label: "Recently Added",  icon: <FiStar size={14} /> },
   ];
 
-  // Clicking a top tab: switches the active tab (moves underline) and
-  // clears any selected category so the tab's own data is shown.
+
   const handleTabClick = (tabKey: TabKey) => {
     setActiveTab(tabKey);
     setActiveCat(null);
   };
 
-  // Clicking a sidebar category: only changes which category's tools are
-  // displayed. It never touches activeTab, so the underline never moves.
   const handleCategoryClick = (catKey: string) => {
     setActiveCat(catKey);
   };
