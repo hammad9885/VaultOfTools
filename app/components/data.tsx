@@ -164,7 +164,7 @@ export default function AIToolsDirectory() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-[600px] font-sans bg-white">
+    <div className="mx-auto flex flex-col lg:flex-row min-h-[600px] font-sans bg-white px-4 sm:px-6 lg:px-8">
       <aside className="w-full lg:w-[220px] lg:shrink-0 lg:border-r border-b lg:border-b-0 border-gray-200 py-3 lg:py-5 px-3 overflow-x-auto lg:overflow-x-visible">
         <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3 px-2 hidden lg:block">
           Most Popular Categories
