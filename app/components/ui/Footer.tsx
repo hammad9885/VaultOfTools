@@ -9,7 +9,7 @@ function Footer() {
     { label: "Discover", href: "/discover" },
     { label: "Categories", href: "/categories" },
     { label: "Compare", href: "/compare" },
-    { label: "Tools reviews", href: "/toolsreview" }
+    { label: "Tools reviews", href: "/toolsreview" },
   ];
 
   const resources = [
@@ -88,7 +88,7 @@ function Footer() {
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  className="flex-1 h-11 px-4 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-sm text-gray-900 dark:text-slate-200 outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] transition-all"
+                  className="w-full sm:flex-1 h-11 px-4 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-sm text-gray-900 dark:text-slate-200 outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] transition-all"
                 />
 
                 <button className="h-11 px-5 rounded-xl bg-[#6366F1] hover:bg-[#4F46E5] text-white text-sm font-semibold transition-all ">
@@ -182,8 +182,8 @@ function Footer() {
         <div className="pt-7 flex flex-col lg:flex-row items-center justify-between gap-5">
           <div className="text-sm text-gray-400 dark:text-slate-500 text-center lg:text-left">
             &copy; 2026{" "}
-            <span className="font-semibold text-[#6366F1]">VaultOfTools</span>
-            . All rights reserved.
+            <span className="font-semibold text-[#6366F1]">VaultOfTools</span>.
+            All rights reserved.
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-5">
