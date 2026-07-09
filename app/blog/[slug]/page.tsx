@@ -5,8 +5,6 @@ import { Calendar, Clock, ArrowLeft, ArrowRight, Share2 } from "lucide-react";
 import { SiteNav, SiteFooter } from "../../routes/index";
 import { posts as dataPosts } from "@/app/lib/data/blog";
 
-const API_BASE = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-
 interface ContentBlock {
   type: "paragraph" | "heading" | "quote" | "image" | "list";
   text?: string;
@@ -45,17 +43,12 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
-  try {
-    const res = await fetch(`${API_BASE}/api/blog/posts/${slug}`);
-    if (!res.ok) return {};
-    const post: BlogPost = await res.json();
-    return {
-      title: `${post.title} | Vault of Tools Blog`,
-      description: post.excerpt,
-    };
-  } catch {
-    return {};
-  }
+  const post = dataPosts.find((p: any) => p.slug === slug);
+  if (!post) return {};
+  return {
+    title: `${post.title} | Vault of Tools Blog`,
+    description: post.excerpt,
+  };
 }
 
 function formatDate(iso: string) {
@@ -146,21 +139,12 @@ function RelatedCard({ post }: { post: BlogPost | null }) {
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
 
-  const res = await fetch(`${API_BASE}/api/blog/posts/${slug}`, { next: { revalidate: 60 } });
-  if (!res.ok) notFound();
-  const post: BlogPost = await res.json();
+  const post = dataPosts.find((p: any) => p.slug === slug);
+  if (!post) notFound();
 
-  let related: BlogPost[] = [];
-  try {
-    const relatedRes = await fetch(`${API_BASE}/api/blog/posts`, { next: { revalidate: 60 } });
-    if (relatedRes.ok) {
-      const data = await relatedRes.json();
-      const allPosts: BlogPost[] = Array.isArray(data) ? data : data.posts || [];
-      related = allPosts.filter((p) => p.slug !== slug && p.category === post.category).slice(0, 3);
-    }
-  } catch {
-    related = [];
-  }
+  const related = dataPosts
+    .filter((p: any) => p.slug !== slug && p.category === post.category)
+    .slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
@@ -238,8 +222,8 @@ export default async function BlogPostPage({ params }: Props) {
 
         <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="space-y-6">
-            {post.content?.map((block, i) => (
-              <Block key={i} block={block} />
+            {post.content?.map((block: any, i) => (
+              <Block key={i} block={block as ContentBlock} />
             ))}
           </div>
 
@@ -288,7 +272,7 @@ export default async function BlogPostPage({ params }: Props) {
             </div>
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
               {related.map((p) => (
-                <RelatedCard key={p?.slug} post={p} />
+                <RelatedCard key={p?.slug} post={p as any} />
               ))}
             </div>
           </div>
