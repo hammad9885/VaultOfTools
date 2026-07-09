@@ -88,10 +88,10 @@ function Footer() {
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  className="flex-1 h-11 px-4 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-sm text-gray-900 dark:text-slate-200 outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] transition-all"
+                  className="w-full sm:flex-1 h-11 px-4 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-sm text-gray-900 dark:text-slate-200 outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] transition-all"
                 />
 
-                <button className="h-11 px-5 rounded-xl bg-[#6366F1] hover:bg-[#4F46E5] text-white text-sm font-semibold transition-all shadow-lg shadow-[#6366F1]/20">
+                <button className="w-full sm:w-auto h-11 px-5 rounded-xl bg-[#6366F1] hover:bg-[#4F46E5] text-white text-sm font-semibold transition-all shadow-lg shadow-[#6366F1]/20">
                   Subscribe
                 </button>
               </div>
