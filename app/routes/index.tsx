@@ -314,8 +314,8 @@ export function HomePage() {
             </div>
             <div className="w-full max-w-xl">
               <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-3 sm:flex-row">
-                <input type="email" placeholder="Enter your email" required className="h-12 flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition-all focus:border-purple-500 focus:ring-4 focus:ring-purple-100" />
-                <button type="submit" className="h-12 rounded-xl bg-primary px-8 text-sm font-semibold text-white transition-all hover:opacity-90">Subscribe</button>
+                <input type="email" placeholder="Enter your email" required className="w-full sm:flex-1 h-12 rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition-all focus:border-purple-500 focus:ring-4 focus:ring-purple-100" />
+                <button type="submit" className="w-full sm:w-auto h-12 rounded-xl bg-primary px-8 text-sm font-semibold text-white transition-all hover:opacity-90">Subscribe</button>
               </form>
               <p className="mt-3 text-xs text-gray-400">No spam, unsubscribe anytime.</p>
             </div>
