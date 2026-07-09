@@ -272,8 +272,8 @@ export function HomePage() {
                 <Link href="/discover" className="rounded-lg border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground hover:bg-surface-soft transition-all">View Popular Versus</Link>
               </div>
               <ul className="mt-8 grid grid-cols-2 gap-2">
-                {comparisons.map((c) => (
-                  <li key={c.slug}>
+                {comparisons.map((c, i) => (
+                  <li key={c.slug || `cmp-${i}`}>
                     <Link href={`/compare/${c.slug}`} className="block rounded-lg border border-border bg-card px-3 py-2 text-sm hover:border-primary/30 hover:text-primary transition-colors">
                       {c.a} <span className="text-muted-foreground">vs</span> {c.b}
                     </Link>
