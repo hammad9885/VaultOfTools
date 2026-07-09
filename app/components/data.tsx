@@ -44,14 +44,14 @@ type TabKey = "popular" | "recent" | "courses";
 
 const categories: Category[] = [
   { key: "Customer Service & Support", label: "Customer Service & Support", icon: <FiHeadphones /> },
-  { key: "Sales",                      label: "Sales",                      icon: <FiBarChart2 /> },
-  { key: "Back Office",                label: "Back Office",                icon: <FiBriefcase /> },
-  { key: "Operations",                 label: "Operations",                 icon: <FiSettings /> },
-  { key: "Growth & Marketing",         label: "Growth & Marketing",         icon: <FiZap /> },
-  { key: "Writing & Editing",          label: "Writing & Editing",          icon: <FiEdit3 /> },
-  { key: "Design & Creative",          label: "Design & Creative",          icon: <FiPenTool /> },
-  { key: "Technology & IT",            label: "Technology & IT",            icon: <FiCode /> },
-  { key: "Workflow Automation",        label: "Workflow Automation",        icon: <FiRepeat /> },
+  { key: "Sales", label: "Sales", icon: <FiBarChart2 /> },
+  { key: "Back Office", label: "Back Office", icon: <FiBriefcase /> },
+  { key: "Operations", label: "Operations", icon: <FiSettings /> },
+  { key: "Growth & Marketing", label: "Growth & Marketing", icon: <FiZap /> },
+  { key: "Writing & Editing", label: "Writing & Editing", icon: <FiEdit3 /> },
+  { key: "Design & Creative", label: "Design & Creative", icon: <FiPenTool /> },
+  { key: "Technology & IT", label: "Technology & IT", icon: <FiCode /> },
+  { key: "Workflow Automation", label: "Workflow Automation", icon: <FiRepeat /> },
 ];
 
 function fmtNum(n: number): string {
@@ -60,11 +60,9 @@ function fmtNum(n: number): string {
 
 function ToolCard({ tool, rank }: { tool: Tool; rank: number }) {
   return (
-    <div className="group flex items-center gap-3 border border-gray-200 rounded-xl px-4 py-3 hover:border-[#6366F1] hover:bg-[#6366F1]/[0.04] transition-all duration-200 cursor-pointer">
-      <span className="text-xs font-medium text-gray-400 w-5 shrink-0 text-right">{rank}.</span>
-
+    <div className="group flex md:flex-row flex-col items-center gap-3 border border-gray-200 rounded-xl px-4 py-3 hover:border-[#6366F1] hover:bg-[#6366F1]/[0.04] transition-all duration-200 cursor-pointer">
+      {/* <span className="text-xs font-medium text-gray-400 w-5 shrink-0 text-right">{rank}.</span> */}
       <div className="w-10 h-10 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden group-hover:border-[#6366F1]/40 transition-colors">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={tool.logo}
           alt={tool.name}
@@ -139,8 +137,6 @@ export default function AIToolsDirectory() {
       .catch(() => {});
   }, [activeCat]);
 
-  // Data shown: if a category is selected, show that category's tools.
-  // Otherwise, show whichever tab (Popular Tools / Recently Added) is active.
   const tools = activeCat === null
     ? (activeTab === "popular" ? popularTools : recentTools)
     : categoryTools;
