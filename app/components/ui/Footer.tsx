@@ -59,7 +59,7 @@ function Footer() {
   ];
 
   return (
-    <footer className="relative mt-24 border-t border-border bg-card overflow-hidden">
+    <footer className="relative mt-24 border-t border-border bg-background overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-72 h-72 bg-primary/5 blur-3xl rounded-full" />
         <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-primary/5 blur-3xl rounded-full" />
