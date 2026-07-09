@@ -59,31 +59,26 @@ function Footer() {
   ];
 
   return (
-    <footer className="relative mt-24 border-t border-border bg-background overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-72 h-72 bg-primary/5 blur-3xl rounded-full" />
-        <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-primary/5 blur-3xl rounded-full" />
-      </div>
-
-      <div className="relative max-w-7xl mx-auto px-6 lg:px-8 pt-16 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-12 pb-14 border-b border-border">
+    <footer className="relative mt-24 border-t border-border bg-white dark:bg-slate-950 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-16 pb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-12 pb-14 border-b border-gray-200 dark:border-slate-800">
           <div className="xl:col-span-2">
             <Link
               href="/"
               className="flex items-center gap-2 shrink-0 no-underline group"
             >
-              <div className="w-11 h-11 rounded-2xl bg-primary shadow-lg shadow-primary/20 grid place-items-center">
-                <HiMiniBolt className="text-primary-foreground text-xl" />
+              <div className="w-11 h-11 rounded-2xl bg-[#6366F1] flex items-center justify-center shadow-lg shadow-[#6366F1]/20">
+                <HiMiniBolt className="text-white text-xl" />
               </div>
               <span
-                className="font-bold text-[18px] text-foreground transition-colors duration-150 group-hover:text-primary"
+                className="font-bold text-[18px] text-gray-900 dark:text-slate-100 transition-colors duration-150 group-hover:text-[#6366F1]"
                 style={{ fontFamily: "'Syne', sans-serif" }}
               >
-                Vault<span className="text-primary">of</span>Tools
+                Vault<span className="text-[#6366F1]">of</span>Tools
               </span>
             </Link>
 
-            <p className="mt-5 max-w-md text-sm leading-7 text-muted-foreground">
+            <p className="mt-5 max-w-md text-sm leading-7 text-gray-500 dark:text-slate-400">
               VaultOfTools is a curated AI tools directory helping developers,
               founders, creators, and businesses discover powerful tools,
               automate workflows, and stay ahead in the AI ecosystem.
@@ -93,15 +88,15 @@ function Footer() {
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  className="flex-1 h-11 px-4 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  className="flex-1 h-11 px-4 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-sm text-gray-900 dark:text-slate-200 outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] transition-all"
                 />
 
-                <button className="h-11 px-5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold transition-all shadow-lg shadow-primary/20">
+                <button className="h-11 px-5 rounded-xl bg-[#6366F1] hover:bg-[#4F46E5] text-white text-sm font-semibold transition-all shadow-lg shadow-[#6366F1]/20">
                   Subscribe
                 </button>
               </div>
 
-              <p className="mt-2 text-xs text-muted-foreground">
+              <p className="mt-2 text-xs text-gray-400 dark:text-slate-500">
                 Weekly AI tools, trends & product launches.
               </p>
             </div>
@@ -113,7 +108,7 @@ function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.label}
-                  className="w-10 h-10 rounded-xl border border-border bg-card hover:bg-muted text-muted-foreground hover:text-primary flex items-center justify-center transition-all duration-200 hover:-translate-y-1"
+                  className="w-10 h-10 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-400 dark:text-slate-500 hover:text-[#6366F1] flex items-center justify-center transition-all duration-200 hover:-translate-y-1"
                 >
                   <span className="text-lg">{s.icon}</span>
                 </a>
@@ -122,7 +117,7 @@ function Footer() {
           </div>
           <div>
             <h4
-              className="text-sm font-bold tracking-wide text-foreground mb-5"
+              className="text-sm font-bold tracking-wide text-gray-900 dark:text-white mb-5"
               style={{ fontFamily: "'Syne', sans-serif" }}
             >
               Explore
@@ -133,7 +128,7 @@ function Footer() {
                 <li key={item.label}>
                   <Link
                     href={item.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors no-underline"
+                    className="text-sm text-gray-500 dark:text-slate-400 hover:text-[#6366F1] transition-colors no-underline"
                   >
                     {item.label}
                   </Link>
@@ -143,7 +138,7 @@ function Footer() {
           </div>
           <div>
             <h4
-              className="text-sm font-bold tracking-wide text-foreground mb-5"
+              className="text-sm font-bold tracking-wide text-gray-900 dark:text-white mb-5"
               style={{ fontFamily: "'Syne', sans-serif" }}
             >
               Resources
@@ -154,7 +149,7 @@ function Footer() {
                 <li key={item.label}>
                   <Link
                     href={item.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors no-underline"
+                    className="text-sm text-gray-500 dark:text-slate-400 hover:text-[#6366F1] transition-colors no-underline"
                   >
                     {item.label}
                   </Link>
@@ -164,7 +159,7 @@ function Footer() {
           </div>
           <div>
             <h4
-              className="text-sm font-bold tracking-wide text-foreground mb-5"
+              className="text-sm font-bold tracking-wide text-gray-900 dark:text-white mb-5"
               style={{ fontFamily: "'Syne', sans-serif" }}
             >
               Company
@@ -175,7 +170,7 @@ function Footer() {
                 <li key={item.label}>
                   <Link
                     href={item.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors no-underline"
+                    className="text-sm text-gray-500 dark:text-slate-400 hover:text-[#6366F1] transition-colors no-underline"
                   >
                     {item.label}
                   </Link>
@@ -185,9 +180,9 @@ function Footer() {
           </div>
         </div>
         <div className="pt-7 flex flex-col lg:flex-row items-center justify-between gap-5">
-          <div className="text-sm text-muted-foreground text-center lg:text-left">
+          <div className="text-sm text-gray-400 dark:text-slate-500 text-center lg:text-left">
             &copy; 2026{" "}
-            <span className="font-semibold text-primary">VaultOfTools</span>
+            <span className="font-semibold text-[#6366F1]">VaultOfTools</span>
             . All rights reserved.
           </div>
 
@@ -196,7 +191,7 @@ function Footer() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="text-sm text-muted-foreground hover:text-primary transition-colors no-underline"
+                className="text-sm text-gray-400 dark:text-slate-500 hover:text-[#6366F1] transition-colors no-underline"
               >
                 {item.label}
               </Link>
