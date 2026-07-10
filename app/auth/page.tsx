@@ -9,7 +9,7 @@ import { api } from "../lib/api";
 import Link from "next/link";
 
 export default function AuthPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, refresh } = useAuth();
   const router = useRouter();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
@@ -24,6 +24,7 @@ export default function AuthPage() {
     setBusy(true);
     try {
       await signInWithGoogle();
+      await refresh();
       toast.success("Signed in!");
       router.replace("/");
     } catch (err) {
@@ -58,6 +59,7 @@ export default function AuthPage() {
         toast.success("Signed in!");
       }
       api.setToken(data.token);
+      await refresh();
       router.replace("/");
     } catch (err: unknown) {
       toast.error(mode === "signup" ? "Sign-up failed" : "Sign-in failed", {
