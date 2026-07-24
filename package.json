@@ -6,7 +6,9 @@
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db": "node scripts/start-mongo.mjs",
+    "migrate": "npx tsx scripts/migrate-static-data.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.4.1",
@@ -82,6 +84,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "mongodb-memory-server": "^11.2.0",
     "tailwindcss": "^4.3.1",
     "typescript": "^5"
   }

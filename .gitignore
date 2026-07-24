@@ -30,6 +30,9 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# local dev mongodb (created by `npm run db`)
+/.mongo-data/
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
