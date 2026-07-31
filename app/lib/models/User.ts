@@ -13,7 +13,7 @@ export interface IUser {
   website?: string;
   location?: string;
   company?: string;
-  role: "user" | "admin" | "moderator";
+  role: "user" | "admin" | "moderator" | "super_admin";
   status: "active" | "suspended";
   googleId?: string;
   createdAt: Date;
@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
     website: { type: String, trim: true, maxlength: 200 },
     location: { type: String, trim: true, maxlength: 100 },
     company: { type: String, trim: true, maxlength: 100 },
-    role: { type: String, enum: ["user", "admin", "moderator"], default: "user" },
+    role: { type: String, enum: ["user", "admin", "moderator", "super_admin"], default: "user" },
     status: { type: String, enum: ["active", "suspended"], default: "active" },
     googleId: { type: String },
   },
@@ -67,6 +67,7 @@ userSchema.methods.toProfile = function () {
     location: this.location || null,
     company: this.company || null,
     role: this.role,
+    status: this.status,
   };
 };
 

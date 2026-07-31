@@ -17,16 +17,16 @@ export default function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) router.replace("/");
+    if (!loading && user) router.replace(user.role === "super_admin" ? "/admin" : "/");
   }, [loading, user, router]);
 
   async function handleGoogle() {
     setBusy(true);
     try {
-      await signInWithGoogle();
+      const profile = await signInWithGoogle();
       await refresh();
       toast.success("Signed in!");
-      router.replace("/");
+      router.replace(profile?.role === "super_admin" ? "/admin" : "/");
     } catch (err) {
       toast.error("Google sign-in failed", {
         description: err instanceof Error ? err.message : String(err),
@@ -60,7 +60,7 @@ export default function AuthPage() {
       }
       api.setToken(data.token);
       await refresh();
-      router.replace("/");
+      router.replace(data.user?.role === "super_admin" ? "/admin" : "/");
     } catch (err: unknown) {
       toast.error(mode === "signup" ? "Sign-up failed" : "Sign-in failed", {
         description: err instanceof Error ? err.message : "Something went wrong.",

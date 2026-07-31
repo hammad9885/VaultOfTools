@@ -1,0 +1,217 @@
+import mongoose from "mongoose";
+import { connectDB } from "../config/db";
+import { AdminSettings } from "./types";
+
+export interface ISettings extends mongoose.Document {
+  key: string;
+  general: {
+    siteName: string;
+    tagline: string;
+    supportEmail: string;
+    timezone: string;
+    itemsPerPage: number;
+    maintenanceMode: boolean;
+  };
+  seo: {
+    metaTitle: string;
+    metaDescription: string;
+    metaKeywords: string;
+    ogImageUrl: string;
+    canonicalUrl: string;
+    robotsIndex: boolean;
+  };
+  branding: {
+    logoUrl: string;
+    faviconUrl: string;
+    primaryColor: string;
+    accentColor: string;
+  };
+  homepage: {
+    heroTitle: string;
+    heroSubtitle: string;
+    heroCtaLabel: string;
+    heroCtaUrl: string;
+    featuredCount: number;
+    showNewsletter: boolean;
+  };
+  smtp: {
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    fromName: string;
+    fromEmail: string;
+    secure: boolean;
+  };
+  social: {
+    twitter: string;
+    facebook: string;
+    instagram: string;
+    linkedin: string;
+    github: string;
+    youtube: string;
+  };
+  analytics: {
+    googleAnalyticsId: string;
+    googleTagManagerId: string;
+    facebookPixelId: string;
+    hotjarId: string;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const settingsSchema = new mongoose.Schema<ISettings>(
+  {
+    key: { type: String, required: true, unique: true, default: "site" },
+    general: {
+      siteName: { type: String, default: "Vault of Tools" },
+      tagline: { type: String, default: "Discover the best tools for your workflow" },
+      supportEmail: { type: String, default: "support@vaultoftools.com" },
+      timezone: { type: String, default: "UTC" },
+      itemsPerPage: { type: Number, default: 12 },
+      maintenanceMode: { type: Boolean, default: false },
+    },
+    seo: {
+      metaTitle: { type: String, default: "" },
+      metaDescription: { type: String, default: "" },
+      metaKeywords: { type: String, default: "" },
+      ogImageUrl: { type: String, default: "" },
+      canonicalUrl: { type: String, default: "" },
+      robotsIndex: { type: Boolean, default: true },
+    },
+    branding: {
+      logoUrl: { type: String, default: "" },
+      faviconUrl: { type: String, default: "" },
+      primaryColor: { type: String, default: "#6366f1" },
+      accentColor: { type: String, default: "#8b5cf6" },
+    },
+    homepage: {
+      heroTitle: { type: String, default: "Find the perfect tool for the job" },
+      heroSubtitle: { type: String, default: "A curated directory of the tools professionals love." },
+      heroCtaLabel: { type: String, default: "Explore Tools" },
+      heroCtaUrl: { type: String, default: "/tools" },
+      featuredCount: { type: Number, default: 8 },
+      showNewsletter: { type: Boolean, default: true },
+    },
+    smtp: {
+      host: { type: String, default: "" },
+      port: { type: Number, default: 587 },
+      username: { type: String, default: "" },
+      password: { type: String, default: "" },
+      fromName: { type: String, default: "Vault of Tools" },
+      fromEmail: { type: String, default: "no-reply@vaultoftools.com" },
+      secure: { type: Boolean, default: true },
+    },
+    social: {
+      twitter: { type: String, default: "" },
+      facebook: { type: String, default: "" },
+      instagram: { type: String, default: "" },
+      linkedin: { type: String, default: "" },
+      github: { type: String, default: "" },
+      youtube: { type: String, default: "" },
+    },
+    analytics: {
+      googleAnalyticsId: { type: String, default: "" },
+      googleTagManagerId: { type: String, default: "" },
+      facebookPixelId: { type: String, default: "" },
+      hotjarId: { type: String, default: "" },
+    },
+  },
+  { timestamps: true }
+);
+
+const Settings =
+  mongoose.models.Settings || mongoose.model<ISettings>("Settings", settingsSchema);
+export default Settings;
+
+const DEFAULTS = {
+  general: {
+    siteName: "Vault of Tools",
+    tagline: "Discover the best tools for your workflow",
+    supportEmail: "support@vaultoftools.com",
+    timezone: "UTC",
+    itemsPerPage: 12,
+    maintenanceMode: false,
+  },
+  seo: {
+    metaTitle: "",
+    metaDescription: "",
+    metaKeywords: "",
+    ogImageUrl: "",
+    canonicalUrl: "",
+    robotsIndex: true,
+  },
+  branding: {
+    logoUrl: "",
+    faviconUrl: "",
+    primaryColor: "#6366f1",
+    accentColor: "#8b5cf6",
+  },
+  homepage: {
+    heroTitle: "Find the perfect tool for the job",
+    heroSubtitle: "A curated directory of the tools professionals love.",
+    heroCtaLabel: "Explore Tools",
+    heroCtaUrl: "/tools",
+    featuredCount: 8,
+    showNewsletter: true,
+  },
+  smtp: {
+    host: "",
+    port: 587,
+    username: "",
+    password: "",
+    fromName: "Vault of Tools",
+    fromEmail: "no-reply@vaultoftools.com",
+    secure: true,
+  },
+  social: {
+    twitter: "",
+    facebook: "",
+    instagram: "",
+    linkedin: "",
+    github: "",
+    youtube: "",
+  },
+  analytics: {
+    googleAnalyticsId: "",
+    googleTagManagerId: "",
+    facebookPixelId: "",
+    hotjarId: "",
+  },
+};
+
+export async function getSettings(): Promise<AdminSettings & { smtp: any }> {
+  await connectDB();
+  let doc = await Settings.findOne({ key: "site" });
+  if (!doc) {
+    doc = await Settings.create({ key: "site" });
+  }
+  return {
+    general: { ...DEFAULTS.general, ...doc.general },
+    seo: { ...DEFAULTS.seo, ...doc.seo },
+    branding: { ...DEFAULTS.branding, ...doc.branding },
+    homepage: { ...DEFAULTS.homepage, ...doc.homepage },
+    smtp: { ...DEFAULTS.smtp, ...doc.smtp },
+    social: { ...DEFAULTS.social, ...doc.social },
+    analytics: { ...DEFAULTS.analytics, ...doc.analytics },
+  };
+}
+
+export async function updateSettings(patch: Partial<AdminSettings>): Promise<AdminSettings & { smtp: any }> {
+  await connectDB();
+  const doc = await Settings.findOneAndUpdate(
+    { key: "site" },
+    { $set: patch },
+    { new: true, upsert: true, runValidators: false }
+  );
+  return {
+    general: { ...DEFAULTS.general, ...doc.general },
+    seo: { ...DEFAULTS.seo, ...doc.seo },
+    branding: { ...DEFAULTS.branding, ...doc.branding },
+    homepage: { ...DEFAULTS.homepage, ...doc.homepage },
+    smtp: { ...DEFAULTS.smtp, ...doc.smtp },
+    social: { ...DEFAULTS.social, ...doc.social },
+    analytics: { ...DEFAULTS.analytics, ...doc.analytics },
+  };
+}

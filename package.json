@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "db": "node scripts/start-mongo.mjs",
-    "migrate": "npx tsx scripts/migrate-static-data.ts"
+    "migrate": "npx tsx scripts/migrate-static-data.ts",
+    "smoke": "npx tsx scripts/admin-smoke.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.4.1",
