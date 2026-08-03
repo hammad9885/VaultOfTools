@@ -60,14 +60,14 @@ export function AdminShell({ children }: { children: ReactNode }) {
     (async () => {
       const token = api.getToken();
       if (!token) {
-        if (!cancelled) router.replace("/");
+        if (!cancelled) router.replace("/admin/login");
         return;
       }
       try {
         const res = await api.getMe();
         if (!cancelled) {
           if (res.user?.role !== SUPER_ADMIN) {
-            router.replace("/");
+            router.replace("/admin/login");
             return;
           }
           setChecking(false);
@@ -149,7 +149,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 aria-label="Sign out"
                 onClick={async () => {
                   await signOut();
-                  router.replace("/");
+                  router.replace("/admin/login");
                 }}
               >
                 <LogOut size={15} />
