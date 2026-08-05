@@ -63,6 +63,7 @@ function AdminLoginInner() {
     try {
       const res = await api.login({ email, password });
       if (res.user?.role === "super_admin") {
+        api.setToken(res.token);
         router.push(callbackUrl);
         router.refresh();
       } else {
