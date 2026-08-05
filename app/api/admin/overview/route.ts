@@ -15,8 +15,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {
-    await requireSuperAdmin(request);
     await connectDB();
+    await requireSuperAdmin(request);
 
     const [tools, users, reviews, categories, tags, posts, subscribers, submissions, consultations] =
       await Promise.all([

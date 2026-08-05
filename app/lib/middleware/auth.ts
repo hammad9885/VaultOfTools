@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { isDBConnected } from "../config/db";
+import { connectDB, isDBConnected } from "../config/db";
 import User from "../models/User";
 import memoryStore from "../data/memoryStore";
 
@@ -17,6 +17,7 @@ export async function authenticate(request: Request): Promise<{ user: any }> {
   }
   const token = header.replace("Bearer ", "");
   try {
+    await connectDB();
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "default-secret") as { id: string };
     const user = await findUser(decoded.id);
     if (!user) {
