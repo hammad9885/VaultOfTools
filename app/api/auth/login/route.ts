@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { isDBConnected } from "@/app/lib/config/db";
+import { connectDB, isDBConnected } from "@/app/lib/config/db";
 import User from "@/app/lib/models/User";
 import memoryStore from "@/app/lib/data/memoryStore";
 
@@ -18,6 +18,8 @@ export async function POST(request: NextRequest) {
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
+
+    await connectDB();
 
     let user;
     if (isDBConnected()) {
