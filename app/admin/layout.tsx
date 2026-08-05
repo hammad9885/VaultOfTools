@@ -20,6 +20,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  const isAuthRoute = pathname.startsWith("/admin/login");
+
   const meta = useMemo(() => {
     if (pathname === "/admin") return { title: "Dashboard" };
     const key = pathname.split("/")[2] || "admin";
@@ -36,6 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       settings: "Settings & SEO",
       data: "Data & Backup",
       activity: "Activity Logs",
+      login: "Sign In",
     };
     return { title: map[key] || "Admin" };
   }, [pathname]);
@@ -43,6 +46,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     document.title = `${meta.title} | Vault Admin`;
   }, [meta.title]);
+
+  if (isAuthRoute) {
+    return (
+      <>
+        <Toaster position="top-right" richColors />
+        {children}
+      </>
+    );
+  }
 
   return (
     <>
