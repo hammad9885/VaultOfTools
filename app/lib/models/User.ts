@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import { isFirestore } from "../config/provider";
+import { createFirestoreModel, type AppModel } from "../firestore/model";
 
 export interface IUser {
   _id: mongoose.Types.ObjectId | string;
@@ -71,5 +73,34 @@ userSchema.methods.toProfile = function () {
   };
 };
 
-const User = mongoose.models.User || mongoose.model<IUser, UserModel>("User", userSchema);
+const MongoUser = mongoose.models.User || mongoose.model<IUser, UserModel>("User", userSchema);
+
+const FirestoreUser = createFirestoreModel("users", {
+  preSave: async (data: any) => {
+    if (data.password && !data.password.startsWith("$2")) {
+      data.password = await bcrypt.hash(data.password, 12);
+    }
+  },
+  methods: {
+    async comparePassword(this: any, candidate: string) {
+      return bcrypt.compare(candidate, this.password);
+    },
+    toProfile(this: any) {
+      return {
+        id: this._id,
+        email: this.email,
+        displayName: this.displayName || this.email.split("@")[0],
+        photoURL: this.photoURL,
+        bio: this.bio,
+        website: this.website || null,
+        location: this.location || null,
+        company: this.company || null,
+        role: this.role,
+        status: this.status,
+      };
+    },
+  },
+});
+
+const User: AppModel = isFirestore() ? FirestoreUser : (MongoUser as unknown as AppModel);
 export default User;

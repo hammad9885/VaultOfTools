@@ -1,4 +1,6 @@
 import mongoose, { type Document } from "mongoose";
+import { isFirestore } from "../config/provider";
+import { createFirestoreModel, type AppModel } from "../firestore/model";
 
 // Shared collection: "tags" (managed by AdminDashboard).
 // Reading from the same collection guarantees tags created in the
@@ -18,6 +20,8 @@ const tagSchema = new mongoose.Schema<ITag>(
   { timestamps: true }
 );
 
-const Tag =
+const MongoTag =
   mongoose.models.Tag || mongoose.model<ITag>("Tag", tagSchema);
+const FirestoreTag = createFirestoreModel("tags");
+const Tag: AppModel = isFirestore() ? FirestoreTag : (MongoTag as unknown as AppModel);
 export default Tag;

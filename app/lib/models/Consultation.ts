@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { isFirestore } from "../config/provider";
+import { createFirestoreModel, type AppModel } from "../firestore/model";
 
 export interface IConsultation {
   name: string;
@@ -25,5 +27,7 @@ const consultationSchema = new mongoose.Schema<IConsultation>(
   { timestamps: true }
 );
 
-const Consultation = mongoose.models.Consultation || mongoose.model<IConsultation>("Consultation", consultationSchema);
+const MongoConsultation = mongoose.models.Consultation || mongoose.model<IConsultation>("Consultation", consultationSchema);
+const FirestoreConsultation = createFirestoreModel("consultations");
+const Consultation: AppModel = isFirestore() ? FirestoreConsultation : (MongoConsultation as unknown as AppModel);
 export default Consultation;

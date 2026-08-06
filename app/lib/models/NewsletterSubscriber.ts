@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { isFirestore } from "../config/provider";
+import { createFirestoreModel, type AppModel } from "../firestore/model";
 
 // Shared collection: "newslettersubscribers" (same collection used by AdminDashboard).
 export interface INewsletterSubscriber {
@@ -20,5 +22,9 @@ const subscriberSchema = new mongoose.Schema<INewsletterSubscriber>(
   { timestamps: true }
 );
 
-const NewsletterSubscriber = mongoose.models.NewsletterSubscriber || mongoose.model<INewsletterSubscriber>("NewsletterSubscriber", subscriberSchema);
+const MongoSubscriber = mongoose.models.NewsletterSubscriber || mongoose.model<INewsletterSubscriber>("NewsletterSubscriber", subscriberSchema);
+const FirestoreSubscriber = createFirestoreModel("newslettersubscribers");
+const NewsletterSubscriber: AppModel = isFirestore()
+  ? FirestoreSubscriber
+  : (MongoSubscriber as unknown as AppModel);
 export default NewsletterSubscriber;

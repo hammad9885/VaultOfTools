@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import { connectDB } from "../config/db";
+import { isFirestore } from "../config/provider";
+import { createFirestoreModel } from "../firestore/model";
 import { AdminSettings } from "./types";
 
 export interface ISettings extends mongoose.Document {
@@ -121,8 +123,16 @@ const settingsSchema = new mongoose.Schema<ISettings>(
   { timestamps: true }
 );
 
-const Settings =
+const MongoSettings =
   mongoose.models.Settings || mongoose.model<ISettings>("Settings", settingsSchema);
+
+const FirestoreSettings = createFirestoreModel("settings", {
+  preSave: async (data: any) => {
+    if (!data.key) data.key = "site";
+  },
+});
+
+const Settings = isFirestore() ? FirestoreSettings : MongoSettings;
 export default Settings;
 
 const DEFAULTS = {

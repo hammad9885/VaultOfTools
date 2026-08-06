@@ -1,10 +1,19 @@
 import mongoose from "mongoose";
+import { isFirestore } from "./provider";
 
 let dbConnected = false;
 let connecting: Promise<void> | null = null;
 
 export async function connectDB() {
   if (dbConnected || connecting) return;
+
+  if (isFirestore()) {
+    // Firestore is initialized lazily via firebaseAdmin.ts when a model
+    // is first queried; there is no persistent connection to establish.
+    dbConnected = true;
+    return;
+  }
+
   connecting = (async () => {
     try {
       await mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/vaultoftools", {

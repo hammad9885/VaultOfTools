@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { isFirestore } from "../config/provider";
+import { createFirestoreModel, type AppModel } from "../firestore/model";
 
 interface IContentBlock {
   type: "paragraph" | "heading" | "quote" | "image" | "list";
@@ -61,5 +63,7 @@ const blogPostSchema = new mongoose.Schema<IBlogPost>(
   { timestamps: true }
 );
 
-const BlogPost = mongoose.models.BlogPost || mongoose.model<IBlogPost>("BlogPost", blogPostSchema);
+const MongoBlogPost = mongoose.models.BlogPost || mongoose.model<IBlogPost>("BlogPost", blogPostSchema);
+const FirestoreBlogPost = createFirestoreModel("blogposts");
+const BlogPost: AppModel = isFirestore() ? FirestoreBlogPost : (MongoBlogPost as unknown as AppModel);
 export default BlogPost;

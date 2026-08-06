@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { isFirestore } from "../config/provider";
+import { createFirestoreModel, type AppModel } from "../firestore/model";
 
 export interface IReview {
   _id: mongoose.Types.ObjectId;
@@ -36,5 +38,7 @@ const reviewSchema = new mongoose.Schema<IReview>(
 
 reviewSchema.index({ userId: 1, toolSlug: 1 }, { unique: true });
 
-const Review = mongoose.models.Review || mongoose.model<IReview>("Review", reviewSchema);
+const MongoReview = mongoose.models.Review || mongoose.model<IReview>("Review", reviewSchema);
+const FirestoreReview = createFirestoreModel("reviews");
+const Review: AppModel = isFirestore() ? FirestoreReview : (MongoReview as unknown as AppModel);
 export default Review;

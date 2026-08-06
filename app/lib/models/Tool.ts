@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { isFirestore } from "../config/provider";
+import { createFirestoreModel, type AppModel } from "../firestore/model";
 
 // Shared collection: "tools" (same collection written to by AdminDashboard).
 // Fields below marked (shared) mirror the AdminDashboard Tool schema so that
@@ -91,5 +93,7 @@ toolSchema.index({ sponsored: 1 });
 toolSchema.index({ status: 1 });
 toolSchema.index({ category: 1 });
 
-const Tool = mongoose.models.Tool || mongoose.model<ITool>("Tool", toolSchema);
+const MongoTool = mongoose.models.Tool || mongoose.model<ITool>("Tool", toolSchema);
+const FirestoreTool = createFirestoreModel("tools");
+const Tool: AppModel = isFirestore() ? FirestoreTool : (MongoTool as unknown as AppModel);
 export default Tool;

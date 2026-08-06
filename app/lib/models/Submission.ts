@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { isFirestore } from "../config/provider";
+import { createFirestoreModel, type AppModel } from "../firestore/model";
 
 export interface ISubmission {
   userId: mongoose.Types.ObjectId;
@@ -33,5 +35,7 @@ const submissionSchema = new mongoose.Schema<ISubmission>(
   { timestamps: true }
 );
 
-const Submission = mongoose.models.Submission || mongoose.model<ISubmission>("Submission", submissionSchema);
+const MongoSubmission = mongoose.models.Submission || mongoose.model<ISubmission>("Submission", submissionSchema);
+const FirestoreSubmission = createFirestoreModel("submissions");
+const Submission: AppModel = isFirestore() ? FirestoreSubmission : (MongoSubmission as unknown as AppModel);
 export default Submission;

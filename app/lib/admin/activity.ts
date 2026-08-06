@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import { connectDB } from "../config/db";
+import { isFirestore } from "../config/provider";
+import { createFirestoreModel } from "../firestore/model";
 
 export interface IActivity extends mongoose.Document {
   actor: string;
@@ -21,8 +23,11 @@ const activitySchema = new mongoose.Schema<IActivity>(
 
 activitySchema.index({ createdAt: -1 });
 
-const Activity =
+const MongoActivity =
   mongoose.models.Activity || mongoose.model<IActivity>("Activity", activitySchema);
+const FirestoreActivity = createFirestoreModel("activities");
+
+const Activity = isFirestore() ? FirestoreActivity : MongoActivity;
 export default Activity;
 
 export async function logActivity(actor: string, action: string, target = "", meta?: Record<string, any>) {
