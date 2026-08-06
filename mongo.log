@@ -1,0 +1,7 @@
+
+> vaultoftools@0.1.0 db
+> node scripts/start-mongo.mjs
+
+MongoDB ready at mongodb://127.0.0.1:27017/
+Data dir: D:\projects\VaultOfTools\.mongo-data
+Keep this terminal open. Press Ctrl+C to stop.

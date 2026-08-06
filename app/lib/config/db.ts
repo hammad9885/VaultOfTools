@@ -18,8 +18,8 @@ export async function connectDB() {
     try {
       await mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/vaultoftools", {
         bufferCommands: false,
-        serverSelectionTimeoutMS: 3000,
-        connectTimeoutMS: 3000,
+        serverSelectionTimeoutMS: 15000,
+        connectTimeoutMS: 15000,
       });
       dbConnected = true;
     } catch (err: any) {
