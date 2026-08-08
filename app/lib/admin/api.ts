@@ -66,6 +66,7 @@ export const adminApi = {
   // Users
   getUsers: (params?: { search?: string; role?: string; status?: string; page?: number; limit?: number }) =>
     request<Paged<UserRow>>(`/users${qs(params)}`),
+  createUser: (data: any) => request<UserRow>("/users", { method: "POST", body: JSON.stringify(data) }),
   updateUser: (id: string, data: any) => request<UserRow>(`/users/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   deleteUser: (id: string) => request<{ message: string }>(`/users/${id}`, { method: "DELETE" }),
 

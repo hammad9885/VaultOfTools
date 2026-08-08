@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { adminApi } from "../../lib/admin/api";
 import { UserRow } from "../../lib/admin/types";
 import { PageHeader } from "../../components/admin/cards";
 import { DataTable, Column } from "../../components/admin/DataTable";
 import { Pagination } from "../../components/admin/Pagination";
-import { Button, Input, Select } from "../../components/admin/ui";
+import { Button, Input, Select, Field, Modal, Spinner } from "../../components/admin/ui";
 
 export default function AdminUsersPage() {
   const [rows, setRows] = useState<UserRow[]>([]);
@@ -21,6 +21,15 @@ export default function AdminUsersPage() {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    displayName: "",
+    role: "user",
+    status: "active",
+  });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -53,6 +62,23 @@ export default function AdminUsersPage() {
       load();
     } catch (err: any) {
       toast.error(err?.message || "Update failed");
+    }
+  };
+
+  const addUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await adminApi.createUser(form);
+      toast.success("User created");
+      setShowAdd(false);
+      setForm({ email: "", password: "", displayName: "", role: "user", status: "active" });
+      setPage(1);
+      load();
+    } catch (err: any) {
+      toast.error(err?.message || "Create failed");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -129,6 +155,12 @@ export default function AdminUsersPage() {
       <PageHeader
         title="Users & Permissions"
         description={`${total} registered users — roles and moderation controls`}
+        actions={
+          <Button onClick={() => setShowAdd(true)}>
+            <Plus size={15} className="mr-1.5" />
+            Add User
+          </Button>
+        }
       />
 
       <div className="mb-4 flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center">
@@ -174,6 +206,74 @@ export default function AdminUsersPage() {
         />
         <Pagination page={page} pages={pages} total={total} onChange={setPage} />
       </div>
+
+      <Modal
+        open={showAdd}
+        onClose={() => setShowAdd(false)}
+        title="Add User"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setShowAdd(false)} disabled={saving}>
+              Cancel
+            </Button>
+            <Button form="add-user-form" type="submit" disabled={saving}>
+              {saving ? <Spinner className="mr-1.5 h-4 w-4" /> : null}
+              Create User
+            </Button>
+          </div>
+        }
+      >
+        <form id="add-user-form" onSubmit={addUser} className="space-y-4">
+          <Field label="Email *">
+            <Input
+              type="email"
+              required
+              placeholder="user@example.com"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+            />
+          </Field>
+          <Field label="Password *" hint="Minimum 8 characters">
+            <Input
+              type="text"
+              required
+              minLength={8}
+              placeholder="••••••••"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+            />
+          </Field>
+          <Field label="Display Name">
+            <Input
+              placeholder="Full name"
+              value={form.displayName}
+              onChange={(e) => setForm({ ...form, displayName: e.target.value })}
+            />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Role">
+              <Select
+                value={form.role}
+                onChange={(e) => setForm({ ...form, role: e.target.value })}
+              >
+                <option value="user">User</option>
+                <option value="moderator">Moderator</option>
+                <option value="admin">Admin</option>
+                <option value="super_admin">Super Admin</option>
+              </Select>
+            </Field>
+            <Field label="Status">
+              <Select
+                value={form.status}
+                onChange={(e) => setForm({ ...form, status: e.target.value })}
+              >
+                <option value="active">Active</option>
+                <option value="suspended">Suspended</option>
+              </Select>
+            </Field>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

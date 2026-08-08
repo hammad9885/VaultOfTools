@@ -44,3 +44,52 @@ export async function GET(request: Request) {
     return errorResponse(err);
   }
 }
+
+export async function POST(request: Request) {
+  try {
+    await requireSuperAdmin(request);
+    await connectDB();
+
+    const body = await request.json().catch(() => ({}));
+    const email = String(body.email || "").trim().toLowerCase();
+    const password = String(body.password || "");
+    const displayName = String(body.displayName || "").trim();
+    const role = String(body.role || "user");
+    const status = String(body.status || "active");
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return Response.json({ error: "A valid email is required" }, { status: 400 });
+    }
+    if (!password || password.length < 8) {
+      return Response.json({ error: "Password must be at least 8 characters" }, { status: 400 });
+    }
+    if (!["user", "admin", "moderator", "super_admin"].includes(role)) {
+      return Response.json({ error: "Invalid role" }, { status: 400 });
+    }
+    if (!["active", "suspended"].includes(status)) {
+      return Response.json({ error: "Invalid status" }, { status: 400 });
+    }
+
+    const existing = await User.findOne({ email });
+    if (existing) {
+      return Response.json({ error: "A user with this email already exists" }, { status: 409 });
+    }
+
+    const user = new User({
+      email,
+      password,
+      displayName: displayName || email.split("@")[0],
+      name: displayName || email.split("@")[0],
+      role,
+      status,
+    });
+    await user.save();
+
+    const raw = await User.findOne({ _id: String(user._id) });
+    const created = raw && typeof raw.toObject === "function" ? raw.toObject() : raw;
+    if (created) delete created.password;
+    return Response.json(created, { status: 201 });
+  } catch (err: any) {
+    return errorResponse(err);
+  }
+}
