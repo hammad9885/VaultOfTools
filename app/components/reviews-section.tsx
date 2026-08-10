@@ -160,7 +160,7 @@ export function ReviewsSection({ slug }: { slug: string }) {
         ) : (
           <div className="text-sm text-muted-foreground">
             <Link
-              to="/auth"
+              href="/auth"
               className="text-primary font-medium hover:underline"
             >
               Sign in

@@ -39,16 +39,18 @@ export function HeroSection() {
 
   return (
     <header className="relative overflow-hidden pt-4 pb-12 sm:pt-6 sm:pb-20 lg:pt-10 lg:pb-24">
-      <Image
-        src={heroBg}
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        quality={70}
-        className="object-cover object-center -z-20"
-        aria-hidden="true"
-      />
+      <div className="absolute inset-0 -z-20">
+        <Image
+          src={heroBg}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          quality={70}
+          className="object-cover object-center"
+          aria-hidden="true"
+        />
+      </div>
 
       <div className="absolute inset-0 -z-10 bg-white/90 backdrop-blur-sm" />
 
