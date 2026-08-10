@@ -7,6 +7,11 @@ async function findUser(id: string) {
   if (isDBConnected()) {
     return User.findById(id);
   }
+  if (process.env.NODE_ENV === "production") {
+    // On production the in-memory store is never populated; a missing
+    // DB connection means the user simply cannot be resolved.
+    throw Object.assign(new Error("Database unavailable — please try again"), { status: 503 });
+  }
   return memoryStore.findUserById(id);
 }
 

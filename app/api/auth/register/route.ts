@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
 import { isDBConnected } from "@/app/lib/config/db";
 import User from "@/app/lib/models/User";
-import memoryStore from "@/app/lib/data/memoryStore";
 
 function signToken(user: any) {
   return jwt.sign(
@@ -29,13 +27,14 @@ export async function POST(request: NextRequest) {
       if (existing) return NextResponse.json({ error: "Email already in use" }, { status: 400 });
       user = await User.create({ email, password, displayName });
     } else {
-      const existing = await memoryStore.findUserByEmail(email);
-      if (existing) return NextResponse.json({ error: "Email already in use" }, { status: 400 });
-      user = await memoryStore.createUser({ email, password, displayName });
+      return NextResponse.json(
+        { error: "Database unavailable — please try again in a few seconds" },
+        { status: 503 }
+      );
     }
 
     const token = signToken(user);
-    const profile = isDBConnected() ? user.toProfile() : memoryStore.toProfile(user);
+    const profile = user.toProfile();
     return NextResponse.json({ token, user: profile }, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });

@@ -38,22 +38,14 @@ export async function POST(request: NextRequest) {
         });
       }
     } else {
-      user = await memoryStore.findUserByGoogleId(googleId);
-      if (!user) user = await memoryStore.findUserByEmail(email);
-      if (!user) {
-        user = await memoryStore.createUser({
-          email, displayName, photoURL, googleId,
-          password: crypto.randomBytes(32).toString("hex"),
-        });
-      } else if (!user.googleId) {
-        user.googleId = googleId;
-        if (photoURL) user.photoURL = photoURL;
-        if (displayName && !user.displayName) user.displayName = displayName;
-      }
+      return NextResponse.json(
+        { error: "Database unavailable — please try again in a few seconds" },
+        { status: 503 }
+      );
     }
 
     const token = signToken(user);
-    const profile = isDBConnected() ? user.toProfile() : memoryStore.toProfile(user);
+    const profile = user.toProfile();
     return NextResponse.json({ token, user: profile });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { connectDB, isDBConnected } from "@/app/lib/config/db";
 import User from "@/app/lib/models/User";
-import memoryStore from "@/app/lib/data/memoryStore";
 
 function signToken(user: any) {
   return jwt.sign(
@@ -28,14 +27,14 @@ export async function POST(request: NextRequest) {
       const valid = await user.comparePassword(password);
       if (!valid) return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
     } else {
-      user = await memoryStore.findUserByEmail(email);
-      if (!user) return NextResponse.json({ error: "No account found with this email" }, { status: 401 });
-      const valid = await memoryStore.comparePassword(user, password);
-      if (!valid) return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Database unavailable — please try again in a few seconds" },
+        { status: 503 }
+      );
     }
 
     const token = signToken(user);
-    const profile = isDBConnected() ? user.toProfile() : memoryStore.toProfile(user);
+    const profile = user.toProfile();
     return NextResponse.json({ token, user: profile });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
