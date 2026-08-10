@@ -330,5 +330,8 @@ class MemoryStore {
   }
 }
 
-const memoryStore = new MemoryStore();
+const memoryStore: MemoryStore =
+  (globalThis as any).__votMemoryStore ||
+  ((globalThis as any).__votMemoryStore = new MemoryStore());
+
 export default memoryStore;

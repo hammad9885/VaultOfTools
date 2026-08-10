@@ -24,6 +24,7 @@ export function AuthMenu() {
   if (!user) {
     return (
       <button
+        type="button"
         onClick={() => router.push("/auth")}
         className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-all"
       >
@@ -40,20 +41,26 @@ export function AuthMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className="size-9 rounded-full bg-primary-muted text-primary grid place-items-center font-semibold text-sm overflow-hidden ring-1 ring-border hover:ring-primary/40 transition"
+          type="button"
+          className="flex items-center gap-2 rounded-full border border-border bg-card pl-1 pr-3 py-1 hover:border-primary/40 transition"
           aria-label="Open account menu"
         >
-          {avatar ? (
-            <Image
-              src={avatar}
-              alt={name}
-              width={36}
-              height={36}
-              className="size-full object-cover"
-            />
-          ) : (
-            initial
-          )}
+          <span className="size-8 rounded-full bg-primary-muted text-primary grid place-items-center font-semibold text-sm overflow-hidden ring-1 ring-border">
+            {avatar ? (
+              <Image
+                src={avatar}
+                alt={name}
+                width={32}
+                height={32}
+                className="size-full object-cover"
+              />
+            ) : (
+              initial
+            )}
+          </span>
+          <span className="hidden sm:inline max-w-[120px] truncate text-sm font-medium text-foreground">
+            {name}
+          </span>
         </button>
       </DropdownMenuTrigger>
 

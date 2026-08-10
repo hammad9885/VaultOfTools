@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import {
   FiTrendingUp,
   FiStar,
@@ -18,6 +17,8 @@ import {
   FiRepeat,
   FiChevronRight,
 } from "react-icons/fi";
+import { ToolLogo } from "./ToolLogo";
+import { withResolvedLogo } from "../lib/tool-logos";
 
 interface Tool {
   name: string;
@@ -57,14 +58,7 @@ function DirectoryToolCard({ tool }: { tool: Tool; rank: number }) {
   return (
     <div className="group flex md:flex-row flex-col items-center gap-3 border border-gray-200 rounded-xl px-4 py-3 hover:border-[#6366F1] hover:bg-[#6366F1]/[0.04] transition-all duration-200 cursor-pointer">
       <div className="w-10 h-10 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden group-hover:border-[#6366F1]/40 transition-colors">
-        <Image
-          src={tool.logo}
-          alt={tool.name}
-          width={22}
-          height={22}
-          className="object-contain"
-          unoptimized={tool.logo.includes("simpleicons.org")}
-        />
+        <ToolLogo name={tool.name} logo={tool.logo} size={22} />
       </div>
 
       <div className="flex-1 min-w-0">
@@ -89,21 +83,21 @@ function DirectoryToolCard({ tool }: { tool: Tool; rank: number }) {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
         <button
           type="button"
           aria-label={`Save ${tool.name}`}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs border border-gray-200 bg-white text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-colors"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs border border-gray-200 bg-white text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-colors whitespace-nowrap"
         >
-          <FiBookmark size={12} />
+          <FiBookmark size={12} className="shrink-0" />
           <span>{fmtNum(tool.saves)}</span>
         </button>
         <button
           type="button"
           aria-label={`Upvote ${tool.name}`}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:border-emerald-300 transition-colors"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:border-emerald-300 transition-colors whitespace-nowrap"
         >
-          <FiArrowUp size={12} />
+          <FiArrowUp size={12} className="shrink-0" />
           <span>{fmtNum(tool.upvotes)}</span>
         </button>
       </div>
@@ -117,19 +111,24 @@ export default function AIToolsDirectory() {
   const [popularTools, setPopularTools] = useState<Tool[]>([]);
   const [recentTools, setRecentTools] = useState<Tool[]>([]);
   const [categoryTools, setCategoryTools] = useState<Tool[]>([]);
+  const [listLoading, setListLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
+    setListLoading(true);
     Promise.all([
       fetch("/api/static/explore/popular").then((r) => r.json()),
       fetch("/api/static/explore/recent").then((r) => r.json()),
     ])
       .then(([popular, recent]) => {
         if (cancelled) return;
-        setPopularTools(popular);
-        setRecentTools(recent);
+        setPopularTools((Array.isArray(popular) ? popular : []).map(withResolvedLogo));
+        setRecentTools((Array.isArray(recent) ? recent : []).map(withResolvedLogo));
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setListLoading(false);
+      });
     return () => {
       cancelled = true;
     };
@@ -141,12 +140,19 @@ export default function AIToolsDirectory() {
       return;
     }
     let cancelled = false;
+    setListLoading(true);
     fetch(`/api/static/categories/${encodeURIComponent(activeCat)}/tools`)
       .then((r) => r.json())
       .then((data) => {
-        if (!cancelled) setCategoryTools(data.slice(0, 10));
+        if (!cancelled) {
+          const list = Array.isArray(data) ? data : [];
+          setCategoryTools(list.slice(0, 10).map(withResolvedLogo));
+        }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setListLoading(false);
+      });
     return () => {
       cancelled = true;
     };
@@ -242,7 +248,16 @@ export default function AIToolsDirectory() {
         </div>
 
         <div className="flex flex-col gap-2 p-4">
-          {tools.length === 0 ? (
+          {listLoading ? (
+            <div className="flex flex-col gap-2 py-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-[72px] rounded-xl border border-gray-200 bg-gray-50 animate-pulse"
+                />
+              ))}
+            </div>
+          ) : tools.length === 0 ? (
             <p className="text-center text-gray-400 text-sm py-16">No tools found for this category.</p>
           ) : (
             tools.map((tool, i) => (

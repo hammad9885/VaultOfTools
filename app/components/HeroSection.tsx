@@ -42,22 +42,23 @@ export function HeroSection() {
       <div className="absolute inset-0 -z-20">
         <Image
           src={heroBg}
-          alt=""
+          alt="Vault of Tools hero background"
           fill
           priority
           sizes="100vw"
-          quality={70}
+          quality={75}
+          placeholder="blur"
           className="object-cover object-center"
-          aria-hidden="true"
         />
       </div>
 
-      <div className="absolute inset-0 -z-10 bg-white/90 backdrop-blur-sm" />
+      {/* Light wash so text stays readable without hiding the image */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white/55 via-white/70 to-white/90" />
 
       <div className="absolute top-10 right-0 h-32 w-32 rounded-full bg-primary/20 blur-3xl" />
       <div className="absolute bottom-0 left-0 h-52 w-52 rounded-full bg-primary/10 blur-3xl" />
 
-      <div className="mx-auto max-w-7xl px-4 text-center">
+      <div className="relative z-0 mx-auto max-w-7xl px-4 text-center">
         <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-medium text-primary">
           Welcome to Vault of Tools <Sparkles className="size-4" />
         </span>
@@ -84,7 +85,7 @@ export function HeroSection() {
               <Link
                 key={item}
                 href={`/discover?q=${encodeURIComponent(item)}`}
-                className="rounded-full border px-3 py-2 text-sm transition-colors hover:border-primary hover:text-primary"
+                className="rounded-full border bg-white/70 px-3 py-2 text-sm transition-colors hover:border-primary hover:text-primary"
               >
                 {item}
               </Link>

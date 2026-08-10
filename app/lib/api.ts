@@ -71,6 +71,18 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
+  firebaseAuth: (data: {
+    email: string;
+    displayName?: string;
+    photoURL?: string;
+    firebaseUid: string;
+    provider?: string;
+  }) =>
+    request<{ token: string; user: any }>("/auth/firebase", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
   getMe: () =>
     request<{ user: any }>("/auth/me"),
 

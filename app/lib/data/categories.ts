@@ -119,29 +119,29 @@ export const categoryToolMap: Record<string, any[]> = {
 };
 
 export const popularTools = [
-  { name: "ChatGPT", desc: "Conversational AI by OpenAI", tags: ["Writing", "Conversation"], logo: "https://cdn.simpleicons.org/openai/4F46E5", upvotes: 1543, saves: 432 },
-  { name: "Midjourney", desc: "AI image generator with artistic quality", tags: ["Image", "Creative"], logo: "https://cdn.simpleicons.org/midjourney/4F46E5", upvotes: 1321, saves: 387 },
-  { name: "Perplexity", desc: "AI-powered search engine with citations", tags: ["Search", "Research"], logo: "https://cdn.simpleicons.org/perplexity/4F46E5", upvotes: 1123, saves: 312 },
-  { name: "Google Gemini", desc: "Multimodal AI from Google", tags: ["Multimodal", "Assistant"], logo: "https://cdn.simpleicons.org/google/4F46E5", upvotes: 987, saves: 287 },
-  { name: "Claude", desc: "Advanced AI assistant by Anthropic", tags: ["Writing", "Analysis"], logo: "https://cdn.simpleicons.org/anthropic/4F46E5", upvotes: 876, saves: 256 },
-  { name: "HubSpot", desc: "AI-powered CRM platform", tags: ["CRM", "Marketing"], logo: "https://cdn.simpleicons.org/hubspot/4F46E5", upvotes: 765, saves: 234 },
-  { name: "Notion AI", desc: "AI-enhanced productivity suite", tags: ["Productivity", "Writing"], logo: "https://cdn.simpleicons.org/notion/4F46E5", upvotes: 654, saves: 198 },
-  { name: "GitHub Copilot", desc: "AI pair programmer", tags: ["Coding", "Completion"], logo: "https://cdn.simpleicons.org/github/4F46E5", upvotes: 543, saves: 176 },
-  { name: "Runway", desc: "AI video generation platform", tags: ["Video", "Editing"], logo: "https://cdn.simpleicons.org/runway/4F46E5", upvotes: 432, saves: 145 },
-  { name: "ElevenLabs", desc: "AI voice synthesis", tags: ["Audio", "Voice"], logo: "https://cdn.simpleicons.org/elevenlabs/4F46E5", upvotes: 321, saves: 98 },
+  { name: "ChatGPT", desc: "Conversational AI by OpenAI", tags: ["Writing", "Conversation"], logo: "https://www.google.com/s2/favicons?domain=chatgpt.com&sz=128", upvotes: 1543, saves: 432 },
+  { name: "Midjourney", desc: "AI image generator with artistic quality", tags: ["Image", "Creative"], logo: "https://www.google.com/s2/favicons?domain=midjourney.com&sz=128", upvotes: 1321, saves: 387 },
+  { name: "Perplexity", desc: "AI-powered search engine with citations", tags: ["Search", "Research"], logo: "https://www.google.com/s2/favicons?domain=perplexity.ai&sz=128", upvotes: 1123, saves: 312 },
+  { name: "Google Gemini", desc: "Multimodal AI from Google", tags: ["Multimodal", "Assistant"], logo: "https://www.google.com/s2/favicons?domain=gemini.google.com&sz=128", upvotes: 987, saves: 287 },
+  { name: "Claude", desc: "Advanced AI assistant by Anthropic", tags: ["Writing", "Analysis"], logo: "https://www.google.com/s2/favicons?domain=anthropic.com&sz=128", upvotes: 876, saves: 256 },
+  { name: "HubSpot", desc: "AI-powered CRM platform", tags: ["CRM", "Marketing"], logo: "https://www.google.com/s2/favicons?domain=hubspot.com&sz=128", upvotes: 765, saves: 234 },
+  { name: "Notion AI", desc: "AI-enhanced productivity suite", tags: ["Productivity", "Writing"], logo: "https://www.google.com/s2/favicons?domain=notion.so&sz=128", upvotes: 654, saves: 198 },
+  { name: "GitHub Copilot", desc: "AI pair programmer", tags: ["Coding", "Completion"], logo: "https://www.google.com/s2/favicons?domain=github.com&sz=128", upvotes: 543, saves: 176 },
+  { name: "Runway", desc: "AI video generation platform", tags: ["Video", "Editing"], logo: "https://www.google.com/s2/favicons?domain=runwayml.com&sz=128", upvotes: 432, saves: 145 },
+  { name: "ElevenLabs", desc: "AI voice synthesis", tags: ["Audio", "Voice"], logo: "https://www.google.com/s2/favicons?domain=elevenlabs.io&sz=128", upvotes: 321, saves: 98 },
 ];
 
 export const recentTools = [
-  { name: "Cursor", isNew: true, desc: "AI-first code editor", tags: ["Coding", "Editor"], logo: "https://cdn.simpleicons.org/cursor/4F46E5", upvotes: 876, saves: 267 },
-  { name: "Bolt.new", isNew: true, desc: "AI-powered web app builder", tags: ["Coding", "Web"], logo: "https://cdn.simpleicons.org/bolt/4F46E5", upvotes: 654, saves: 198 },
-  { name: "Sora", isNew: true, desc: "OpenAI video generation model", tags: ["Video", "Text-to-Video"], logo: "https://cdn.simpleicons.org/openai/4F46E5", upvotes: 543, saves: 176 },
-  { name: "Grok", isNew: true, desc: "AI assistant by xAI", tags: ["Conversation", "Assistant"], logo: "https://cdn.simpleicons.org/x/4F46E5", upvotes: 432, saves: 145 },
-  { name: "Mistral", isNew: false, desc: "Open-weight LLM platform", tags: ["LLM", "Open Source"], logo: "https://cdn.simpleicons.org/mistral/4F46E5", upvotes: 321, saves: 98 },
-  { name: "Kling AI", isNew: true, desc: "AI video generation from text", tags: ["Video", "Text-to-Video"], logo: "https://cdn.simpleicons.org/kling/4F46E5", upvotes: 287, saves: 87 },
-  { name: "Lovable", isNew: true, desc: "AI app builder with natural language", tags: ["App Builder", "No-code"], logo: "https://cdn.simpleicons.org/lovable/4F46E5", upvotes: 234, saves: 76 },
-  { name: "Ideogram", isNew: false, desc: "AI image generator with typography", tags: ["Image", "Typography"], logo: "https://cdn.simpleicons.org/ideogram/4F46E5", upvotes: 198, saves: 65 },
-  { name: "Pika Labs", isNew: false, desc: "AI video creation platform", tags: ["Video", "Creative"], logo: "https://cdn.simpleicons.org/pikalabs/4F46E5", upvotes: 176, saves: 54 },
-  { name: "Gamma", isNew: false, desc: "AI presentation maker", tags: ["Presentation", "Design"], logo: "https://cdn.simpleicons.org/gamma/4F46E5", upvotes: 154, saves: 43 },
+  { name: "Cursor", isNew: true, desc: "AI-first code editor", tags: ["Coding", "Editor"], logo: "https://www.google.com/s2/favicons?domain=cursor.com&sz=128", upvotes: 876, saves: 267 },
+  { name: "Bolt.new", isNew: true, desc: "AI-powered web app builder", tags: ["Coding", "Web"], logo: "https://www.google.com/s2/favicons?domain=bolt.new&sz=128", upvotes: 654, saves: 198 },
+  { name: "Sora", isNew: true, desc: "OpenAI video generation model", tags: ["Video", "Text-to-Video"], logo: "https://www.google.com/s2/favicons?domain=openai.com&sz=128", upvotes: 543, saves: 176 },
+  { name: "Grok", isNew: true, desc: "AI assistant by xAI", tags: ["Conversation", "Assistant"], logo: "https://www.google.com/s2/favicons?domain=x.ai&sz=128", upvotes: 432, saves: 145 },
+  { name: "Mistral", isNew: false, desc: "Open-weight LLM platform", tags: ["LLM", "Open Source"], logo: "https://www.google.com/s2/favicons?domain=mistral.ai&sz=128", upvotes: 321, saves: 98 },
+  { name: "Kling AI", isNew: true, desc: "AI video generation from text", tags: ["Video", "Text-to-Video"], logo: "https://www.google.com/s2/favicons?domain=klingai.com&sz=128", upvotes: 287, saves: 87 },
+  { name: "Lovable", isNew: true, desc: "AI app builder with natural language", tags: ["App Builder", "No-code"], logo: "https://www.google.com/s2/favicons?domain=lovable.dev&sz=128", upvotes: 234, saves: 76 },
+  { name: "Ideogram", isNew: false, desc: "AI image generator with typography", tags: ["Image", "Typography"], logo: "https://www.google.com/s2/favicons?domain=ideogram.ai&sz=128", upvotes: 198, saves: 65 },
+  { name: "Pika Labs", isNew: false, desc: "AI video creation platform", tags: ["Video", "Creative"], logo: "https://www.google.com/s2/favicons?domain=pika.art&sz=128", upvotes: 176, saves: 54 },
+  { name: "Gamma", isNew: false, desc: "AI presentation maker", tags: ["Presentation", "Design"], logo: "https://www.google.com/s2/favicons?domain=gamma.app&sz=128", upvotes: 154, saves: 43 },
 ];
 
 export const popularSearchTerms = ["AI Writing", "AI Image", "AI Video", "AI Coding", "Chatbots"];
