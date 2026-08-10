@@ -1,57 +1,115 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight, Star, Sparkles, Zap, Code, Image as ImageIcon, Video, MessageSquare, Megaphone, Mic, Mail, Menu, X, Grid2x2 } from "lucide-react";
+import dynamic from "next/dynamic";
+import {
+  ArrowRight,
+  Star,
+  Sparkles,
+  Zap,
+  Code,
+  Image as ImageIcon,
+  Video,
+  MessageSquare,
+  Megaphone,
+  Mic,
+  Mail,
+  Menu,
+  X,
+  Grid2x2,
+} from "lucide-react";
 import { AuthMenu } from "../components/auth-menu";
-import fluxLogo from "../assets/images/tool-flux.png";
-import codeLogo from "../assets/images/tool-codewhisper.png";
-import motionLogo from "../assets/images/tool-motionflow.png";
-import synthLogo from "../assets/images/tool-synth.png";
-import luminaLogo from "../assets/images/tool-lumina.png";
-import insightLogo from "../assets/images/tool-insight.png";
+import fluxLogo from "../assets/images/tool-flux.webp";
+import codeLogo from "../assets/images/tool-codewhisper.webp";
+import motionLogo from "../assets/images/tool-motionflow.webp";
+import synthLogo from "../assets/images/tool-synth.webp";
+import luminaLogo from "../assets/images/tool-lumina.webp";
+import insightLogo from "../assets/images/tool-insight.webp";
 import Image from "next/image";
 import Link from "next/link";
-import AIToolsDirectory, { HeroSection } from "../components/data";
 import { api } from "../lib/api";
-import Footer from "../components/ui/Footer";
-export const SiteFooter = Footer;
+import { HeroSection } from "../components/HeroSection";
+
+const AIToolsDirectory = dynamic(() => import("../components/AIToolsDirectory"), {
+  loading: () => (
+    <div className="mx-auto max-w-7xl min-h-[320px] px-4 sm:px-6 lg:px-8 py-8">
+      <div className="h-64 animate-pulse rounded-2xl bg-muted/60" />
+    </div>
+  ),
+});
+
+const SiteFooter = dynamic(() => import("../components/ui/Footer"), {
+  loading: () => <div className="mt-24 h-40 border-t border-border bg-muted/30" />,
+});
+
+export { SiteFooter };
 
 type Pricing = "Free" | "Freemium" | "Paid";
 
 const fallbackTrending = [
   {
-    slug: "flux-studio", name: "Flux Studio", category: "Image Generation",
-    logo: fluxLogo, pricing: "Free" as Pricing, rating: 4.9, reviews: 128,
+    slug: "flux-studio",
+    name: "Flux Studio",
+    category: "Image Generation",
+    logo: fluxLogo,
+    pricing: "Free" as Pricing,
+    rating: 4.9,
+    reviews: 128,
     desc: "Create photorealistic imagery with the latest open-source generative model architecture.",
     website: "https://fluxstudio.ai",
   },
   {
-    slug: "codewhisper", name: "CodeWhisper", category: "Developer Tools",
-    logo: codeLogo, pricing: "Freemium" as Pricing, rating: 4.7, reviews: 850,
+    slug: "codewhisper",
+    name: "CodeWhisper",
+    category: "Developer Tools",
+    logo: codeLogo,
+    pricing: "Freemium" as Pricing,
+    rating: 4.7,
+    reviews: 850,
     desc: "Real-time code completion and security scanning across 15+ programming languages.",
     website: "https://codewhisper.dev",
   },
   {
-    slug: "motionflow", name: "MotionFlow", category: "Video Editing",
-    logo: motionLogo, pricing: "Paid" as Pricing, rating: 4.8, reviews: 312,
+    slug: "motionflow",
+    name: "MotionFlow",
+    category: "Video Editing",
+    logo: motionLogo,
+    pricing: "Paid" as Pricing,
+    rating: 4.8,
+    reviews: 312,
     desc: "Automate B-roll and subtitle generation with one-click cinematic style transfers.",
     website: "https://motionflow.ai",
   },
   {
-    slug: "synthflow", name: "SynthFlow", category: "Voice Synthesis",
-    logo: synthLogo, pricing: "Freemium" as Pricing, rating: 4.9, reviews: 421,
+    slug: "synthflow",
+    name: "SynthFlow",
+    category: "Voice Synthesis",
+    logo: synthLogo,
+    pricing: "Freemium" as Pricing,
+    rating: 4.9,
+    reviews: 421,
     desc: "Studio-quality voiceovers in seconds with realistic neural speech engines.",
     website: "https://synthflow.ai",
   },
   {
-    slug: "lumina-script", name: "Lumina Script", category: "AI Writing",
-    logo: luminaLogo, pricing: "Free" as Pricing, rating: 4.6, reviews: 198,
+    slug: "lumina-script",
+    name: "Lumina Script",
+    category: "AI Writing",
+    logo: luminaLogo,
+    pricing: "Free" as Pricing,
+    rating: 4.6,
+    reviews: 198,
     desc: "Long-form narrative consistency and world-building powered by orchestrated LLMs.",
     website: "https://luminascript.ai",
   },
   {
-    slug: "insightlayer", name: "InsightLayer", category: "Analytics",
-    logo: insightLogo, pricing: "Paid" as Pricing, rating: 4.8, reviews: 264,
+    slug: "insightlayer",
+    name: "InsightLayer",
+    category: "Analytics",
+    logo: insightLogo,
+    pricing: "Paid" as Pricing,
+    rating: 4.8,
+    reviews: 264,
     desc: "Turn complex business data into readable narratives and actionable reports automatically.",
     website: "https://insightlayer.ai",
   },
@@ -70,17 +128,31 @@ export const categories = [
   { slug: "ai-voice", name: "Voice & Audio", icon: Mic, count: 96 },
 ];
 
-
 function PricingBadge({ pricing }: { pricing: Pricing }) {
-  const styles = pricing === "Free" ? "bg-primary-muted text-primary" : "bg-slate-100 text-slate-600";
-  return <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${styles}`}>{pricing}</span>;
+  const styles =
+    pricing === "Free" ? "bg-primary-muted text-primary" : "bg-slate-100 text-slate-600";
+  return (
+    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${styles}`}>
+      {pricing}
+    </span>
+  );
 }
 
 export function ToolCard({ tool }: { tool: (typeof fallbackTrending)[number] }) {
   return (
-    <Link href={`/tool/${tool.slug}`} className="group flex flex-col rounded-2xl border border-gray-100 bg-white p-5 hover:shadow-md transition-all">
+    <Link
+      href={`/tool/${tool.slug}`}
+      className="group flex flex-col rounded-2xl border border-gray-100 bg-white p-5 hover:shadow-md transition-all"
+    >
       <div className="w-14 h-14 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 grid place-items-center mb-4">
-        <Image src={tool.logo} alt={`${tool.name} logo`} width={48} height={48} loading="lazy" className="w-10 h-10 object-contain" unoptimized />
+        <Image
+          src={tool.logo}
+          alt={`${tool.name} logo`}
+          width={48}
+          height={48}
+          loading="lazy"
+          className="w-10 h-10 object-contain"
+        />
       </div>
       <h3 className="font-semibold text-gray-900 text-base leading-tight">{tool.name}</h3>
       <p className="text-xs text-gray-400 mt-0.5">{tool.category}</p>
@@ -90,7 +162,9 @@ export function ToolCard({ tool }: { tool: (typeof fallbackTrending)[number] }) 
           <span className="text-sm font-bold text-gray-800">{tool.rating}</span>
           <span className="text-xs text-gray-400">({tool.reviews})</span>
         </div>
-        <div className="sm:self-auto self-start"><PricingBadge pricing={tool.pricing} /></div>
+        <div className="sm:self-auto self-start">
+          <PricingBadge pricing={tool.pricing} />
+        </div>
       </div>
     </Link>
   );
@@ -107,17 +181,40 @@ export function SiteNav() {
         </Link>
 
         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
-          <Link href="/discover" className="hover:text-primary transition-colors">Discover</Link>
-          <Link href="/categories" className="hover:text-primary transition-colors">Categories</Link>
-          <Link href="/compare" className="hover:text-primary transition-colors">Compare</Link>
-          <Link href="/toolsreview" className="hover:text-primary transition-colors">Tools reviews</Link>
-          <Link href="/blog" className="hover:text-primary transition-colors">Blog</Link>
-          <Link href="/consulting" className="hover:text-primary transition-colors">Consulting</Link>
+          <Link href="/discover" className="hover:text-primary transition-colors">
+            Discover
+          </Link>
+          <Link href="/categories" className="hover:text-primary transition-colors">
+            Categories
+          </Link>
+          <Link href="/compare" className="hover:text-primary transition-colors">
+            Compare
+          </Link>
+          <Link href="/toolsreview" className="hover:text-primary transition-colors">
+            Tools reviews
+          </Link>
+          <Link href="/blog" className="hover:text-primary transition-colors">
+            Blog
+          </Link>
+          <Link href="/consulting" className="hover:text-primary transition-colors">
+            Consulting
+          </Link>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/submit" className="hidden sm:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Submit Tool</Link>
+          <Link
+            href="/submit"
+            className="hidden sm:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Submit Tool
+          </Link>
           <AuthMenu />
-          <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
+          <button
+            type="button"
+            className="md:hidden"
+            aria-label={isOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isOpen}
+            onClick={() => setIsOpen(!isOpen)}
+          >
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
@@ -125,13 +222,27 @@ export function SiteNav() {
       {isOpen && (
         <div className="md:hidden border-t border-border bg-background">
           <div className="flex flex-col px-4 py-4 space-y-4">
-            <Link href="/discover" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">Discover</Link>
-            <Link href="/categories" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">Categories</Link>
-            <Link href="/compare" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">Compare</Link>
-            <Link href="/toolsreview" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">Tools reviews</Link>
-            <Link href="/blog" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">Blog</Link>
-            <Link href="/consulting" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">Consulting</Link>
-            <Link href="/submit" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary sm:hidden">Submit Tool</Link>
+            <Link href="/discover" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">
+              Discover
+            </Link>
+            <Link href="/categories" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">
+              Categories
+            </Link>
+            <Link href="/compare" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">
+              Compare
+            </Link>
+            <Link href="/toolsreview" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">
+              Tools reviews
+            </Link>
+            <Link href="/blog" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">
+              Blog
+            </Link>
+            <Link href="/consulting" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">
+              Consulting
+            </Link>
+            <Link href="/submit" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary sm:hidden">
+              Submit Tool
+            </Link>
           </div>
         </div>
       )}
@@ -139,12 +250,15 @@ export function SiteNav() {
   );
 }
 
-
-
 interface ApiTool {
-  slug: string; name: string; category: string;
-  pricing: string; rating: number; reviews: number;
-  desc: string; website: string;
+  slug: string;
+  name: string;
+  category: string;
+  pricing: string;
+  rating: number;
+  reviews: number;
+  desc: string;
+  website: string;
 }
 
 export function HomePage() {
@@ -158,62 +272,81 @@ export function HomePage() {
   ];
 
   const fallbackFaqs = [
-    { q: "How do you choose which tools to list?", a: "Every tool is reviewed by our editorial team and the community. We prioritize tools that are actively maintained, well-documented, and solving real problems." },
+    {
+      q: "How do you choose which tools to list?",
+      a: "Every tool is reviewed by our editorial team and the community. We prioritize tools that are actively maintained, well-documented, and solving real problems.",
+    },
     { q: "Is Vault of Tools free to use?", a: "Yes — discovering, comparing, and reading reviews is completely free." },
-    { q: "Can I submit my own AI tool?", a: "Absolutely. Use the Submit Tool button in the navigation. Submissions are reviewed within 48 hours." },
-    { q: "How often is the directory updated?", a: "New tools are added daily and existing listings are refreshed weekly to keep pricing and features accurate." },
-    { q: "Do I need an account to browse tools?", a: "No account is required to explore the directory. Creating an account unlocks additional features such as bookmarking and personalized recommendations." },
-    { q: "Can I compare multiple AI tools?", a: "Yes, you can compare features, pricing, ratings, and use cases to find the best tool for your needs." },
-    { q: "Are user reviews verified?", a: "We use moderation and automated checks to reduce spam and ensure reviews come from genuine users whenever possible." },
-    { q: "How can I report outdated information?", a: "Each tool page includes a feedback option where you can report incorrect pricing, broken links, or outdated features." },
+    {
+      q: "Can I submit my own AI tool?",
+      a: "Absolutely. Use the Submit Tool button in the navigation. Submissions are reviewed within 48 hours.",
+    },
+    {
+      q: "How often is the directory updated?",
+      a: "New tools are added daily and existing listings are refreshed weekly to keep pricing and features accurate.",
+    },
+    {
+      q: "Do I need an account to browse tools?",
+      a: "No account is required to explore the directory. Creating an account unlocks additional features such as bookmarking and personalized recommendations.",
+    },
+    {
+      q: "Can I compare multiple AI tools?",
+      a: "Yes, you can compare features, pricing, ratings, and use cases to find the best tool for your needs.",
+    },
+    {
+      q: "Are user reviews verified?",
+      a: "We use moderation and automated checks to reduce spam and ensure reviews come from genuine users whenever possible.",
+    },
+    {
+      q: "How can I report outdated information?",
+      a: "Each tool page includes a feedback option where you can report incorrect pricing, broken links, or outdated features.",
+    },
   ];
 
   const [comparisons, setComparisons] = useState(fallbackComparisons);
   const [faqs, setFaqs] = useState(fallbackFaqs);
 
   useEffect(() => {
-    api.getTools({ limit: 10, sort: "newest" })
-      .then((data) => {
-        if (data.tools.length > 0) {
-          const mapped = data.tools.map((t: ApiTool) => {
-            const fallback = fallbackTrending.find((f) => f.slug === t.slug);
-            return {
-              slug: t.slug,
-              name: t.name,
-              category: t.category,
-              logo: fallback?.logo || fluxLogo,
-              pricing: t.pricing || "Free",
-              rating: t.rating || 0,
-              reviews: t.reviews || 0,
-              desc: t.desc || "",
-              website: t.website || "#",
-            } as (typeof fallbackTrending)[number];
-          });
-          setTools(mapped);
-          trending = mapped;
-        }
-      })
-      .catch(() => {});
-  }, []);
+    let cancelled = false;
 
-  useEffect(() => {
-    api.getHomeComparisons()
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setComparisons(data as unknown as typeof fallbackComparisons);
-        }
-      })
-      .catch(() => {});
-  }, []);
+    Promise.allSettled([
+      api.getTools({ limit: 10, sort: "newest" }),
+      api.getHomeComparisons(),
+      api.getHomeFaqs(),
+    ]).then(([toolsRes, comparisonsRes, faqsRes]) => {
+      if (cancelled) return;
 
-  useEffect(() => {
-    api.getHomeFaqs()
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setFaqs(data as typeof fallbackFaqs);
-        }
-      })
-      .catch(() => {});
+      if (toolsRes.status === "fulfilled" && toolsRes.value.tools.length > 0) {
+        const mapped = toolsRes.value.tools.map((t: ApiTool) => {
+          const fallback = fallbackTrending.find((f) => f.slug === t.slug);
+          return {
+            slug: t.slug,
+            name: t.name,
+            category: t.category,
+            logo: fallback?.logo || fluxLogo,
+            pricing: t.pricing || "Free",
+            rating: t.rating || 0,
+            reviews: t.reviews || 0,
+            desc: t.desc || "",
+            website: t.website || "#",
+          } as (typeof fallbackTrending)[number];
+        });
+        setTools(mapped);
+        trending = mapped;
+      }
+
+      if (comparisonsRes.status === "fulfilled" && Array.isArray(comparisonsRes.value) && comparisonsRes.value.length > 0) {
+        setComparisons(comparisonsRes.value as unknown as typeof fallbackComparisons);
+      }
+
+      if (faqsRes.status === "fulfilled" && Array.isArray(faqsRes.value) && faqsRes.value.length > 0) {
+        setFaqs(faqsRes.value as typeof fallbackFaqs);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -224,8 +357,14 @@ export function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-indigo-500">
-              <path d="M5 19L19 5M19 5H9M19 5V15" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-indigo-500" aria-hidden="true">
+              <path
+                d="M5 19L19 5M19 5H9M19 5V15"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
             Trending AI Tools
           </h2>
@@ -247,7 +386,11 @@ export function HomePage() {
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {categories.map((c) => (
-            <Link key={c.slug} href={`/category/${c.slug}`} className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-md">
+            <Link
+              key={c.slug}
+              href={`/category/${c.slug}`}
+              className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-md"
+            >
               <div className="size-10 rounded-lg bg-primary-muted text-primary grid place-items-center group-hover:scale-105 transition-transform">
                 <c.icon className="size-5" />
               </div>
@@ -265,16 +408,34 @@ export function HomePage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <span className="text-xs font-semibold uppercase tracking-widest text-primary">Side-by-side</span>
-              <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Compare AI models head to head</h2>
-              <p className="mt-4 text-lg text-muted-foreground">Cannot decide? Our comparison engine breaks down pricing, context windows, and feature sets so you choose the right stack the first time.</p>
+              <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                Compare AI models head to head
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                Cannot decide? Our comparison engine breaks down pricing, context windows, and feature sets so you
+                choose the right stack the first time.
+              </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/compare/chatgpt-vs-claude" className="rounded-lg bg-foreground px-6 py-3 text-sm font-semibold text-background shadow-sm hover:bg-foreground/90 transition-all">Start a Comparison</Link>
-                <Link href="/discover" className="rounded-lg border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground hover:bg-surface-soft transition-all">View Popular Versus</Link>
+                <Link
+                  href="/compare/chatgpt-vs-claude"
+                  className="rounded-lg bg-foreground px-6 py-3 text-sm font-semibold text-background shadow-sm hover:bg-foreground/90 transition-all"
+                >
+                  Start a Comparison
+                </Link>
+                <Link
+                  href="/discover"
+                  className="rounded-lg border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground hover:bg-surface-soft transition-all"
+                >
+                  View Popular Versus
+                </Link>
               </div>
               <ul className="mt-8 grid grid-cols-2 gap-2">
                 {comparisons.map((c, i) => (
                   <li key={c.slug || `cmp-${i}`}>
-                    <Link href={`/compare/${c.slug}`} className="block rounded-lg border border-border bg-card px-3 py-2 text-sm hover:border-primary/30 hover:text-primary transition-colors">
+                    <Link
+                      href={`/compare/${c.slug}`}
+                      className="block rounded-lg border border-border bg-card px-3 py-2 text-sm hover:border-primary/30 hover:text-primary transition-colors"
+                    >
                       {c.a} <span className="text-muted-foreground">vs</span> {c.b}
                     </Link>
                   </li>
@@ -288,14 +449,23 @@ export function HomePage() {
                   <div className="w-1/2 pl-4 font-semibold text-foreground text-center">Claude 3.5 Sonnet</div>
                 </div>
                 <div className="py-4 space-y-3">
-                  {[["Knowledge Cutoff", "Oct 2023 vs Apr 2024"], ["Context Window", "128k vs 200k"], ["Pricing", "$20/mo vs $20/mo"], ["Best For", "General vs Coding"]].map(([k, v]) => (
+                  {(
+                    [
+                      ["Knowledge Cutoff", "Oct 2023 vs Apr 2024"],
+                      ["Context Window", "128k vs 200k"],
+                      ["Pricing", "$20/mo vs $20/mo"],
+                      ["Best For", "General vs Coding"],
+                    ] as const
+                  ).map(([k, v]) => (
                     <div key={k} className="flex justify-between text-sm py-1 border-b border-border last:border-0">
                       <span className="text-muted-foreground">{k}</span>
                       <span className="font-medium text-foreground">{v}</span>
                     </div>
                   ))}
                 </div>
-                <div className="rounded-xl bg-primary/5 p-4 text-center text-xs font-semibold text-primary">Winner: Claude 3.5 for Coding Tasks</div>
+                <div className="rounded-xl bg-primary/5 p-4 text-center text-xs font-semibold text-primary">
+                  Winner: Claude 3.5 for Coding Tasks
+                </div>
               </div>
             </div>
           </div>
@@ -306,16 +476,35 @@ export function HomePage() {
         <div className="rounded-3xl border border-purple-100 bg-white px-6 py-8 sm:px-10 sm:py-10 shadow-sm">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-col items-center gap-5 text-center lg:flex-row lg:text-left">
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary shadow-lg"><Mail size={38} className="text-white" /></div>
+              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary shadow-lg">
+                <Mail size={38} className="text-white" />
+              </div>
               <div>
-                <h2 className="text-2xl font-bold leading-tight text-gray-900 sm:text-3xl">Stay Updated With<br />The Latest AI Tools</h2>
-                <p className="mt-3 max-w-md text-sm text-gray-500 sm:text-base">Join our newsletter and get the best AI tools, news, and updates delivered to your inbox.</p>
+                <h2 className="text-2xl font-bold leading-tight text-gray-900 sm:text-3xl">
+                  Stay Updated With
+                  <br />
+                  The Latest AI Tools
+                </h2>
+                <p className="mt-3 max-w-md text-sm text-gray-500 sm:text-base">
+                  Join our newsletter and get the best AI tools, news, and updates delivered to your inbox.
+                </p>
               </div>
             </div>
             <div className="w-full max-w-xl">
               <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-3 sm:flex-row">
-                <input type="email" placeholder="Enter your email" required className="w-full sm:flex-1 h-12 rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition-all focus:border-purple-500 focus:ring-4 focus:ring-purple-100" />
-                <button type="submit" className="w-full sm:w-auto h-12 rounded-xl bg-primary px-8 text-sm font-semibold text-white transition-all hover:opacity-90">Subscribe</button>
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  required
+                  aria-label="Email address"
+                  className="w-full sm:flex-1 h-12 rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition-all focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
+                />
+                <button
+                  type="submit"
+                  className="w-full sm:w-auto h-12 rounded-xl bg-primary px-8 text-sm font-semibold text-white transition-all hover:opacity-90"
+                >
+                  Subscribe
+                </button>
               </form>
               <p className="mt-3 text-xs text-gray-400">No spam, unsubscribe anytime.</p>
             </div>

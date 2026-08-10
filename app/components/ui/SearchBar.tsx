@@ -19,47 +19,74 @@ interface RawTool {
 export function SearchBar({ initialValue = "" }: { initialValue?: string }) {
   const [query, setQuery] = useState(initialValue);
   const [allTools, setAllTools] = useState<Suggestion[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [open, setOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
   const router = useRouter();
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
+  function loadSuggestions(search: string) {
     import("../../lib/api").then(({ api }) => {
-      api.getTools({ limit: 999 }).then((data) => {
-        setAllTools(
-          data.tools.map((t: RawTool) => ({
-            name: t.name,
-            slug: t.slug,
-            category: t.category,
-          }))
-        );
-      }).catch(() => {
-        import("../../routes/index").then((mod) => {
+      api
+        .getTools({ limit: 20, search: search || undefined, sort: "popular" })
+        .then((data) => {
           setAllTools(
-            mod.trending.map((t: RawTool) => ({
+            data.tools.map((t: RawTool) => ({
               name: t.name,
               slug: t.slug,
               category: t.category,
             }))
           );
+          setLoaded(true);
+        })
+        .catch(() => {
+          import("../../routes/index").then((mod) => {
+            setAllTools(
+              mod.trending.map((t: RawTool) => ({
+                name: t.name,
+                slug: t.slug,
+                category: t.category,
+              }))
+            );
+            setLoaded(true);
+          });
         });
-      });
     });
-  }, []);
+  }
+
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (trimmed.length < 2) {
+      if (!loaded) return;
+      setOpen(false);
+      return;
+    }
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      loadSuggestions(trimmed);
+    }, 250);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [query, loaded]);
 
   const suggestions = useMemo(() => {
     const trimmed = query.trim().toLowerCase();
     if (!trimmed) return [];
-    return allTools.filter(
-      (t) =>
-        t.name.toLowerCase().includes(trimmed) ||
-        t.category.toLowerCase().includes(trimmed)
-    );
+    return allTools
+      .filter(
+        (t) =>
+          t.name.toLowerCase().includes(trimmed) ||
+          t.category.toLowerCase().includes(trimmed)
+      )
+      .slice(0, 8);
   }, [query, allTools]);
 
   useEffect(() => {
-    if (suggestions.length > 0 && query.trim()) {
+    if (suggestions.length > 0 && query.trim().length >= 2) {
       setOpen(true);
     }
   }, [suggestions, query]);
@@ -107,16 +134,20 @@ export function SearchBar({ initialValue = "" }: { initialValue?: string }) {
 
   return (
     <div ref={wrapperRef} className="relative w-full max-w-3xl mx-auto">
-      <form onSubmit={handleSearch}>
+      <form onSubmit={handleSearch} role="search">
         <Search className="absolute left-3 sm:left-4 top-3.5 sm:top-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground sm:-translate-y-1/2 z-10" />
 
         <input
-          type="text"
+          type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={onKeyDown}
-          onFocus={() => { if (suggestions.length > 0) setOpen(true); }}
+          onFocus={() => {
+            if (suggestions.length > 0) setOpen(true);
+          }}
           placeholder="Search AI tools, categories, or keywords..."
+          aria-label="Search AI tools"
+          autoComplete="off"
           className="w-full rounded-2xl border border-border bg-white py-3 sm:py-4 pl-10 sm:pl-12 pr-4 sm:pr-32 text-sm sm:text-base shadow-lg outline-none focus:border-primary"
         />
 
@@ -133,6 +164,7 @@ export function SearchBar({ initialValue = "" }: { initialValue?: string }) {
           {suggestions.map((s, i) => (
             <button
               key={s.slug}
+              type="button"
               onMouseDown={() => select(s)}
               className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition-colors ${
                 i === activeIdx ? "bg-primary/5 text-primary" : "text-foreground hover:bg-muted"

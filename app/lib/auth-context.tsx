@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { api } from "./api";
-import { signOut as authSignOut } from "./auth";
 
 type AuthState = {
   user: any | null;
@@ -16,9 +15,16 @@ type AuthContextValue = AuthState & {
 
 const AuthContext = createContext<AuthContextValue>({ user: null, loading: true, signOut: async () => {}, refresh: async () => {} });
 
+async function firebaseSignOutSafe() {
+  try {
+    const { signOut: authSignOut } = await import("./auth");
+    await authSignOut();
+  } catch {}
+}
+
 export async function signOut(): Promise<void> {
   api.clearToken();
-  try { await authSignOut(); } catch {}
+  await firebaseSignOutSafe();
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -65,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     api.clearToken();
     setUser(null);
     setLoading(false);
-    try { await authSignOut(); } catch {}
+    await firebaseSignOutSafe();
   }, []);
 
   return (

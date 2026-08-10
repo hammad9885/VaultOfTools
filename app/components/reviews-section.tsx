@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { toast } from "sonner";
 import { z } from "zod";
 import Image from "next/image";
