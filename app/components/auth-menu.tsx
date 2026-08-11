@@ -49,6 +49,8 @@ function Avatar({
           width={size}
           height={size}
           className="size-full object-cover"
+          unoptimized
+          referrerPolicy="no-referrer"
           onError={() => setBroken(true)}
         />
       ) : (
@@ -71,7 +73,7 @@ export function AuthMenu() {
       <button
         type="button"
         onClick={() => router.push("/login")}
-        className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90"
+        className="shrink-0 rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 sm:px-5 sm:text-sm"
       >
         Sign In
       </button>
@@ -103,7 +105,7 @@ export function AuthMenu() {
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" sideOffset={10} className="w-64 rounded-xl p-1.5">
+      <DropdownMenuContent align="end" sideOffset={10} className="w-64 max-w-[calc(100vw-1rem)] rounded-xl p-1.5">
         <div className="flex items-center gap-3 rounded-lg px-2 py-2.5">
           <Avatar src={avatar} name={name} email={user.email} size={40} />
           <div className="min-w-0 leading-tight">

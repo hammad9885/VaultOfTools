@@ -71,10 +71,10 @@ export default function ToolPage() {
     <div className="min-h-screen bg-background font-sans text-foreground">
       <SiteNav />
       <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
-        <nav className="text-xs text-muted-foreground mb-6">
+        <nav className="mb-6 flex flex-wrap gap-x-1 text-xs text-muted-foreground">
           <Link href="/" className="hover:text-primary">Home</Link> /{" "}
           <Link href="/discover" className="hover:text-primary">Tools</Link> /{" "}
-          <span className="text-foreground">{tool.name}</span>
+          <span className="inline-block max-w-[200px] truncate align-bottom text-foreground sm:max-w-none">{tool.name}</span>
         </nav>
         <header className="flex flex-col sm:flex-row gap-6 sm:items-center">
           <div className="size-20 overflow-hidden rounded-2xl bg-surface-soft ring-1 ring-black/5 grid place-items-center shrink-0">
@@ -96,7 +96,7 @@ export default function ToolPage() {
             href={tool.website}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-all"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 sm:w-auto"
           >
             Visit website <ExternalLink className="size-4" />
           </a>

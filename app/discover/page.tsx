@@ -72,7 +72,7 @@ function DiscoverContent() {
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
       <SiteNav />
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         <header className="mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Discover AI tools</h1>
           <p className="mt-2 text-muted-foreground">Filter {allTools.length}+ curated tools by category, pricing, and more.</p>
@@ -88,12 +88,12 @@ function DiscoverContent() {
           />
         </form>
 
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="-mx-4 mt-6 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
           {(["All", "Free", "Freemium", "Paid"] as Filter[]).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all ${
+              className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-medium transition-all ${
                 filter === f
                   ? "bg-primary text-primary-foreground"
                   : "bg-card border border-border text-muted-foreground hover:border-primary/30 hover:text-primary"
@@ -102,10 +102,10 @@ function DiscoverContent() {
               {f}
             </button>
           ))}
-          <span className="mx-2 w-px self-stretch bg-border" />
+          <span className="mx-1 w-px shrink-0 self-stretch bg-border" />
           <button
             onClick={() => setCategory("All")}
-            className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all ${
+            className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-medium transition-all ${
               category === "All"
                 ? "bg-foreground text-background"
                 : "bg-card border border-border text-muted-foreground hover:border-primary/30 hover:text-primary"
@@ -117,7 +117,7 @@ function DiscoverContent() {
             <button
               key={c.slug}
               onClick={() => setCategory(c.name)}
-              className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all ${
+              className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-medium transition-all ${
                 category === c.name
                   ? "bg-foreground text-background"
                   : "bg-card border border-border text-muted-foreground hover:border-primary/30 hover:text-primary"
@@ -128,7 +128,7 @@ function DiscoverContent() {
           ))}
         </div>
 
-        <div className="mt-10 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="mt-8 grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-3">
           {tools.map((t: ToolData) => {
             const fallbackMatch = fallbackTrending.find((f) => f.slug === t.slug);
             const pricing = t.pricing as "Free" | "Freemium" | "Paid";

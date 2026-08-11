@@ -57,10 +57,10 @@ function Footer() {
   ];
 
   return (
-    <footer className="relative mt-24 border-t border-border bg-white dark:bg-slate-950 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-16 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-12 pb-14 border-b border-gray-200 dark:border-slate-800">
-          <div className="xl:col-span-2">
+    <footer className="relative mt-16 overflow-hidden border-t border-border bg-white dark:bg-slate-950 sm:mt-24">
+      <div className="mx-auto max-w-7xl px-4 pb-8 pt-12 sm:px-6 sm:pt-16 lg:px-8">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 border-b border-gray-200 pb-12 dark:border-slate-800 md:grid-cols-4 xl:grid-cols-5 xl:gap-12 xl:pb-14">
+          <div className="col-span-2 md:col-span-4 xl:col-span-2">
             <Link
               href="/"
               className="flex items-center gap-2 shrink-0 no-underline group"
@@ -113,7 +113,7 @@ function Footer() {
               ))}
             </div>
           </div>
-          <div>
+          <div className="min-w-0">
             <h4
               className="text-sm font-bold tracking-wide text-gray-900 dark:text-white mb-5"
               style={{ fontFamily: "'Syne', sans-serif" }}
@@ -134,7 +134,7 @@ function Footer() {
               ))}
             </ul>
           </div>
-          <div>
+          <div className="min-w-0">
             <h4
               className="text-sm font-bold tracking-wide text-gray-900 dark:text-white mb-5"
               style={{ fontFamily: "'Syne', sans-serif" }}
@@ -155,7 +155,7 @@ function Footer() {
               ))}
             </ul>
           </div>
-          <div>
+          <div className="min-w-0">
             <h4
               className="text-sm font-bold tracking-wide text-gray-900 dark:text-white mb-5"
               style={{ fontFamily: "'Syne', sans-serif" }}
@@ -177,14 +177,14 @@ function Footer() {
             </ul>
           </div>
         </div>
-        <div className="pt-7 flex flex-col lg:flex-row items-center justify-between gap-5">
+        <div className="flex flex-col items-center justify-between gap-5 pt-7 lg:flex-row">
           <div className="text-sm text-gray-400 dark:text-slate-500 text-center lg:text-left">
             &copy; 2026{" "}
             <span className="font-semibold text-[#6366F1]">VaultOfTools</span>.
             All rights reserved.
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-5">
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
             {legal.map((item) => (
               <Link
                 key={item.label}

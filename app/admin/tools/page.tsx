@@ -312,7 +312,7 @@ export default function AdminToolsPage() {
         }
       >
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Name *">
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </Field>
@@ -320,7 +320,7 @@ export default function AdminToolsPage() {
               <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Category *">
               <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
             </Field>
@@ -342,7 +342,7 @@ export default function AdminToolsPage() {
           <Field label="Full description">
             <Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </Field>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Features" hint="Comma separated">
               <Input value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} />
             </Field>
@@ -350,7 +350,7 @@ export default function AdminToolsPage() {
               <Input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} />
             </Field>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <label className="flex items-center gap-2 text-sm text-foreground">
               <input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} />
               Featured

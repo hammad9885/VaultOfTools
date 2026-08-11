@@ -60,11 +60,11 @@ export default function AdminActivityPage() {
         ) : (
           <ul className="divide-y divide-border">
             {rows.map((a) => (
-              <li key={a._id} className="flex items-start justify-between gap-4 py-3.5">
+              <li key={a._id} className="flex flex-col gap-3 py-3.5 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                 <div className="flex min-w-0 items-start gap-3">
                   <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary/50" />
                   <div className="min-w-0">
-                    <p className="text-sm text-foreground">
+                    <p className="line-clamp-2 break-words text-sm text-foreground">
                       <span className="font-medium">{a.actor}</span>{" "}
                       <span className="text-muted-foreground">{a.action}</span>{" "}
                       <span className="font-medium">{a.target}</span>
@@ -76,7 +76,7 @@ export default function AdminActivityPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex shrink-0 flex-col items-end gap-1.5">
+                <div className="ml-5 flex shrink-0 flex-row flex-wrap items-center gap-2 sm:ml-0 sm:flex-col sm:items-end sm:gap-1.5">
                   <Badge tone={actionTone(a.action)}>{a.action}</Badge>
                   <span className="text-xs text-muted-foreground">
                     {new Date(a.createdAt).toLocaleString()}

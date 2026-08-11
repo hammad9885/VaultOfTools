@@ -119,7 +119,7 @@ export default function AdminTagsPage() {
       />
 
       <form
-        className="mb-4 flex gap-2 rounded-xl border border-border bg-card p-4"
+        className="mb-4 flex flex-col gap-2 rounded-xl border border-border bg-card p-4 min-[420px]:flex-row"
         onSubmit={(e) => {
           e.preventDefault();
           setSearch(searchInput);

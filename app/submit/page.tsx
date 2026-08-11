@@ -53,7 +53,7 @@ export default function SubmitPage() {
     <div className="min-h-screen bg-background font-sans text-foreground">
       <SiteNav />
 
-      <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8">
         <header className="mb-10 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
             Submit an AI tool
@@ -65,7 +65,7 @@ export default function SubmitPage() {
         </header>
 
         {done ? (
-          <div className="rounded-2xl border border-border bg-card p-10 text-center">
+          <div className="rounded-2xl border border-border bg-card p-6 text-center sm:p-10">
             <h2 className="text-xl font-bold text-foreground">
               Thanks — we received your submission.
             </h2>
@@ -82,7 +82,7 @@ export default function SubmitPage() {
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="rounded-2xl border border-border bg-card p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-2 gap-5"
+            className="grid grid-cols-1 gap-5 rounded-2xl border border-border bg-card p-4 sm:p-8 lg:grid-cols-2"
           >
             <Field label="Tool name" name="name" placeholder="e.g. Flux Studio" required />
             <Field label="Website URL" name="website" placeholder="https://" type="url" required />

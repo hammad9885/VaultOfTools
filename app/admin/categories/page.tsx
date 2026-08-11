@@ -138,7 +138,7 @@ export default function AdminCategoriesPage() {
       />
 
       <form
-        className="mb-4 flex gap-2 rounded-xl border border-border bg-card p-4"
+        className="mb-4 flex flex-col gap-2 rounded-xl border border-border bg-card p-4 min-[420px]:flex-row"
         onSubmit={(e) => {
           e.preventDefault();
           setSearch(searchInput);
@@ -182,7 +182,7 @@ export default function AdminCategoriesPage() {
         }
       >
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Name *">
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </Field>

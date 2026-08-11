@@ -181,6 +181,20 @@ export function SiteNav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsOpen(false);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen]);
+
   return (
     <nav
       className={`sticky top-0 z-50 border-b transition-all duration-200 ${
@@ -189,8 +203,8 @@ export function SiteNav() {
           : "border-border/60 bg-background/90 backdrop-blur-md"
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="text-lg sm:text-xl font-bold tracking-tight text-primary">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 lg:px-8">
+        <Link href="/" className="min-w-0 shrink text-base font-bold tracking-tight text-primary sm:text-xl">
           Vault<span className="text-foreground"> of Tools</span>
         </Link>
 
@@ -214,17 +228,17 @@ export function SiteNav() {
             Consulting
           </Link>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <Link
             href="/submit"
-            className="hidden sm:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground md:block"
           >
             Submit Tool
           </Link>
           <AuthMenu />
           <button
             type="button"
-            className="md:hidden"
+            className="grid size-9 shrink-0 place-items-center rounded-lg transition-colors hover:bg-muted md:hidden"
             aria-label={isOpen ? "Close menu" : "Open menu"}
             aria-expanded={isOpen}
             onClick={() => setIsOpen(!isOpen)}
@@ -234,27 +248,27 @@ export function SiteNav() {
         </div>
       </div>
       {isOpen && (
-        <div className="md:hidden border-t border-border bg-background">
-          <div className="flex flex-col px-4 py-4 space-y-4">
-            <Link href="/discover" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">
+        <div className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-border bg-background md:hidden">
+          <div className="flex flex-col space-y-1 px-3 py-3">
+            <Link href="/discover" onClick={() => setIsOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary">
               Discover
             </Link>
-            <Link href="/categories" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">
+            <Link href="/categories" onClick={() => setIsOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary">
               Categories
             </Link>
-            <Link href="/compare" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">
+            <Link href="/compare" onClick={() => setIsOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary">
               Compare
             </Link>
-            <Link href="/toolsreview" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">
+            <Link href="/toolsreview" onClick={() => setIsOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary">
               Tools reviews
             </Link>
-            <Link href="/blog" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">
+            <Link href="/blog" onClick={() => setIsOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary">
               Blog
             </Link>
-            <Link href="/consulting" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">
+            <Link href="/consulting" onClick={() => setIsOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary">
               Consulting
             </Link>
-            <Link href="/submit" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary sm:hidden">
+            <Link href="/submit" onClick={() => setIsOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary md:hidden">
               Submit Tool
             </Link>
           </div>
@@ -369,7 +383,7 @@ export function HomePage() {
       <HeroSection />
       <AIToolsDirectory />
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-indigo-500" aria-hidden="true">
               <path
@@ -382,11 +396,11 @@ export function HomePage() {
             </svg>
             Trending AI Tools
           </h2>
-          <Link href="/discover" className="text-sm font-medium text-indigo-500 hover:underline flex items-center gap-1">
+          <Link href="/discover" className="flex shrink-0 items-center gap-1 text-sm font-medium text-indigo-500 hover:underline">
             View all <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
           {tools.slice(0, 6).map((t) => (
             <ToolCard key={t.slug} tool={t} />
           ))}
@@ -398,7 +412,7 @@ export function HomePage() {
           <Grid2x2 className="w-6 h-6 text-indigo-600" />
           <h2 className="text-2xl font-bold text-foreground">AI Categories</h2>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
           {categories.map((c) => (
             <Link
               key={c.slug}
@@ -443,7 +457,7 @@ export function HomePage() {
                   View Popular Versus
                 </Link>
               </div>
-              <ul className="mt-8 grid grid-cols-2 gap-2">
+              <ul className="mt-8 grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
                 {comparisons.map((c, i) => (
                   <li key={c.slug || `cmp-${i}`}>
                     <Link
@@ -458,9 +472,9 @@ export function HomePage() {
             </div>
             <div className="relative">
               <div className="rounded-2xl border border-border bg-card p-4 shadow-2xl shadow-primary/5">
-                <div className="flex border-b border-border pb-4">
-                  <div className="w-1/2 pr-4 border-r border-border font-semibold text-primary text-center">ChatGPT-4o</div>
-                  <div className="w-1/2 pl-4 font-semibold text-foreground text-center">Claude 3.5 Sonnet</div>
+                <div className="grid grid-cols-2 border-b border-border pb-4">
+                  <div className="min-w-0 break-words border-r border-border px-2 text-center text-xs font-semibold text-primary sm:px-4 sm:text-sm">ChatGPT-4o</div>
+                  <div className="min-w-0 break-words px-2 text-center text-xs font-semibold text-foreground sm:px-4 sm:text-sm">Claude 3.5 Sonnet</div>
                 </div>
                 <div className="py-4 space-y-3">
                   {(
@@ -471,9 +485,9 @@ export function HomePage() {
                       ["Best For", "General vs Coding"],
                     ] as const
                   ).map(([k, v]) => (
-                    <div key={k} className="flex justify-between text-sm py-1 border-b border-border last:border-0">
+                    <div key={k} className="flex flex-col gap-1 border-b border-border py-1 text-sm last:border-0 sm:flex-row sm:items-center sm:justify-between">
                       <span className="text-muted-foreground">{k}</span>
-                      <span className="font-medium text-foreground">{v}</span>
+                      <span className="break-words text-left font-medium text-foreground sm:text-right">{v}</span>
                     </div>
                   ))}
                 </div>

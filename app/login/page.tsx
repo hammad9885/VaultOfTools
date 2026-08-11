@@ -91,7 +91,6 @@ export default function LoginPage() {
     try {
       const profile = await signInWithGoogle();
       if (!profile) return; // redirect flow in progress
-      await refresh();
       finishLogin(profile);
     } catch (err) {
       const msg = friendlyAuthError(err);
@@ -147,7 +146,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background grid place-items-center px-4 font-sans">
+    <div className="grid min-h-[100dvh] place-items-center bg-background px-3 py-6 font-sans sm:px-4">
       <div className="w-full max-w-md">
         <Link
           href="/"
@@ -156,7 +155,7 @@ export default function LoginPage() {
           Vault<span className="text-foreground"> of Tools</span>
         </Link>
 
-        <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-8">
           <h1 className="text-2xl font-bold text-foreground">
             {mode === "signin" ? "Welcome back" : "Create your account"}
           </h1>

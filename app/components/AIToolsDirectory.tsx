@@ -297,7 +297,7 @@ export default function AIToolsDirectory() {
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
               onPointerCancel={onPointerUp}
-              className="flex cursor-grab touch-pan-x gap-2 overflow-x-auto pb-3 active:cursor-grabbing [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              className="flex cursor-grab touch-pan-x snap-x snap-mandatory gap-2 overflow-x-auto pb-3 active:cursor-grabbing [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               style={{ WebkitOverflowScrolling: "touch" }}
             >
               {categories.map((cat) => {
@@ -322,7 +322,7 @@ export default function AIToolsDirectory() {
           </div>
 
           <main className="flex min-w-0 flex-1 flex-col">
-            <div className="flex gap-1 border-b border-[#E5E7EB] px-1 sm:px-2">
+            <div className="flex gap-1 overflow-x-auto border-b border-[#E5E7EB] px-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-2">
               {tabs.map((tab) => {
                 const isActive = activeTab === tab.key && activeCat === null;
                 return (
@@ -330,7 +330,7 @@ export default function AIToolsDirectory() {
                     key={tab.key}
                     type="button"
                     onClick={() => handleTabClick(tab.key)}
-                    className={`relative flex items-center gap-2 px-3 py-3.5 text-[13px] font-medium transition-colors whitespace-nowrap sm:px-5 ${
+                    className={`relative flex shrink-0 items-center gap-2 whitespace-nowrap px-3 py-3.5 text-[13px] font-medium transition-colors sm:px-5 ${
                       isActive ? "text-[#6366F1]" : "text-[#6B7280] hover:text-[#374151]"
                     }`}
                   >

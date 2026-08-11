@@ -98,7 +98,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur sm:px-6">
+          <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-border bg-background/95 px-3 backdrop-blur sm:gap-3 sm:px-6">
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
@@ -120,7 +120,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
               <ThemeToggle />
 
-              <div className="flex items-center gap-2 rounded-lg border border-border bg-card py-1.5 pl-1.5 pr-3">
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-1.5 sm:pr-3">
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-primary">
                   <UserIcon size={13} />
                 </div>
@@ -133,6 +133,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <Button
                 variant="outline"
                 size="icon"
+                className="hidden min-[400px]:inline-flex"
                 aria-label="View public site"
                 onClick={() => window.open("/", "_blank")}
               >
@@ -153,9 +154,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </div>
           </header>
 
-          <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+          <main className="min-w-0 flex-1 px-3 py-5 sm:px-6 sm:py-6 lg:px-8">{children}</main>
 
-          <footer className="border-t border-border px-6 py-4 text-center text-xs text-muted-foreground">
+          <footer className="border-t border-border px-4 py-4 text-center text-xs text-muted-foreground sm:px-6">
             Vault of Tools Admin — MongoDB super admin only. All actions are logged.
           </footer>
         </div>

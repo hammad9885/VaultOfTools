@@ -130,7 +130,7 @@ function AdminLoginInner() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background lg:flex-row">
+    <div className="flex min-h-[100dvh] flex-col bg-background lg:flex-row">
       <div className="relative hidden flex-1 flex-col justify-between overflow-hidden bg-violet-950 p-10 text-violet-50 lg:flex">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(139,92,246,0.35),transparent_55%),radial-gradient(ellipse_at_bottom_right,rgba(99,102,241,0.25),transparent_55%)]" />
         <div className="relative flex items-center gap-3">
@@ -172,7 +172,7 @@ function AdminLoginInner() {
         </p>
       </div>
 
-      <div className="flex flex-1 items-center justify-center p-6 sm:p-10">
+      <div className="flex flex-1 items-center justify-center p-4 sm:p-10">
         <div className="w-full max-w-sm">
           <div className="mb-8 flex items-center gap-3 lg:hidden">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600 text-white">

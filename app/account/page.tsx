@@ -80,9 +80,9 @@ export default function AccountPage() {
   const showProfile = pathname === "/account";
 
   return (
-    <div className="min-h-screen bg-background font-sans text-foreground">
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold tracking-tight">Your account</h1>
+    <div className="bg-background font-sans text-foreground">
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Your account</h1>
 
         <nav className="mt-6 flex gap-6 border-b border-border text-sm font-medium">
           <Link
@@ -113,7 +113,7 @@ export default function AccountPage() {
           ) : (
             <form
               onSubmit={save}
-              className="space-y-5 rounded-2xl border border-border bg-card p-6"
+              className="space-y-5 rounded-2xl border border-border bg-card p-4 sm:p-6"
             >
               <label className="block">
                 <span className="text-sm font-medium">Email</span>
@@ -181,7 +181,7 @@ export default function AccountPage() {
               <div className="flex gap-3">
                 <button
                   disabled={saving}
-                  className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                  className="w-full rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 sm:w-auto"
                 >
                   {saving ? "Saving…" : "Save changes"}
                 </button>

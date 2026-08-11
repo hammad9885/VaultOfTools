@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../hooks/use-auth";
 import { api } from "../../lib/api";
@@ -14,6 +14,29 @@ type Row = {
   category: string;
   createdAt: string;
 };
+
+function AccountSubmissionsShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-8 font-sans text-foreground sm:px-6 sm:py-12 lg:px-8">
+      <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Your account</h1>
+      <nav className="mt-6 flex gap-4 overflow-x-auto border-b border-border text-sm font-medium sm:gap-6">
+        <Link
+          href="/account"
+          className="-mb-px shrink-0 border-b-2 border-transparent pb-3 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Profile
+        </Link>
+        <Link
+          href="/account/submissions"
+          className="-mb-px shrink-0 border-b-2 border-primary pb-3 text-primary"
+        >
+          My submissions
+        </Link>
+      </nav>
+      <div className="mt-8">{children}</div>
+    </div>
+  );
+}
 
 export default function MySubmissions() {
   const { user, loading } = useAuth();
@@ -43,22 +66,28 @@ export default function MySubmissions() {
   }, [user]);
 
   if (loading || busy) {
-    return <p className="text-sm text-muted-foreground">Loading…</p>;
+    return (
+      <AccountSubmissionsShell>
+        <p className="text-sm text-muted-foreground">Loading…</p>
+      </AccountSubmissionsShell>
+    );
   }
 
   if (rows.length === 0) {
     return (
-      <div className="rounded-2xl border border-border bg-card p-10 text-center">
-        <p className="text-sm text-muted-foreground">
-          You have not submitted any tools yet.
-        </p>
-        <Link
-          href="/submit"
-          className="mt-4 inline-block text-sm font-medium text-primary hover:underline"
-        >
-          Submit your first tool →
-        </Link>
-      </div>
+      <AccountSubmissionsShell>
+        <div className="rounded-2xl border border-border bg-card p-6 text-center sm:p-10">
+          <p className="text-sm text-muted-foreground">
+            You have not submitted any tools yet.
+          </p>
+          <Link
+            href="/submit"
+            className="mt-4 inline-block text-sm font-medium text-primary hover:underline"
+          >
+            Submit your first tool →
+          </Link>
+        </div>
+      </AccountSubmissionsShell>
     );
   }
 
@@ -70,33 +99,35 @@ export default function MySubmissions() {
         : "bg-amber-50 text-amber-700";
 
   return (
-    <div className="space-y-3">
-      {rows.map((r) => (
-        <div
-          key={r._id}
-          className="flex items-center justify-between rounded-xl border border-border bg-card p-4"
-        >
-          <div className="min-w-0">
-            <p className="font-semibold truncate">{r.name}</p>
-            <p className="text-xs text-muted-foreground truncate">
-              {r.category} · {new Date(r.createdAt).toLocaleDateString()} ·{" "}
-              <a
-                href={r.website}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-primary"
-              >
-                {r.website}
-              </a>
-            </p>
-          </div>
-          <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${badge(r.status)}`}
+    <AccountSubmissionsShell>
+      <div className="space-y-3">
+        {rows.map((r) => (
+          <div
+            key={r._id}
+            className="flex flex-col items-start gap-3 rounded-xl border border-border bg-card p-4 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between"
           >
-            {r.status}
-          </span>
-        </div>
-      ))}
-    </div>
+            <div className="min-w-0">
+              <p className="truncate font-semibold">{r.name}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {r.category} · {new Date(r.createdAt).toLocaleDateString()} ·{" "}
+                <a
+                  href={r.website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-primary"
+                >
+                  {r.website}
+                </a>
+              </p>
+            </div>
+            <span
+              className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${badge(r.status)}`}
+            >
+              {r.status}
+            </span>
+          </div>
+        ))}
+      </div>
+    </AccountSubmissionsShell>
   );
 }

@@ -121,7 +121,7 @@ export default function AdminReviewsPage() {
 
       <div className="mb-4 flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center">
         <form
-          className="flex flex-1 gap-2"
+          className="flex min-w-0 flex-1 flex-col gap-2 min-[420px]:flex-row"
           onSubmit={(e) => {
             e.preventDefault();
             setSearch(searchInput);
@@ -131,14 +131,14 @@ export default function AdminReviewsPage() {
           <Input placeholder="Search by tool, author or content…" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
           <Button type="submit">Search</Button>
         </form>
-        <div className="flex gap-2">
-          <Select className="w-36" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
+        <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:flex">
+          <Select className="w-full sm:w-36" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
             <option value="">Any status</option>
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
           </Select>
-          <Select className="w-28" value={rating} onChange={(e) => { setRating(e.target.value); setPage(1); }}>
+          <Select className="w-full sm:w-28" value={rating} onChange={(e) => { setRating(e.target.value); setPage(1); }}>
             <option value="">Any rating</option>
             {[5, 4, 3, 2, 1].map((n) => (
               <option key={n} value={n}>{n} stars</option>

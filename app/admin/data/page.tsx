@@ -78,12 +78,12 @@ export default function AdminDataPage() {
         <Card title="Export data" description="Download CSV snapshots of your collections">
           <div className="space-y-3">
             {EXPORTS.map((e) => (
-              <div key={e.type} className="flex items-center justify-between gap-4 rounded-lg border border-border p-4">
-                <div>
+              <div key={e.type} className="flex flex-col items-start gap-3 rounded-lg border border-border p-4 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
+                <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground">{e.label}</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">{e.desc}</p>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => runExport(e.type)}>
+                <Button className="w-full min-[420px]:w-auto" variant="outline" size="sm" onClick={() => runExport(e.type)}>
                   <Download size={13} /> Export
                 </Button>
               </div>

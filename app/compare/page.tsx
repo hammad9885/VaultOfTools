@@ -169,7 +169,7 @@ export default function CompareLandingPage() {
           <div className="mt-8 max-w-3xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
               {/* First tool input */}
-              <div ref={toolOneWrapperRef} className="relative flex-1 text-left">
+              <div ref={toolOneWrapperRef} className="relative min-w-0 flex-1 text-left">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                   type="text"
@@ -180,7 +180,7 @@ export default function CompareLandingPage() {
                   className="w-full h-12 pl-11 pr-4 rounded-xl border border-border bg-card text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all shadow-sm sm:rounded-r-none"
                 />
                 {showToolOneSuggestions && toolOneSuggestionResults.length > 0 && (
-                  <div className="absolute z-20 mt-2 w-full rounded-xl border border-border bg-card shadow-lg overflow-hidden">
+                  <div className="absolute z-20 mt-2 max-h-[min(16rem,50dvh)] w-full overflow-y-auto rounded-xl border border-border bg-card shadow-lg">
                     {toolOneSuggestionResults.map((name) => (
                       <button
                         key={name}
@@ -196,13 +196,13 @@ export default function CompareLandingPage() {
               </div>
 
               <div className="relative z-10 flex justify-center sm:-mx-0">
-                <span className="grid place-items-centertext-xs font-bold uppercase tracking-wide shadow-md ring-4 ring-card shrink-0 -my-1 sm:my-0">
+                <span className="-my-1 grid size-10 shrink-0 place-items-center rounded-full bg-card text-xs font-bold uppercase tracking-wide shadow-md ring-4 ring-card sm:my-0 sm:size-12">
                   VS
                 </span>
               </div>
 
               {/* Second tool input */}
-              <div ref={toolTwoWrapperRef} className="relative flex-1 text-left">
+              <div ref={toolTwoWrapperRef} className="relative min-w-0 flex-1 text-left">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                   type="text"
@@ -213,7 +213,7 @@ export default function CompareLandingPage() {
                   className="w-full h-12 pl-11 pr-4 rounded-xl border border-border bg-card text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all shadow-sm sm:rounded-l-none"
                 />
                 {showToolTwoSuggestions && toolTwoSuggestionResults.length > 0 && (
-                  <div className="absolute z-20 mt-2 w-full rounded-xl border border-border bg-card shadow-lg overflow-hidden">
+                  <div className="absolute z-20 mt-2 max-h-[min(16rem,50dvh)] w-full overflow-y-auto rounded-xl border border-border bg-card shadow-lg">
                     {toolTwoSuggestionResults.map((name) => (
                       <button
                         key={name}

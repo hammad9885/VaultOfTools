@@ -146,7 +146,7 @@ export default function AdminPostsPage() {
       />
 
       <form
-        className="mb-4 flex gap-2 rounded-xl border border-border bg-card p-4"
+        className="mb-4 flex flex-col gap-2 rounded-xl border border-border bg-card p-4 min-[420px]:flex-row"
         onSubmit={(e) => {
           e.preventDefault();
           setSearch(searchInput);
@@ -198,7 +198,7 @@ export default function AdminPostsPage() {
           <Field label="Title *">
             <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           </Field>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Slug" hint="Auto-generated if empty">
               <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
             </Field>

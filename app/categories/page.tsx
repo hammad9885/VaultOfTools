@@ -43,7 +43,7 @@ export default function CategoriesPage() {
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
       <SiteNav />
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8">
         <header className="mb-12 text-center">
           <h1 className="text-3xl sm:text-5xl font-bold tracking-tight">
             Browse all categories
@@ -52,7 +52,7 @@ export default function CategoriesPage() {
             Specialized AI tools for every workflow. Pick a category to explore.
           </p>
         </header>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-3">
           {categories.map((c) => {
             const Icon = typeof c.icon === "string"
               ? (iconMap[c.icon.toLowerCase()] ?? Layers)

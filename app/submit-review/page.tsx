@@ -58,7 +58,7 @@ export default function SubmitReviewPage() {
     <div className="min-h-screen bg-background font-sans text-foreground">
       <SiteNav />
 
-      <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8">
         <header className="mb-10 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
             Write a Review
@@ -69,7 +69,7 @@ export default function SubmitReviewPage() {
         </header>
 
         {done ? (
-          <div className="rounded-2xl border border-border bg-card p-10 text-center">
+          <div className="rounded-2xl border border-border bg-card p-6 text-center sm:p-10">
             <h2 className="text-xl font-bold text-foreground">
               Thanks for your review!
             </h2>
@@ -93,7 +93,7 @@ export default function SubmitReviewPage() {
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="rounded-2xl border border-border bg-card p-6 sm:p-8 space-y-5"
+            className="space-y-5 rounded-2xl border border-border bg-card p-4 sm:p-8"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <label className="block">

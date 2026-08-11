@@ -41,19 +41,19 @@ export function DataTable<T extends { _id: string }>({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left">
+    <div className="w-full overflow-x-auto overscroll-x-contain">
+      <table className="min-w-[640px] w-full text-left">
         <thead>
           <tr className="border-b border-border">
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`px-5 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground ${col.className || ""} ${col.hideOnMobile ? "hidden lg:table-cell" : ""}`}
+                className={`px-3 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-5 ${col.className || ""} ${col.hideOnMobile ? "hidden lg:table-cell" : ""}`}
               >
                 {col.header}
               </th>
             ))}
-            {rowActions && <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">Actions</th>}
+            {rowActions && <th className="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-5">Actions</th>}
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -62,13 +62,13 @@ export function DataTable<T extends { _id: string }>({
               {columns.map((col) => (
                 <td
                   key={col.key}
-                  className={`px-5 ${dense ? "py-2.5" : "py-3.5"} text-sm text-foreground ${col.className || ""} ${col.hideOnMobile ? "hidden lg:table-cell" : ""}`}
+                  className={`px-3 sm:px-5 ${dense ? "py-2.5" : "py-3.5"} text-sm text-foreground ${col.className || ""} ${col.hideOnMobile ? "hidden lg:table-cell" : ""}`}
                 >
                   {col.render ? col.render(row) : String((row as Record<string, unknown>)[col.key] ?? "")}
                 </td>
               ))}
               {rowActions && (
-                <td className={`px-5 text-right ${dense ? "py-2.5" : "py-3.5"}`}>
+                <td className={`px-3 text-right sm:px-5 ${dense ? "py-2.5" : "py-3.5"}`}>
                   <div className="flex items-center justify-end gap-1">{rowActions(row)}</div>
                 </td>
               )}

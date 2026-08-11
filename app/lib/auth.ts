@@ -23,10 +23,14 @@ async function syncAppSession(fbUser: User) {
     throw new Error("Google account has no email. Use an account with email access.");
   }
 
+  const googleProfile = fbUser.providerData.find(
+    (provider) => provider.providerId === "google.com"
+  );
+
   const data = await api.firebaseAuth({
     email: fbUser.email,
     displayName: fbUser.displayName || undefined,
-    photoURL: fbUser.photoURL || undefined,
+    photoURL: fbUser.photoURL || googleProfile?.photoURL || undefined,
     firebaseUid: fbUser.uid,
     provider: fbUser.providerData[0]?.providerId || "firebase",
   });

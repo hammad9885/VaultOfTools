@@ -18,7 +18,7 @@ export function PageHeader({
         <h1 className="text-xl font-bold tracking-tight text-foreground">{title}</h1>
         {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
       </div>
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      {actions && <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">{actions}</div>}
     </div>
   );
 }
@@ -72,15 +72,15 @@ export function Card({ title, description, actions, children, className }: {
   return (
     <div className={cn("rounded-xl border border-border bg-card shadow-sm", className)}>
       {(title || actions) && (
-        <div className="flex items-center justify-between border-b border-border px-5 py-4">
-          <div>
+        <div className="flex flex-col gap-3 border-b border-border px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div className="min-w-0">
             {title && <h3 className="text-sm font-semibold text-foreground">{title}</h3>}
             {description && <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>}
           </div>
-          {actions}
+          {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
         </div>
       )}
-      <div className="p-5">{children}</div>
+      <div className="p-4 sm:p-5">{children}</div>
     </div>
   );
 }

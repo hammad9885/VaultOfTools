@@ -105,7 +105,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const synced = await syncAppSession(fbUser);
             if (alive) setUser(synced);
           } catch {
-            // ignore background sync errors
+            // Keep the live Google identity visible even if app-session sync
+            // is temporarily unavailable.
+            const googleProfile = fbUser.providerData.find(
+              (provider) => provider.providerId === "google.com"
+            );
+            const photoURL = fbUser.photoURL || googleProfile?.photoURL;
+            if (alive) {
+              setUser((current) => ({
+                ...(current || {}),
+                email: fbUser.email || current?.email,
+                displayName: fbUser.displayName || current?.displayName,
+                photoURL: photoURL || current?.photoURL,
+              }));
+            }
           }
         });
       } catch {

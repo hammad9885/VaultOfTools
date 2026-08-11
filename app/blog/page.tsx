@@ -186,7 +186,7 @@ export default function BlogLanding() {
             >
               <SectionTag>Blog</SectionTag>
 
-              <h1 className="mt-6 text-4xl font-bold leading-tight text-[#0F172A] sm:text-5xl lg:text-6xl xl:text-7xl">
+              <h1 className="mt-6 text-balance text-3xl font-bold leading-tight text-[#0F172A] sm:text-5xl lg:text-6xl xl:text-7xl">
                 Insights, Reviews &amp;{" "}
                 <span className="text-[#4F46E5]">AI</span> Industry Trends
               </h1>
@@ -570,7 +570,7 @@ export default function BlogLanding() {
       {/* ================================================================ */}
       <section id="nl-cta" className="px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
         <div
-          className="relative mx-auto max-w-7xl overflow-hidden rounded-3xl px-8 py-14 sm:px-14 sm:py-20 lg:px-20"
+          className="relative mx-auto max-w-7xl overflow-hidden rounded-3xl px-4 py-10 sm:px-14 sm:py-20 lg:px-20"
           style={{ background: "linear-gradient(135deg, #5B4CF6, #7C3AED)" }}
         >
           {/* decorative glow */}

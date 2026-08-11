@@ -216,7 +216,7 @@ export default function ConsultingLanding() {
       <SiteNav />
       <main className="overflow-hidden font-sans">
         <section
-          className="relative min-h-screen flex items-center overflow-hidden px-4 sm:px-6 lg:px-8"
+          className="relative flex min-h-[85dvh] items-center overflow-hidden px-4 py-12 sm:px-6 lg:min-h-screen lg:px-8 lg:py-0"
           style={{
             background:
               "linear-gradient(135deg, #070B1F 0%, #111936 50%, #1A1454 100%)",
@@ -539,7 +539,7 @@ export default function ConsultingLanding() {
           <div className="mx-auto text-center">
             <h3>Why Choose Vault of Tools?</h3>
 
-            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 w-full max-w-7xl mx-auto">
+            <div className="mx-auto mt-12 grid w-full max-w-7xl grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
               {whyChooseUs.map((item, i) => (
                 <motion.div
                   key={item.title}
@@ -724,7 +724,7 @@ export default function ConsultingLanding() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowModal(false)}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+              className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4"
             >
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -732,7 +732,7 @@ export default function ConsultingLanding() {
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-lg rounded-3xl border border-[#E5E7EB] bg-white p-8 shadow-2xl"
+                className="max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-[#E5E7EB] bg-white p-5 shadow-2xl sm:rounded-3xl sm:p-8"
               >
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold text-[#0F172A]">
@@ -801,7 +801,7 @@ export default function ConsultingLanding() {
                       rows={4}
                       required
                       placeholder="Tell us about your project..."
-                      className="mt-1.5 w-full rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm outline-none focus:border-[#4F46E5]/50 focus:ring-4 focus:ring-[#4F46E5]/5 transition resize-none"
+                      className="mt-1.5 min-h-24 w-full resize-none rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#4F46E5]/50 focus:ring-4 focus:ring-[#4F46E5]/5"
                     />
                   </div>
                   <button

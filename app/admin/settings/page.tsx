@@ -186,7 +186,7 @@ export default function AdminSettingsPage() {
         <Spinner />
       ) : (
         <div className="rounded-xl border border-border bg-card shadow-sm">
-          <div className="flex gap-1 overflow-x-auto border-b border-border px-3 pt-3">
+          <div className="flex gap-1 overflow-x-auto overscroll-x-contain border-b border-border px-3 pt-3">
             {TABS.map((t) => (
               <button
                 key={t.id}
@@ -203,7 +203,7 @@ export default function AdminSettingsPage() {
               </button>
             ))}
           </div>
-          <div className="p-6">{tabContent}</div>
+          <div className="p-4 sm:p-6">{tabContent}</div>
         </div>
       )}
     </div>

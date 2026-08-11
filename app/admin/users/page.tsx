@@ -165,7 +165,7 @@ export default function AdminUsersPage() {
 
       <div className="mb-4 flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center">
         <form
-          className="flex flex-1 gap-2"
+          className="flex min-w-0 flex-1 flex-col gap-2 min-[420px]:flex-row"
           onSubmit={(e) => {
             e.preventDefault();
             setSearch(searchInput);
@@ -175,15 +175,15 @@ export default function AdminUsersPage() {
           <Input placeholder="Search by email or name…" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
           <Button type="submit">Search</Button>
         </form>
-        <div className="flex gap-2">
-          <Select className="w-36" value={role} onChange={(e) => { setRole(e.target.value); setPage(1); }}>
+        <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:flex">
+          <Select className="w-full sm:w-36" value={role} onChange={(e) => { setRole(e.target.value); setPage(1); }}>
             <option value="">All roles</option>
             <option value="user">User</option>
             <option value="moderator">Moderator</option>
             <option value="admin">Admin</option>
             <option value="super_admin">Super Admin</option>
           </Select>
-          <Select className="w-32" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
+          <Select className="w-full sm:w-32" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
             <option value="">Any status</option>
             <option value="active">Active</option>
             <option value="suspended">Suspended</option>
@@ -250,7 +250,7 @@ export default function AdminUsersPage() {
               onChange={(e) => setForm({ ...form, displayName: e.target.value })}
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Role">
               <Select
                 value={form.role}

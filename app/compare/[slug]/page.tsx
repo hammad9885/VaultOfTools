@@ -70,7 +70,7 @@ export default function ComparePage() {
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
       <SiteNav />
-      <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         <header className="text-center mb-10">
           <span className="text-xs font-semibold uppercase tracking-widest text-primary">Comparison</span>
           <h1 className="mt-2 text-3xl sm:text-5xl font-bold tracking-tight">
@@ -81,7 +81,8 @@ export default function ComparePage() {
           </p>
         </header>
 
-        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+        <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
+          <div className="min-w-[560px]">
           <div className="grid grid-cols-3 border-b border-border bg-surface-soft">
             <div className="p-4 font-semibold text-muted-foreground text-sm">Feature</div>
             <div className="p-4 font-bold text-primary text-center">{a}</div>
@@ -94,6 +95,7 @@ export default function ComparePage() {
               <div className="p-4 text-center font-medium">{row.b}</div>
             </div>
           ))}
+          </div>
         </div>
 
         <div className="mt-8 grid sm:grid-cols-2 gap-6">
@@ -115,7 +117,7 @@ export default function ComparePage() {
           </div>
         </div>
 
-        <div className="mt-10 rounded-2xl bg-primary-muted p-8 text-center">
+        <div className="mt-10 rounded-2xl bg-primary-muted p-5 text-center sm:p-8">
           <h3 className="text-xl font-bold text-foreground">Verdict</h3>
           <p className="mt-2 text-muted-foreground max-w-2xl mx-auto">
             Pick <span className="font-semibold text-primary">{b}</span> for coding-heavy and long-document workflows. Pick <span className="font-semibold text-primary">{a}</span> if you need multimodal output and plugin breadth.
