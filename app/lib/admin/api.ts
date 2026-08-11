@@ -20,7 +20,7 @@ import {
 const BASE = "/api/admin";
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = sharedApi.getToken();
+  const token = sharedApi.getAdminToken() || sharedApi.getToken();
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
   };
@@ -31,7 +31,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   const res = await fetch(`${BASE}${path}`, { ...options, headers });
   if (res.status === 401) {
-    sharedApi.clearToken();
+    sharedApi.clearAdminToken();
   }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -131,7 +131,7 @@ export const adminApi = {
   // Data tools
   exportCSV: async (type: "tools" | "users" | "subscribers" | "reviews") => {
     const res = await fetch(`${BASE}/export?type=${type}`, {
-      headers: { Authorization: `Bearer ${sharedApi.getToken() || ""}` },
+      headers: { Authorization: `Bearer ${sharedApi.getAdminToken() || sharedApi.getToken() || ""}` },
     });
     if (!res.ok) throw new Error(`Export failed (${res.status})`);
     return res.text();
@@ -140,7 +140,7 @@ export const adminApi = {
     request<{ imported: number; errors: string[] }>("/import", { method: "POST", body: JSON.stringify({ csv }) }),
   downloadBackup: async () => {
     const res = await fetch(`${BASE}/backup`, {
-      headers: { Authorization: `Bearer ${sharedApi.getToken() || ""}` },
+      headers: { Authorization: `Bearer ${sharedApi.getAdminToken() || sharedApi.getToken() || ""}` },
     });
     if (!res.ok) throw new Error(`Backup failed (${res.status})`);
     return res.text();

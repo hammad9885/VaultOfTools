@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  signAuthToken,
-  toAuthProfile,
+  buildAuthResponse,
   upsertFirebaseUser,
 } from "@/app/lib/auth-server";
 
@@ -23,8 +22,7 @@ export async function POST(request: NextRequest) {
       firebaseUid,
     });
 
-    const token = signAuthToken(user);
-    return NextResponse.json({ token, user: toAuthProfile(user) });
+    return NextResponse.json(buildAuthResponse(user));
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
   }

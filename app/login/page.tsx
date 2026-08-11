@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/use-auth";
-import { signInWithGoogle, signInWithEmail, signUpWithEmail } from "../lib/auth";
+import {
+  signInWithGoogle,
+  signInWithEmail,
+  signUpWithEmail,
+  completeGoogleRedirectIfAny,
+} from "../lib/auth";
 import { api } from "../lib/api";
 import Link from "next/link";
 
@@ -51,24 +56,41 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const redirected = await completeGoogleRedirectIfAny();
+        if (cancelled || !redirected) return;
+        setSession(redirected, api.getToken());
+        toast.success("Signed in with Google");
+        router.replace(redirected?.role === "super_admin" ? "/admin" : "/");
+      } catch {
+        // ignore redirect completion errors
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [router, setSession]);
+
+  useEffect(() => {
     if (!loading && user) {
-      // Public users stay on the site — never send them to /admin
-      router.replace("/");
+      router.replace(user.role === "super_admin" ? "/admin" : "/");
     }
   }, [loading, user, router]);
 
   function finishLogin(profile: any) {
-    if (profile) setSession(profile);
+    if (profile) setSession(profile, api.getToken());
     toast.success(mode === "signup" ? "Account created" : "Signed in");
-    router.replace("/");
+    router.replace(profile?.role === "super_admin" ? "/admin" : "/");
   }
 
   async function handleGoogle() {
     setBusy(true);
     setError(null);
     try {
-      api.clearAdminToken();
       const profile = await signInWithGoogle();
+      if (!profile) return; // redirect flow in progress
       await refresh();
       finishLogin(profile);
     } catch (err) {
@@ -97,7 +119,6 @@ export default function LoginPage() {
 
     setBusy(true);
     try {
-      api.clearAdminToken();
       let profile;
       if (mode === "signup") {
         profile = await signUpWithEmail(email, password, displayName || undefined);

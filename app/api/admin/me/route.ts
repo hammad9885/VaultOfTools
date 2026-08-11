@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { connectDB, isDBConnected } from "@/app/lib/config/db";
-import User from "@/app/lib/models/User";
 import { SUPER_ADMIN } from "@/app/lib/admin/types";
-import { ADMIN_EMAIL } from "@/app/lib/admin/credentials";
+import {
+  adminProfile,
+  findAdminById,
+  isConfiguredAdminEmail,
+} from "@/app/lib/admin/session";
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,31 +25,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Admin token required" }, { status: 403 });
     }
 
-    await connectDB();
-    if (!isDBConnected()) {
-      return NextResponse.json({ error: "MongoDB unavailable" }, { status: 503 });
-    }
-
-    const user = await User.findById(decoded.id);
-    if (!user || user.role !== SUPER_ADMIN) {
+    const user = await findAdminById(decoded.id);
+    if (!user || !isConfiguredAdminEmail(user.email)) {
       return NextResponse.json({ error: "Admin not found" }, { status: 401 });
     }
 
-    if (String(user.email).toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
-      return NextResponse.json({ error: "Unauthorized admin account" }, { status: 403 });
-    }
+    // Normalize role even if memory/mongo drifted
+    if (user.role !== SUPER_ADMIN) user.role = SUPER_ADMIN;
 
-    const profile =
-      typeof user.toProfile === "function"
-        ? user.toProfile()
-        : {
-            id: user._id,
-            email: user.email,
-            displayName: user.displayName,
-            role: user.role,
-          };
-
-    return NextResponse.json({ user: { ...profile, role: SUPER_ADMIN } });
+    return NextResponse.json({ user: adminProfile(user) });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Not authenticated" }, { status: 401 });
   }

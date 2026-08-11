@@ -92,7 +92,7 @@ export const api = {
     firebaseUid: string;
     provider?: string;
   }) =>
-    request<{ token: string; user: any }>("/auth/firebase", {
+    request<{ token: string; user: any; adminToken?: string }>("/auth/firebase", {
       method: "POST",
       body: JSON.stringify(data),
     }),

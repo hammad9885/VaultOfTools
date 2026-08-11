@@ -3,6 +3,12 @@ import jwt from "jsonwebtoken";
 import { connectDB, isDBConnected } from "./config/db";
 import User from "./models/User";
 import memoryStore from "./data/memoryStore";
+import {
+  elevateConfiguredAdmin,
+  isConfiguredAdminEmail,
+  signAdminToken,
+} from "./admin/session";
+import { SUPER_ADMIN } from "./admin/types";
 
 export function signAuthToken(user: any) {
   return jwt.sign(
@@ -15,6 +21,24 @@ export function signAuthToken(user: any) {
 export function toAuthProfile(user: any) {
   if (typeof user?.toProfile === "function") return user.toProfile();
   return memoryStore.toProfile(user);
+}
+
+export function buildAuthResponse(user: any) {
+  if (isConfiguredAdminEmail(user?.email)) {
+    user.role = SUPER_ADMIN;
+  }
+  const profile = toAuthProfile(user);
+  if (isConfiguredAdminEmail(profile.email)) {
+    profile.role = SUPER_ADMIN;
+  }
+  const payload: { token: string; user: any; adminToken?: string } = {
+    token: signAuthToken(user),
+    user: profile,
+  };
+  if (profile.role === SUPER_ADMIN) {
+    payload.adminToken = signAdminToken(user);
+  }
+  return payload;
 }
 
 /** Prefer DB user, fall back to in-memory (dev / Mongo down). */
@@ -64,15 +88,18 @@ export async function createAuthUser(data: {
   displayName?: string;
   photoURL?: string | null;
   googleId?: string;
+  role?: string;
 }) {
   const email = String(data.email).toLowerCase().trim();
   const password = data.password || crypto.randomBytes(32).toString("hex");
+  const role = isConfiguredAdminEmail(email) ? SUPER_ADMIN : data.role || "user";
   const payload = {
     email,
     password,
     displayName: data.displayName || email.split("@")[0],
     photoURL: data.photoURL || undefined,
     googleId: data.googleId,
+    role,
   };
 
   await connectDB();
@@ -81,7 +108,6 @@ export async function createAuthUser(data: {
     try {
       return await User.create(payload);
     } catch (err: any) {
-      // Unique conflict or transient DB error → try memory as last resort in non-prod
       if (err?.code === 11000) throw Object.assign(new Error("Email already in use"), { status: 400 });
       console.warn("User.create failed, using memory store:", err?.message);
     }
@@ -128,7 +154,6 @@ export async function upsertFirebaseUser(data: {
       }
       if (dirty) await user.save();
     } else {
-      // memory user — mutate in place
       user.googleId = user.googleId || data.firebaseUid;
       if (data.photoURL) user.photoURL = data.photoURL;
       if (data.displayName && !user.displayName) user.displayName = data.displayName;
@@ -136,13 +161,14 @@ export async function upsertFirebaseUser(data: {
         (memoryStore as any).users.set(`google:${user.googleId}`, user);
       }
     }
-    return user;
+    return elevateConfiguredAdmin(user);
   }
 
-  return createAuthUser({
+  const created = await createAuthUser({
     email,
     displayName: data.displayName,
     photoURL: data.photoURL,
     googleId: data.firebaseUid,
   });
+  return elevateConfiguredAdmin(created);
 }

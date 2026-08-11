@@ -20,7 +20,7 @@ class MemoryStore {
       website: data.website || null,
       location: data.location || null,
       company: data.company || null,
-      role: "user",
+      role: data.role || "user",
       googleId: data.googleId || null,
       createdAt: new Date(),
     };

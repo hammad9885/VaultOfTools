@@ -3,6 +3,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   updateProfile,
@@ -13,22 +15,70 @@ import { api } from "./api";
 
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
+googleProvider.addScope("email");
+googleProvider.addScope("profile");
 
 async function syncAppSession(fbUser: User) {
+  if (!fbUser.email) {
+    throw new Error("Google account has no email. Use an account with email access.");
+  }
+
   const data = await api.firebaseAuth({
-    email: fbUser.email!,
+    email: fbUser.email,
     displayName: fbUser.displayName || undefined,
     photoURL: fbUser.photoURL || undefined,
     firebaseUid: fbUser.uid,
     provider: fbUser.providerData[0]?.providerId || "firebase",
   });
+
   api.setToken(data.token);
-  return data.user;
+  if (data.adminToken) {
+    api.setAdminToken(data.adminToken);
+  } else {
+    api.clearAdminToken();
+  }
+
+  return { ...data.user, adminToken: data.adminToken };
+}
+
+function shouldFallbackToRedirect(err: any) {
+  const code = String(err?.code || "");
+  const msg = String(err?.message || "");
+  return (
+    code === "auth/popup-blocked" ||
+    code === "auth/operation-not-supported-in-this-environment" ||
+    /cross-origin-opener|COOP|window\.closed|blocked/i.test(msg)
+  );
 }
 
 export async function signInWithGoogle(): Promise<any> {
-  const result = await signInWithPopup(auth, googleProvider);
-  return syncAppSession(result.user);
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    return syncAppSession(result.user);
+  } catch (err: any) {
+    const code = String(err?.code || "");
+    if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
+      throw err;
+    }
+    if (shouldFallbackToRedirect(err)) {
+      await signInWithRedirect(auth, googleProvider);
+      // Page will navigate away; keep the caller pending.
+      return new Promise(() => {});
+    }
+    throw err;
+  }
+}
+
+/** Finish Google redirect flow after returning to the app. */
+export async function completeGoogleRedirectIfAny(): Promise<any | null> {
+  try {
+    const result = await getRedirectResult(auth);
+    if (!result?.user) return null;
+    return syncAppSession(result.user);
+  } catch (err) {
+    console.warn("Google redirect completion failed:", err);
+    return null;
+  }
 }
 
 /** Public signup — Firebase Auth is source of truth */
@@ -56,6 +106,7 @@ export async function signInWithEmail(email: string, password: string): Promise<
 
 export async function signOut(): Promise<void> {
   api.clearToken();
+  api.clearAdminToken();
   try {
     await firebaseSignOut(auth);
   } catch {}

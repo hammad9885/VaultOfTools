@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Lock,
@@ -18,6 +18,11 @@ import {
   Activity,
 } from "lucide-react";
 import { api } from "../../../lib/api";
+import {
+  completeGoogleRedirectIfAny,
+  signInWithGoogle,
+  signOut as firebaseSignOut,
+} from "../../../lib/auth";
 import { Button, Input } from "../../../components/admin/ui";
 
 const FEATURES = [
@@ -54,14 +59,63 @@ function AdminLoginInner() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const profile = await completeGoogleRedirectIfAny();
+        if (cancelled || !profile) return;
+        if (profile.role === "super_admin" && api.getAdminToken()) {
+          router.push(callbackUrl);
+          router.refresh();
+          return;
+        }
+        api.clearAdminToken();
+        await firebaseSignOut();
+        setError("Only the configured admin Google account can access this console.");
+      } catch (err: any) {
+        if (!cancelled) setError(err?.message || "Google sign-in failed");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [callbackUrl, router]);
+
+  const finishAdminGoogle = async (profile: any) => {
+    if (profile?.role === "super_admin" && api.getAdminToken()) {
+      router.push(callbackUrl);
+      router.refresh();
+      return;
+    }
+    api.clearAdminToken();
+    await firebaseSignOut();
+    throw new Error("Only the configured admin Google account can access this console.");
+  };
+
+  const handleGoogle = async () => {
+    setError("");
+    setGoogleBusy(true);
+    try {
+      api.clearToken();
+      const profile = await signInWithGoogle();
+      if (!profile) return;
+      await finishAdminGoogle(profile);
+    } catch (err: any) {
+      setError(err?.message || "Google sign-in failed");
+    } finally {
+      setGoogleBusy(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      // Clear site user session so admin + public auth stay separate
       api.clearToken();
       const res = await api.adminLogin({ email, password });
       api.setAdminToken(res.token);
@@ -91,7 +145,7 @@ function AdminLoginInner() {
 
         <div className="relative max-w-md">
           <p className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/40 bg-violet-500/10 px-3 py-1 text-xs font-medium text-violet-200">
-            <ShieldCheck size={12} /> MongoDB Super Admin only
+            <ShieldCheck size={12} /> Super Admin only
           </p>
           <h1 className="mt-5 text-3xl font-bold leading-tight">
             Manage your entire
@@ -99,8 +153,7 @@ function AdminLoginInner() {
             tool directory from here.
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-violet-300">
-            This login is separate from the public site. Only the configured MongoDB
-            admin account can access the console.
+            Sign in with the admin Google account or the configured admin email/password.
           </p>
 
           <div className="mt-8 grid grid-cols-2 gap-4">
@@ -134,7 +187,7 @@ function AdminLoginInner() {
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-foreground">Admin Sign In</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              MongoDB-only access — not connected to public Firebase login.
+              Use Google (admin Gmail) or email/password.
             </p>
           </div>
 
@@ -144,6 +197,21 @@ function AdminLoginInner() {
               {error}
             </div>
           )}
+
+          <button
+            type="button"
+            onClick={handleGoogle}
+            disabled={loading || googleBusy}
+            className="mb-5 flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-background py-2.5 text-sm font-medium text-foreground transition hover:bg-muted disabled:opacity-50"
+          >
+            {googleBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
+            Continue with Google
+          </button>
+
+          <div className="mb-5 flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="h-px flex-1 bg-border" /> OR{" "}
+            <span className="h-px flex-1 bg-border" />
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
@@ -160,7 +228,7 @@ function AdminLoginInner() {
                   className="pl-10"
                   placeholder="admin@email.com"
                   required
-                  disabled={loading}
+                  disabled={loading || googleBusy}
                   autoComplete="username"
                 />
               </div>
@@ -180,7 +248,7 @@ function AdminLoginInner() {
                   className="pl-10 pr-10"
                   placeholder="••••••••"
                   required
-                  disabled={loading}
+                  disabled={loading || googleBusy}
                   autoComplete="current-password"
                 />
                 <button
@@ -194,7 +262,7 @@ function AdminLoginInner() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full" disabled={loading || googleBusy}>
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -222,5 +290,16 @@ function AdminLoginInner() {
         </div>
       </div>
     </div>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+      <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.17-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.71v2.26h2.92c1.71-1.57 2.68-3.89 2.68-6.61z" />
+      <path fill="#34A853" d="M9 18c2.43 0 4.47-.81 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.95v2.33A9 9 0 0 0 9 18z" />
+      <path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.95A9 9 0 0 0 0 9c0 1.45.35 2.83.95 4.05l3.02-2.33z" />
+      <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .95 4.95L3.97 7.28C4.68 5.16 6.66 3.58 9 3.58z" />
+    </svg>
   );
 }
