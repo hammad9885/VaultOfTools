@@ -100,10 +100,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         unsub = subscribeToAuthState(async (fbUser) => {
           if (!alive || !fbUser) return;
           try {
-            if (!api.getToken()) {
-              await syncAppSession(fbUser);
-              if (alive) await loadFromToken();
-            }
+            // Always refresh the app profile from Firebase. An existing JWT may
+            // contain a user saved before Google supplied its current photo.
+            const synced = await syncAppSession(fbUser);
+            if (alive) setUser(synced);
           } catch {
             // ignore background sync errors
           }
