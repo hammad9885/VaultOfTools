@@ -172,9 +172,23 @@ export function ToolCard({ tool }: { tool: (typeof fallbackTrending)[number] }) 
 
 export function SiteNav() {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
+    <nav
+      className={`sticky top-0 z-50 border-b transition-all duration-200 ${
+        scrolled
+          ? "border-border bg-white/95 shadow-sm backdrop-blur-md"
+          : "border-border/60 bg-background/90 backdrop-blur-md"
+      }`}
+    >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="text-lg sm:text-xl font-bold tracking-tight text-primary">
           Vault<span className="text-foreground"> of Tools</span>

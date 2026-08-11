@@ -21,7 +21,7 @@ export default function AccountPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) router.replace("/auth");
+    if (!loading && !user) router.replace("/login");
   }, [loading, user, router]);
 
   useEffect(() => {

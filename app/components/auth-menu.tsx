@@ -25,7 +25,7 @@ export function AuthMenu() {
     return (
       <button
         type="button"
-        onClick={() => router.push("/auth")}
+        onClick={() => router.push("/login")}
         className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-all"
       >
         Sign In

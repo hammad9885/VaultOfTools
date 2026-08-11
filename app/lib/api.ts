@@ -13,11 +13,25 @@ function clearToken() {
   localStorage.removeItem("vot_token");
 }
 
+function getAdminToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("vot_admin_token");
+}
+
+function setAdminToken(token: string) {
+  localStorage.setItem("vot_admin_token", token);
+}
+
+function clearAdminToken() {
+  localStorage.removeItem("vot_admin_token");
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = getToken();
+  const isAdminPath = path.startsWith("/admin");
+  const token = isAdminPath ? getAdminToken() : getToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options.headers as Record<string, string>),
@@ -85,6 +99,15 @@ export const api = {
 
   getMe: () =>
     request<{ user: any }>("/auth/me"),
+
+  adminLogin: (data: { email: string; password: string }) =>
+    request<{ token: string; user: any }>("/admin/login", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  adminMe: () =>
+    request<{ user: any }>("/admin/me"),
 
   // Reviews
   getReviews: (params?: { tool?: string; rating?: number; search?: string; sort?: string; page?: number; limit?: number }) => {
@@ -256,4 +279,7 @@ export const api = {
   setToken,
   getToken,
   clearToken,
+  setAdminToken,
+  getAdminToken,
+  clearAdminToken,
 };

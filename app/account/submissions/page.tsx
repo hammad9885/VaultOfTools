@@ -22,7 +22,7 @@ export default function MySubmissions() {
   const [busy, setBusy] = useState(true);
 
   useEffect(() => {
-    if (!loading && !user) router.replace("/auth");
+    if (!loading && !user) router.replace("/login");
   }, [loading, user, router]);
 
   useEffect(() => {

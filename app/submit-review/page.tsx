@@ -25,7 +25,7 @@ export default function SubmitReviewPage() {
 
     if (!user) {
       toast.error("Please sign in to submit a review");
-      router.push("/auth");
+      router.push("/login");
       return;
     }
 

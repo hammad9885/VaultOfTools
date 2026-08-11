@@ -26,57 +26,32 @@ async function syncAppSession(fbUser: User) {
   return data.user;
 }
 
-/** Best-effort: mirror email user into Firebase (non-blocking for login UX). */
-async function mirrorEmailToFirebase(email: string, password: string, displayName?: string) {
-  try {
-    const result = await createUserWithEmailAndPassword(auth, email, password);
-    if (displayName) {
-      try {
-        await updateProfile(result.user, { displayName });
-      } catch {}
-    }
-  } catch {
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch {
-      // Firebase Email provider may be disabled — app JWT session is enough.
-    }
-  }
-}
-
 export async function signInWithGoogle(): Promise<any> {
   const result = await signInWithPopup(auth, googleProvider);
   return syncAppSession(result.user);
 }
 
+/** Public signup — Firebase Auth is source of truth */
 export async function signUpWithEmail(
   email: string,
   password: string,
   displayName?: string
 ): Promise<any> {
   const trimmed = email.trim();
-
-  // Primary: app API (works even if Mongo is down / Firebase Email is off)
-  const data = await api.register({ email: trimmed, password, displayName });
-  api.setToken(data.token);
-
-  // Secondary: keep Firebase in sync when available
-  void mirrorEmailToFirebase(trimmed, password, displayName);
-
-  return data.user;
+  const result = await createUserWithEmailAndPassword(auth, trimmed, password);
+  if (displayName) {
+    try {
+      await updateProfile(result.user, { displayName });
+    } catch {}
+  }
+  return syncAppSession(result.user);
 }
 
+/** Public sign-in — Firebase Auth is source of truth */
 export async function signInWithEmail(email: string, password: string): Promise<any> {
   const trimmed = email.trim();
-
-  // Primary: app API
-  const data = await api.login({ email: trimmed, password });
-  api.setToken(data.token);
-
-  // Secondary: Firebase session for Google-linked features
-  void mirrorEmailToFirebase(trimmed, password);
-
-  return data.user;
+  const result = await signInWithEmailAndPassword(auth, trimmed, password);
+  return syncAppSession(result.user);
 }
 
 export async function signOut(): Promise<void> {

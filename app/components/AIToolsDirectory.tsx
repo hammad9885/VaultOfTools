@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import {
   FiTrendingUp,
   FiStar,
@@ -28,6 +29,7 @@ interface Tool {
   upvotes: number;
   saves: number;
   isNew?: boolean;
+  slug?: string;
 }
 
 interface Category {
@@ -36,7 +38,7 @@ interface Category {
   icon: React.ReactNode;
 }
 
-type TabKey = "popular" | "recent" | "courses";
+type TabKey = "popular" | "recent";
 
 const categories: Category[] = [
   { key: "Customer Service & Support", label: "Customer Service & Support", icon: <FiHeadphones /> },
@@ -51,57 +53,68 @@ const categories: Category[] = [
 ];
 
 function fmtNum(n: number): string {
-  return n >= 1000 ? (n / 1000).toFixed(1) + "k" : String(n);
+  return n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") + "k" : String(n);
 }
 
-function DirectoryToolCard({ tool }: { tool: Tool; rank: number }) {
+function toSlug(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function toolHref(tool: Tool) {
+  const slug = tool.slug || toSlug(tool.name);
+  return `/discover?q=${encodeURIComponent(tool.name)}&tool=${encodeURIComponent(slug)}`;
+}
+
+function DirectoryToolCard({ tool }: { tool: Tool }) {
   return (
-    <div className="group flex md:flex-row flex-col items-center gap-3 border border-gray-200 rounded-xl px-4 py-3 hover:border-[#6366F1] hover:bg-[#6366F1]/[0.04] transition-all duration-200 cursor-pointer">
-      <div className="w-10 h-10 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden group-hover:border-[#6366F1]/40 transition-colors">
-        <ToolLogo name={tool.name} logo={tool.logo} size={22} />
+    <Link
+      href={toolHref(tool)}
+      className="group flex items-start gap-3 rounded-xl border border-[#E5E7EB] bg-white px-3.5 py-3 transition-all duration-200 hover:-translate-y-[1px] hover:border-[#6366F1]/45 hover:bg-[#6366F1]/[0.04] hover:shadow-[0_8px_24px_rgba(99,102,241,0.08)] sm:items-center sm:px-4"
+    >
+      <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] transition-colors group-hover:border-[#6366F1]/35 sm:mt-0 sm:h-12 sm:w-12">
+        <ToolLogo name={tool.name} logo={tool.logo} size={26} />
       </div>
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-semibold text-gray-900">{tool.name}</span>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[14px] font-semibold text-[#111827] transition-colors group-hover:text-[#4F46E5]">
+            {tool.name}
+          </span>
           {tool.isNew && (
-            <span className="text-[10px] bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">
+            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-600">
               New
             </span>
           )}
         </div>
-        <p className="text-xs text-gray-500 mt-0.5 truncate">{tool.desc}</p>
-        <div className="flex gap-1.5 mt-1.5 flex-wrap">
-          {tool.tags.map((tag, i) => (
+        <p className="mt-0.5 line-clamp-2 text-[12.5px] leading-relaxed text-[#6B7280] sm:truncate sm:line-clamp-1">
+          {tool.desc}
+        </p>
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          {tool.tags.slice(0, 3).map((tag, i) => (
             <span
               key={i}
-              className="text-[10.5px] text-[#6366F1] bg-[#6366F1]/10 px-2 py-0.5 rounded-full"
+              className="rounded-full bg-[#EEF2FF] px-2 py-0.5 text-[10.5px] font-medium text-[#6366F1]"
             >
-              {tag}
+              #{tag.toLowerCase().replace(/\s+/g, "")}
             </span>
           ))}
         </div>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
-        <button
-          type="button"
-          aria-label={`Save ${tool.name}`}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs border border-gray-200 bg-white text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-colors whitespace-nowrap"
-        >
+      <div className="flex shrink-0 flex-col items-end gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+        <span className="inline-flex items-center gap-1 rounded-lg border border-[#E5E7EB] bg-white px-2 py-1 text-[11px] text-[#6B7280] transition-colors group-hover:border-[#D1D5DB]">
           <FiBookmark size={12} className="shrink-0" />
-          <span>{fmtNum(tool.saves)}</span>
-        </button>
-        <button
-          type="button"
-          aria-label={`Upvote ${tool.name}`}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:border-emerald-300 transition-colors whitespace-nowrap"
-        >
+          {fmtNum(tool.saves)}
+        </span>
+        <span className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] font-medium text-emerald-600">
           <FiArrowUp size={12} className="shrink-0" />
-          <span>{fmtNum(tool.upvotes)}</span>
-        </button>
+          {fmtNum(tool.upvotes)}
+        </span>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -112,6 +125,18 @@ export default function AIToolsDirectory() {
   const [recentTools, setRecentTools] = useState<Tool[]>([]);
   const [categoryTools, setCategoryTools] = useState<Tool[]>([]);
   const [listLoading, setListLoading] = useState(true);
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{
+    down: boolean;
+    moved: boolean;
+    startX: number;
+    scrollLeft: number;
+  }>({
+    down: false,
+    moved: false,
+    startX: 0,
+    scrollLeft: 0,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -166,8 +191,8 @@ export default function AIToolsDirectory() {
       : categoryTools;
 
   const tabs: { key: TabKey; label: string; icon: React.ReactNode; badge?: number }[] = [
-    { key: "popular", label: "Popular Tools", icon: <FiTrendingUp size={14} /> },
-    { key: "recent", label: "Recently Added", icon: <FiStar size={14} /> },
+    { key: "popular", label: "Popular Tools", icon: <FiTrendingUp size={14} />, badge: popularTools.length || 15 },
+    { key: "recent", label: "Recently Added", icon: <FiStar size={14} />, badge: recentTools.length || 15 },
   ];
 
   const handleTabClick = (tabKey: TabKey) => {
@@ -176,96 +201,190 @@ export default function AIToolsDirectory() {
   };
 
   const handleCategoryClick = (catKey: string) => {
-    setActiveCat(catKey);
+    setActiveCat((prev) => (prev === catKey ? null : catKey));
   };
 
-  return (
-    <div className="mx-auto flex flex-col lg:flex-row min-h-[600px] font-sans bg-white px-4 sm:px-6 lg:px-8">
-      <aside className="w-full lg:w-[220px] lg:shrink-0 lg:border-r border-b lg:border-b-0 border-gray-200 py-3 lg:py-5 px-3 overflow-x-auto lg:overflow-x-visible">
-        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3 px-2 hidden lg:block">
-          Most Popular Categories
-        </p>
+  function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    const el = sliderRef.current;
+    if (!el) return;
+    dragRef.current = {
+      down: true,
+      moved: false,
+      startX: e.clientX,
+      scrollLeft: el.scrollLeft,
+    };
+    el.setPointerCapture(e.pointerId);
+  }
 
-        <div className="flex lg:flex-col gap-1 w-max lg:w-auto">
-          {categories.map((cat) => {
-            const isActive = cat.key === activeCat;
-            return (
-              <button
-                key={cat.key}
-                type="button"
-                onClick={() => handleCategoryClick(cat.key)}
-                className={`flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-150 text-left group whitespace-nowrap lg:whitespace-normal
-                  ${
-                    isActive
-                      ? "bg-[#6366F1]/10 text-[#6366F1] font-medium"
-                      : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-                  }`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <span
-                    className={`text-base shrink-0 ${
-                      isActive ? "text-[#6366F1]" : "text-gray-400 group-hover:text-gray-600"
+  function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    const el = sliderRef.current;
+    if (!el || !dragRef.current.down) return;
+    const walk = e.clientX - dragRef.current.startX;
+    if (Math.abs(walk) > 6) dragRef.current.moved = true;
+    if (dragRef.current.moved) {
+      el.scrollLeft = dragRef.current.scrollLeft - walk;
+    }
+  }
+
+  function onPointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    const el = sliderRef.current;
+    dragRef.current.down = false;
+    el?.releasePointerCapture(e.pointerId);
+  }
+
+  function categoryChipClick(catKey: string) {
+    if (dragRef.current.moved) return;
+    handleCategoryClick(catKey);
+  }
+
+  return (
+    <section className="border-t border-[#E5E7EB] bg-white">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+        <div className="mb-6 text-center lg:mb-8 lg:text-left">
+          <h2 className="text-xl font-bold tracking-tight text-[#111827] sm:text-2xl lg:text-[28px]">
+            Find The Best AI Tools & Software
+          </h2>
+          <p className="mt-1.5 text-sm text-[#6B7280]">
+            Explore top AI tools by category — curated for every workflow.
+          </p>
+        </div>
+
+        <div className="flex flex-col lg:flex-row lg:min-h-[560px] lg:rounded-2xl lg:border lg:border-[#E5E7EB] lg:bg-white lg:shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+          {/* Desktop sidebar */}
+          <aside className="hidden w-[240px] shrink-0 border-r border-[#E5E7EB] py-5 lg:block">
+            <p className="mb-3 px-4 text-[11px] font-semibold uppercase tracking-widest text-[#9CA3AF]">
+              Most Popular Categories
+            </p>
+            <div className="flex flex-col gap-0.5 px-2">
+              {categories.map((cat) => {
+                const isActive = cat.key === activeCat;
+                return (
+                  <button
+                    key={cat.key}
+                    type="button"
+                    onClick={() => handleCategoryClick(cat.key)}
+                    className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-left text-sm transition-all duration-150 group ${
+                      isActive
+                        ? "bg-[#EEF2FF] font-medium text-[#6366F1]"
+                        : "text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#374151]"
                     }`}
                   >
-                    {cat.icon}
-                  </span>
-                  <span className="truncate text-[12.5px]">{cat.label}</span>
-                </div>
-                {isActive && (
-                  <FiChevronRight size={13} className="shrink-0 text-[#6366F1] hidden lg:block" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </aside>
-
-      <main className="flex-1 min-w-0 flex flex-col">
-        <div className="flex border-b border-gray-200 bg-white px-4">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.key;
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => handleTabClick(tab.key)}
-                className={`relative flex items-center gap-2 px-5 py-3.5 text-[13px] font-medium transition-colors whitespace-nowrap
-                  ${isActive ? "text-[#6366F1]" : "text-gray-500 hover:text-gray-700"}`}
-              >
-                {tab.icon}
-                {tab.label}
-                {tab.badge !== undefined && (
-                  <span className="bg-[#6366F1] text-white text-[10px] px-1.5 py-0.5 rounded-full font-semibold leading-none">
-                    {tab.badge}
-                  </span>
-                )}
-                {isActive && (
-                  <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#6366F1] rounded-t-full" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="flex flex-col gap-2 p-4">
-          {listLoading ? (
-            <div className="flex flex-col gap-2 py-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-[72px] rounded-xl border border-gray-200 bg-gray-50 animate-pulse"
-                />
-              ))}
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <span
+                        className={`text-base shrink-0 ${
+                          isActive ? "text-[#6366F1]" : "text-[#9CA3AF] group-hover:text-[#6B7280]"
+                        }`}
+                      >
+                        {cat.icon}
+                      </span>
+                      <span className="truncate text-[13px]">{cat.label}</span>
+                    </span>
+                    {isActive && <FiChevronRight size={14} className="shrink-0 text-[#6366F1]" />}
+                  </button>
+                );
+              })}
             </div>
-          ) : tools.length === 0 ? (
-            <p className="text-center text-gray-400 text-sm py-16">No tools found for this category.</p>
-          ) : (
-            tools.map((tool, i) => (
-              <DirectoryToolCard key={`${tool.name}-${i}`} tool={tool} rank={i + 1} />
-            ))
-          )}
+          </aside>
+
+          {/* Mobile category slider */}
+          <div className="lg:hidden">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-[#9CA3AF]">
+              Most Popular Categories
+            </p>
+            <div
+              ref={sliderRef}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerUp}
+              className="flex cursor-grab touch-pan-x gap-2 overflow-x-auto pb-3 active:cursor-grabbing [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              style={{ WebkitOverflowScrolling: "touch" }}
+            >
+              {categories.map((cat) => {
+                const isActive = cat.key === activeCat;
+                return (
+                  <button
+                    key={cat.key}
+                    type="button"
+                    onClick={() => categoryChipClick(cat.key)}
+                    className={`flex shrink-0 snap-start items-center gap-2 rounded-full border px-3.5 py-2 text-[12.5px] transition-colors ${
+                      isActive
+                        ? "border-[#6366F1] bg-[#EEF2FF] font-medium text-[#6366F1]"
+                        : "border-[#E5E7EB] bg-white text-[#6B7280]"
+                    }`}
+                  >
+                    <span className={isActive ? "text-[#6366F1]" : "text-[#9CA3AF]"}>{cat.icon}</span>
+                    <span className="whitespace-nowrap">{cat.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <main className="flex min-w-0 flex-1 flex-col">
+            <div className="flex gap-1 border-b border-[#E5E7EB] px-1 sm:px-2">
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab.key && activeCat === null;
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => handleTabClick(tab.key)}
+                    className={`relative flex items-center gap-2 px-3 py-3.5 text-[13px] font-medium transition-colors whitespace-nowrap sm:px-5 ${
+                      isActive ? "text-[#6366F1]" : "text-[#6B7280] hover:text-[#374151]"
+                    }`}
+                  >
+                    {tab.icon}
+                    {tab.label}
+                    {tab.badge !== undefined && (
+                      <span className="rounded-full bg-[#6366F1] px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white">
+                        +{tab.badge}
+                      </span>
+                    )}
+                    {isActive && (
+                      <span className="absolute bottom-0 left-2 right-2 h-[2px] rounded-t-full bg-[#6366F1] sm:left-3 sm:right-3" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {activeCat && (
+              <div className="flex items-center justify-between border-b border-[#E5E7EB] bg-[#F9FAFB] px-4 py-2.5">
+                <p className="truncate text-sm font-medium text-[#374151]">{activeCat}</p>
+                <button
+                  type="button"
+                  onClick={() => setActiveCat(null)}
+                  className="text-xs font-medium text-[#6366F1] hover:underline"
+                >
+                  Clear
+                </button>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2 p-3 sm:p-4">
+              {listLoading ? (
+                <div className="flex flex-col gap-2 py-1">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-[78px] animate-pulse rounded-xl border border-[#E5E7EB] bg-[#F9FAFB]"
+                    />
+                  ))}
+                </div>
+              ) : tools.length === 0 ? (
+                <p className="py-16 text-center text-sm text-[#9CA3AF]">
+                  No tools found for this category.
+                </p>
+              ) : (
+                tools.map((tool, i) => (
+                  <DirectoryToolCard key={`${tool.name}-${i}`} tool={tool} />
+                ))
+              )}
+            </div>
+          </main>
         </div>
-      </main>
-    </div>
+      </div>
+    </section>
   );
 }

@@ -6,10 +6,8 @@ import { Menu, Search, ChevronRight, LogOut, User as UserIcon, ExternalLink } fr
 import { AdminThemeProvider } from "./theme";
 import { ThemeToggle } from "./ThemeToggle";
 import { Sidebar } from "./Sidebar";
-import { useAuth } from "../../hooks/use-auth";
 import { api } from "../../lib/api";
 import { Button } from "./ui";
-import { SUPER_ADMIN } from "../../lib/admin/types";
 
 const BREADCRUMBS: Record<string, string> = {
   "/admin": "Dashboard",
@@ -51,29 +49,27 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
 export function AdminShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, loading, signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [adminUser, setAdminUser] = useState<any | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const token = api.getToken();
+      const token = api.getAdminToken();
       if (!token) {
         if (!cancelled) router.replace("/admin/login");
         return;
       }
       try {
-        const res = await api.getMe();
+        const res = await api.adminMe();
         if (!cancelled) {
-          if (res.user?.role !== SUPER_ADMIN) {
-            router.replace("/admin/login");
-            return;
-          }
+          setAdminUser(res.user);
           setChecking(false);
         }
       } catch {
-        if (!cancelled) router.replace("/");
+        api.clearAdminToken();
+        if (!cancelled) router.replace("/admin/login");
       }
     })();
     return () => {
@@ -82,11 +78,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }, [router]);
 
   const displayName = useMemo(
-    () => user?.displayName || user?.email?.split("@")[0] || "Admin",
-    [user]
+    () => adminUser?.displayName || adminUser?.email?.split("@")[0] || "Admin",
+    [adminUser]
   );
 
-  if (loading || checking) {
+  if (checking) {
     return (
       <AdminThemeProvider>
         <div className="flex min-h-screen items-center justify-center bg-background">
@@ -147,8 +143,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 variant="ghost"
                 size="icon"
                 aria-label="Sign out"
-                onClick={async () => {
-                  await signOut();
+                onClick={() => {
+                  api.clearAdminToken();
                   router.replace("/admin/login");
                 }}
               >
@@ -160,7 +156,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
 
           <footer className="border-t border-border px-6 py-4 text-center text-xs text-muted-foreground">
-            Vault of Tools Admin — super admin only. All actions are logged.
+            Vault of Tools Admin — MongoDB super admin only. All actions are logged.
           </footer>
         </div>
       </div>
