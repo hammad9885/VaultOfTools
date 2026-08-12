@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import {
   ArrowRight,
@@ -183,21 +184,28 @@ export function SiteNav() {
 
   useEffect(() => {
     if (!isOpen) return;
-    const previousOverflow = document.body.style.overflow;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setIsOpen(false);
     };
-    document.body.style.overflow = "hidden";
+    const preventBackgroundScroll = (event: Event) => event.preventDefault();
     window.addEventListener("keydown", onKeyDown);
+    document.addEventListener("touchmove", preventBackgroundScroll, {
+      passive: false,
+    });
+    document.addEventListener("wheel", preventBackgroundScroll, {
+      passive: false,
+    });
     return () => {
-      document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("touchmove", preventBackgroundScroll);
+      document.removeEventListener("wheel", preventBackgroundScroll);
     };
   }, [isOpen]);
 
   return (
+    <>
     <nav
-      className={`sticky top-0 z-50 border-b transition-all duration-200 ${
+      className={`sticky top-0 z-50 border-b transition-colors duration-200 ${
         scrolled
           ? "border-border bg-white/95 shadow-sm backdrop-blur-md"
           : "border-border/60 bg-background/90 backdrop-blur-md"
@@ -247,9 +255,20 @@ export function SiteNav() {
           </button>
         </div>
       </div>
-      {isOpen && (
-        <div className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-border bg-background md:hidden">
-          <div className="flex flex-col space-y-1 px-3 py-3">
+    </nav>
+      {isOpen && typeof document !== "undefined" && createPortal(
+        <div className="fixed inset-x-0 bottom-0 top-16 touch-none md:hidden">
+          <button
+            type="button"
+            aria-label="Close navigation menu"
+            className="absolute inset-0 bg-black/25"
+            onClick={() => setIsOpen(false)}
+          />
+          <div
+            data-testid="mobile-nav-panel"
+            className="relative z-10 max-h-full overflow-y-auto overscroll-contain border-t border-border bg-background shadow-xl"
+          >
+            <div className="flex flex-col space-y-1 px-3 py-3">
             <Link href="/discover" onClick={() => setIsOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary">
               Discover
             </Link>
@@ -271,10 +290,12 @@ export function SiteNav() {
             <Link href="/submit" onClick={() => setIsOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary md:hidden">
               Submit Tool
             </Link>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
-    </nav>
+    </>
   );
 }
 
