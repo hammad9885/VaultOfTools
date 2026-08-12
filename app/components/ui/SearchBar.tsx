@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { api } from "../../lib/api";
 
 interface Suggestion {
   name: string;
@@ -31,80 +32,64 @@ export function SearchBar({
 }: Props) {
   const [query, setQuery] = useState(initialValue);
   const [allTools, setAllTools] = useState<Suggestion[]>([]);
-  const [loaded, setLoaded] = useState(false);
   const [open, setOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
   const router = useRouter();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestIdRef = useRef(0);
 
-  function loadSuggestions(search: string) {
-    import("../../lib/api").then(({ api }) => {
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (!trimmed) {
+      requestIdRef.current += 1;
+      return;
+    }
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const requestId = ++requestIdRef.current;
+
+    debounceRef.current = setTimeout(() => {
       api
-        .getTools({ limit: 20, search: search || undefined, sort: "popular" })
+        .getTools({ limit: 50, search: trimmed, sort: "popular" })
         .then((data) => {
-          setAllTools(
-            data.tools.map((t: RawTool) => ({
+          if (requestId !== requestIdRef.current) return;
+          const normalized = trimmed.toLowerCase();
+          const mapped = data.tools
+            .map((t: RawTool) => ({
               name: t.name,
               slug: t.slug,
               category: t.category,
               rating: typeof t.rating === "number" ? t.rating : undefined,
             }))
-          );
-          setLoaded(true);
+            .filter((tool) =>
+              tool.name.trim().toLowerCase().startsWith(normalized)
+            );
+          setAllTools(mapped);
+          setActiveIdx(-1);
+          setOpen(mapped.length > 0);
         })
         .catch(() => {
-          import("../../routes/index").then((mod) => {
-            setAllTools(
-              mod.trending.map((t: RawTool & { rating?: number }) => ({
-                name: t.name,
-                slug: t.slug,
-                category: t.category,
-                rating: typeof t.rating === "number" ? t.rating : 4.5,
-              }))
-            );
-            setLoaded(true);
-          });
+          if (requestId !== requestIdRef.current) return;
+          setAllTools([]);
+          setOpen(false);
         });
-    });
-  }
-
-  useEffect(() => {
-    const trimmed = query.trim();
-    if (trimmed.length < 2) {
-      if (!loaded) return;
-      setOpen(false);
-      return;
-    }
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      loadSuggestions(trimmed);
-    }, 250);
+    }, 200);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query, loaded]);
+  }, [query]);
 
   const suggestions = useMemo(() => {
     const trimmed = query.trim().toLowerCase();
     if (!trimmed) return [];
     return allTools
-      .filter(
-        (t) =>
-          t.name.toLowerCase().includes(trimmed) ||
-          t.category.toLowerCase().includes(trimmed)
-      )
+      .filter((t) => t.name.trim().toLowerCase().startsWith(trimmed))
+      .sort((a, b) => a.name.localeCompare(b.name))
       .slice(0, 8);
   }, [query, allTools]);
-
-  useEffect(() => {
-    if (suggestions.length > 0 && query.trim().length >= 2) {
-      setOpen(true);
-    }
-  }, [suggestions, query]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -164,7 +149,15 @@ export function SearchBar({
           ref={inputRef}
           type="search"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            const nextQuery = e.target.value;
+            setQuery(nextQuery);
+            setActiveIdx(-1);
+            if (!nextQuery.trim()) {
+              setAllTools([]);
+              setOpen(false);
+            }
+          }}
           onKeyDown={onKeyDown}
           onFocus={() => {
             if (typeof window !== "undefined" && window.innerWidth < 640) {

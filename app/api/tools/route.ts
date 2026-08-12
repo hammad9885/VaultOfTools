@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB, isDBConnected } from "@/app/lib/config/db";
 import Tool from "@/app/lib/models/Tool";
 import memoryStore from "@/app/lib/data/memoryStore";
+import { staticToolCatalog } from "@/app/lib/data/static-tool-catalog";
 
 export async function GET(request: NextRequest) {
   await connectDB();
@@ -37,7 +38,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ tools, total, page, pages: Math.ceil(total / limit) });
     }
 
-    const all = await memoryStore.getTools(filter);
+    let all = await memoryStore.getTools(filter);
+    if (memoryStore.tools.length === 0) {
+      all = staticToolCatalog.slice();
+      if (category) {
+        all = all.filter((tool) => tool.category === category);
+      }
+      if (search) {
+        const query = search.toLowerCase();
+        all = all.filter(
+          (tool) =>
+            tool.name.toLowerCase().includes(query) ||
+            tool.desc.toLowerCase().includes(query) ||
+            tool.tags.some((tag) => tag.toLowerCase().includes(query))
+        );
+      }
+      if (sort === "name") {
+        all.sort((a, b) => a.name.localeCompare(b.name));
+      } else {
+        all.sort((a, b) => b.rating - a.rating);
+      }
+    }
     const total = all.length;
     const tools = all.slice(skip, skip + limit);
     return NextResponse.json({ tools, total, page, pages: Math.ceil(total / limit) });

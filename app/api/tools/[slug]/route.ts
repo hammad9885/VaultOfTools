@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB, isDBConnected } from "@/app/lib/config/db";
 import Tool from "@/app/lib/models/Tool";
 import memoryStore from "@/app/lib/data/memoryStore";
+import { staticToolCatalog } from "@/app/lib/data/static-tool-catalog";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   await connectDB();
@@ -12,6 +13,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       tool = await Tool.findOne({ slug });
     } else {
       tool = await memoryStore.getToolBySlug(slug);
+      if (!tool && memoryStore.tools.length === 0) {
+        tool = staticToolCatalog.find((entry) => entry.slug === slug);
+      }
     }
     if (!tool) return NextResponse.json({ error: "Tool not found" }, { status: 404 });
     return NextResponse.json(tool);

@@ -47,7 +47,11 @@ export function HeroSection() {
   }, [searchPinned]);
 
   return (
-    <header className="relative overflow-hidden pt-4 pb-10 sm:pt-6 sm:pb-16 lg:pt-8 lg:pb-20">
+    <header
+      className={`relative pt-4 pb-10 sm:pt-6 sm:pb-16 lg:pt-8 lg:pb-20 ${
+        searchPinned ? "z-[100] overflow-visible" : "overflow-hidden"
+      }`}
+    >
       <div className="absolute inset-0 -z-20">
         <Image
           src={heroBg}
@@ -82,14 +86,14 @@ export function HeroSection() {
             <button
               type="button"
               aria-label="Close search"
-              className="fixed inset-0 z-[55] bg-black/30 sm:hidden"
+              className="fixed inset-0 z-[105] bg-black/30 sm:hidden"
               onClick={() => setSearchPinned(false)}
             />
           )}
           <div
             className={
               searchPinned
-                ? "fixed top-0 left-0 right-0 z-[60] m-0 bg-white px-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 shadow-md sm:static sm:bg-transparent sm:p-0 sm:shadow-none"
+                ? "fixed top-0 left-0 right-0 z-[110] m-0 bg-white px-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 shadow-md sm:static sm:bg-transparent sm:p-0 sm:shadow-none"
                 : "relative"
             }
           >
