@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
-import { categories } from "@/app/lib/data/categories";
+import { listPublicCategories } from "@/app/lib/data/public-tools";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  return NextResponse.json(categories);
+  try {
+    const categories = await listPublicCategories();
+    return NextResponse.json(categories);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+  }
 }

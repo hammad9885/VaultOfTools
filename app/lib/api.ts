@@ -192,6 +192,23 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
+  // Saved tools
+  getSavedTools: () =>
+    request<{ tools: any[]; slugs: string[] }>("/users/saved-tools"),
+
+  toggleSavedTool: (data: {
+    slug: string;
+    name?: string;
+    desc?: string;
+    logo?: string;
+    category?: string;
+    tags?: string[];
+  }) =>
+    request<{ saved: boolean; slug: string }>("/users/saved-tools", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
   // Consultations
   createConsultation: (data: { name: string; email: string; company?: string; message: string }) =>
     request<{ success: boolean; message: string }>("/consultations", {

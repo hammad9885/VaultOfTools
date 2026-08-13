@@ -1,32 +1,73 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, notFound } from "next/navigation";
-import { SiteNav, SiteFooter, ToolCard, trending as fallbackTrending, categories } from "../../routes/index";
+import { useParams } from "next/navigation";
+import { SiteNav, SiteFooter, ToolCard, trending as fallbackTrending } from "../../routes/index";
 import { api } from "../../lib/api";
 import Link from "next/link";
+import { Layers } from "lucide-react";
+
+function titleFromSlug(slug: string) {
+  return decodeURIComponent(slug)
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
 
 export default function CategoryPage() {
   const params = useParams<{ slug: string }>();
-  const cat = categories.find((c) => c.slug === params.slug);
+  const slug = params.slug;
+  const [categoryName, setCategoryName] = useState(titleFromSlug(slug));
+  const [count, setCount] = useState(0);
   const [fetchedTools, setFetchedTools] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.getCategoryTools(params.slug)
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setFetchedTools(data);
-        }
-      })
-      .catch(() => {});
-  }, [params.slug]);
+    let cancelled = false;
+    setLoading(true);
 
-  if (!cat) return notFound();
+    Promise.all([
+      api.getCategories().catch(() => []),
+      api.getCategoryTools(slug).catch(() => []),
+      api.getTools({ category: titleFromSlug(slug), limit: 50 }).catch(() => ({ tools: [] })),
+    ])
+      .then(([categories, categoryTools, toolsRes]) => {
+        if (cancelled) return;
+        const match = (Array.isArray(categories) ? categories : []).find(
+          (c: any) =>
+            c.slug === slug ||
+            String(c.name || "").toLowerCase().replace(/\s+/g, "-") === slug
+        );
+        const name = match?.name || titleFromSlug(slug);
+        setCategoryName(name);
+
+        const fromCategory = Array.isArray(categoryTools) ? categoryTools : [];
+        const fromToolsApi = Array.isArray(toolsRes?.tools) ? toolsRes.tools : [];
+        const list = fromCategory.length > 0 ? fromCategory : fromToolsApi;
+        setFetchedTools(list);
+        setCount(match?.count ?? list.length);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
 
   const fallback = fallbackTrending.filter((t) =>
-    t.category.toLowerCase().includes(cat.name.toLowerCase().split(" ")[0])
+    t.category.toLowerCase().includes(categoryName.toLowerCase().split(" ")[0] || "")
   );
-  const list = fetchedTools ?? (fallback.length ? fallback : fallbackTrending);
+  const list =
+    fetchedTools && fetchedTools.length > 0
+      ? fetchedTools
+      : loading
+        ? []
+        : fallback.length
+          ? fallback
+          : fallbackTrending;
 
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
@@ -35,24 +76,32 @@ export default function CategoryPage() {
         <nav className="text-xs text-muted-foreground mb-4">
           <Link href="/" className="hover:text-primary">Home</Link> /{" "}
           <Link href="/categories" className="hover:text-primary">Categories</Link> /{" "}
-          <span className="text-foreground">{cat.name}</span>
+          <span className="text-foreground">{categoryName}</span>
         </nav>
         <header className="mb-10">
           <div className="flex items-center gap-4">
             <div className="size-14 rounded-xl bg-primary-muted text-primary grid place-items-center">
-              <cat.icon className="size-6" />
+              <Layers className="size-6" />
             </div>
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Best {cat.name} Tools</h1>
-              <p className="text-muted-foreground mt-1">{cat.count} tools • curated and reviewed</p>
+              <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">
+                Best {categoryName} Tools
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                {count || list.length} tools • curated and reviewed
+              </p>
             </div>
           </div>
         </header>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {list.map((t) => (
-            <ToolCard key={t.slug} tool={t} />
-          ))}
-        </div>
+        {loading ? (
+          <p className="text-sm text-muted-foreground">Loading tools…</p>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {list.map((t: any) => (
+              <ToolCard key={t.slug || t.name} tool={t} />
+            ))}
+          </div>
+        )}
       </div>
       <SiteFooter />
     </div>

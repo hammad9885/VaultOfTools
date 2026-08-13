@@ -83,6 +83,8 @@ export async function POST(request: Request) {
           url: website,
           website,
           shortDescription: body.description || "",
+          description: body.description || "",
+          desc: body.description || "",
           pricing: body.pricing || "Free",
           status: "published",
           publishDate: new Date(),

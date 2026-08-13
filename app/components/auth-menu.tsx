@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ChevronDown, LogOut, User as UserIcon, FileText } from "lucide-react";
+import { Bookmark, ChevronDown, LogOut, User as UserIcon, FileText } from "lucide-react";
 import { useAuth } from "../hooks/use-auth";
 import {
   DropdownMenu,
@@ -123,6 +123,13 @@ export function AuthMenu() {
           className="cursor-pointer gap-2.5 rounded-lg px-2 py-2 text-sm"
         >
           <UserIcon className="size-4 text-muted-foreground" /> Account
+        </DropdownMenuItem>
+
+        <DropdownMenuItem
+          onClick={() => router.push("/account/saved")}
+          className="cursor-pointer gap-2.5 rounded-lg px-2 py-2 text-sm"
+        >
+          <Bookmark className="size-4 text-muted-foreground" /> Saved Tools
         </DropdownMenuItem>
 
         <DropdownMenuItem

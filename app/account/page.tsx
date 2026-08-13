@@ -84,10 +84,10 @@ export default function AccountPage() {
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Your account</h1>
 
-        <nav className="mt-6 flex gap-6 border-b border-border text-sm font-medium">
+        <nav className="mt-6 flex gap-4 overflow-x-auto border-b border-border text-sm font-medium sm:gap-6">
           <Link
             href="/account"
-            className={`pb-3 -mb-px border-b-2 transition-colors ${
+            className={`pb-3 -mb-px shrink-0 border-b-2 transition-colors ${
               showProfile
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground"
@@ -96,8 +96,14 @@ export default function AccountPage() {
             Profile
           </Link>
           <Link
+            href="/account/saved"
+            className="pb-3 -mb-px shrink-0 border-b-2 border-transparent text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Saved tools
+          </Link>
+          <Link
             href="/account/submissions"
-            className={`pb-3 -mb-px border-b-2 transition-colors ${
+            className={`pb-3 -mb-px shrink-0 border-b-2 transition-colors ${
               !showProfile
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground"

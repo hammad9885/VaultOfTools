@@ -31,20 +31,20 @@ export default function ToolPage() {
     if (!params.slug) return;
     let cancelled = false;
     setLoading(true);
-    api.getTool(params.slug)
-      .then((data) => { if (!cancelled) setTool(data); })
-      .catch(() => {
-        if (cancelled) return;
-        const trend = staticData?.trending || trending;
-        const hardcoded = trend.find((t: any) => t.slug === params.slug);
-        if (hardcoded) {
-          setTool({ ...hardcoded, features: [], pros: [], cons: [] });
-        } else {
-          setError(true);
-        }
+    api
+      .getTool(params.slug)
+      .then((data) => {
+        if (!cancelled) setTool(data);
       })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [params.slug]);
 
   if (loading) {
@@ -62,7 +62,9 @@ export default function ToolPage() {
   if (error || !tool) return notFound();
 
   const alternativeTrends = staticData?.trending || trending;
-  const alternatives = alternativeTrends.filter((t: any) => t.slug !== tool.slug).slice(0, 3);
+  const alternatives = alternativeTrends
+    .filter((t: any) => t.slug !== tool.slug)
+    .slice(0, 3);
   const features = tool.features?.length > 0 ? tool.features : (staticData?.fallbackFeatures || ["API access with simple key auth", "Team workspaces and shared libraries", "Export to PNG, SVG, and JSON", "Integrations with Slack, Notion, Zapier"]);
   const pros = tool.pros?.length > 0 ? tool.pros : (staticData?.fallbackPros || ["Fast and responsive", "Generous free tier"]);
   const cons = tool.cons?.length > 0 ? tool.cons : (staticData?.fallbackCons || ["Limited offline mode"]);

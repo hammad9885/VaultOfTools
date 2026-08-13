@@ -185,27 +185,150 @@ class MemoryStore {
   }
 
   async createTool(data: any) {
+    const existing = this.tools.find((t: any) => t.slug === data.slug);
+    if (existing) {
+      const err: any = new Error(`A tool with slug "${data.slug}" already exists`);
+      err.status = 409;
+      throw err;
+    }
     const _id = String(this._idCounter++);
+    const shortDescription = data.shortDescription || data.desc || data.description || "";
+    const description = data.description || data.fullDescription || shortDescription;
     const tool = {
       _id,
       slug: data.slug,
       name: data.name,
-      category: data.category,
-      logo: data.logo || null,
+      category: data.category || "Uncategorized",
+      categoryId: data.categoryId || null,
+      logo: data.logo || data.logoUrl || null,
+      logoUrl: data.logoUrl || data.logo || null,
+      bannerUrl: data.bannerUrl || null,
+      imageUrl: data.imageUrl || null,
+      url: data.url || data.website || null,
+      website: data.website || data.url || null,
+      shortDescription,
+      fullDescription: data.fullDescription || description,
+      description,
+      desc: shortDescription || description,
       pricing: data.pricing || "Free",
       rating: data.rating || 0,
       reviews: data.reviews || 0,
-      desc: data.desc || null,
-      website: data.website || null,
       features: data.features || [],
       pros: data.pros || [],
       cons: data.cons || [],
       tags: data.tags || [],
+      featured: Boolean(data.featured),
+      sponsored: Boolean(data.sponsored),
+      status: data.status || "published",
+      publishDate: data.publishDate || new Date(),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
     this.tools.push(tool);
     return tool;
+  }
+
+  async updateTool(id: string, patch: Record<string, any>) {
+    const idx = this.tools.findIndex((t: any) => String(t._id) === String(id));
+    if (idx === -1) return null;
+    if (patch.slug) {
+      const dup = this.tools.find(
+        (t: any) => t.slug === patch.slug && String(t._id) !== String(id)
+      );
+      if (dup) {
+        const err: any = new Error(`A tool with slug "${patch.slug}" already exists`);
+        err.status = 409;
+        throw err;
+      }
+    }
+    const current = this.tools[idx];
+    const next = { ...current, ...patch, updatedAt: new Date() };
+    if (
+      "shortDescription" in patch ||
+      "description" in patch ||
+      "fullDescription" in patch ||
+      "desc" in patch
+    ) {
+      const shortDescription = String(
+        next.shortDescription || next.desc || next.description || ""
+      ).trim();
+      const description = String(
+        next.description || next.fullDescription || shortDescription
+      ).trim();
+      next.shortDescription = shortDescription;
+      next.description = description;
+      next.desc = shortDescription || description;
+    }
+    if ("logoUrl" in patch && !("logo" in patch) && next.logoUrl) next.logo = next.logoUrl;
+    if ("logo" in patch && !next.logoUrl) next.logoUrl = next.logo || null;
+    this.tools[idx] = next;
+    return next;
+  }
+
+  async deleteTool(id: string) {
+    const idx = this.tools.findIndex((t: any) => String(t._id) === String(id));
+    if (idx === -1) return null;
+    const [removed] = this.tools.splice(idx, 1);
+    return removed;
+  }
+
+  async getToolById(id: string) {
+    return this.tools.find((t: any) => String(t._id) === String(id)) || null;
+  }
+
+  async getAdminTools(filter: any = {}) {
+    let list = this.tools.slice();
+    if (filter.search) {
+      const q = String(filter.search).toLowerCase();
+      list = list.filter(
+        (t: any) =>
+          t.name?.toLowerCase().includes(q) ||
+          t.slug?.toLowerCase().includes(q) ||
+          t.category?.toLowerCase().includes(q)
+      );
+    }
+    if (filter.status) list = list.filter((t: any) => t.status === filter.status);
+    if (filter.featured === true) list = list.filter((t: any) => t.featured);
+    if (filter.featured === false) list = list.filter((t: any) => !t.featured);
+    if (filter.sponsored === true) list = list.filter((t: any) => t.sponsored);
+    if (filter.sponsored === false) list = list.filter((t: any) => !t.sponsored);
+    list.sort(
+      (a: any, b: any) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    return list;
+  }
+
+  // ── Saved tools ───────────────────────────────────────
+
+  savedTools: any[] = [];
+
+  async getSavedTools(userId: string) {
+    return this.savedTools
+      .filter((s: any) => s.userId === userId)
+      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async toggleSavedTool(userId: string, tool: any) {
+    const idx = this.savedTools.findIndex(
+      (s: any) => s.userId === userId && s.slug === tool.slug
+    );
+    if (idx !== -1) {
+      this.savedTools.splice(idx, 1);
+      return { saved: false };
+    }
+    this.savedTools.push({
+      _id: String(this._idCounter++),
+      userId,
+      slug: tool.slug,
+      name: tool.name,
+      desc: tool.desc || null,
+      logo: tool.logo || null,
+      category: tool.category || null,
+      tags: tool.tags || [],
+      createdAt: new Date(),
+    });
+    return { saved: true };
   }
 
   // ── Review ────────────────────────────────────────────
@@ -333,5 +456,8 @@ class MemoryStore {
 const memoryStore: MemoryStore =
   (globalThis as any).__votMemoryStore ||
   ((globalThis as any).__votMemoryStore = new MemoryStore());
+
+// Keep HMR-safe: existing singleton should always use the latest class methods.
+Object.setPrototypeOf(memoryStore, MemoryStore.prototype);
 
 export default memoryStore;

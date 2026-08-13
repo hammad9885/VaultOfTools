@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
-import { popularTools } from "@/app/lib/data/categories";
+import { listPopularPublicTools } from "@/app/lib/data/public-tools";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  return NextResponse.json(popularTools);
+  try {
+    const tools = await listPopularPublicTools(15);
+    return NextResponse.json(tools);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+  }
 }

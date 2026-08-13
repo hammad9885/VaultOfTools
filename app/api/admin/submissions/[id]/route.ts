@@ -37,6 +37,8 @@ export async function PATCH(request: Request, { params }: Ctx) {
             url: submission.website,
             website: submission.website,
             shortDescription: submission.description || "",
+            description: submission.description || "",
+            desc: submission.description || "",
             pricing: submission.pricing || "Free",
             status: "published",
             publishDate: new Date(),

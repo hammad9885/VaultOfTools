@@ -27,6 +27,12 @@ function AccountSubmissionsShell({ children }: { children: ReactNode }) {
           Profile
         </Link>
         <Link
+          href="/account/saved"
+          className="-mb-px shrink-0 border-b-2 border-transparent pb-3 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Saved tools
+        </Link>
+        <Link
           href="/account/submissions"
           className="-mb-px shrink-0 border-b-2 border-primary pb-3 text-primary"
         >

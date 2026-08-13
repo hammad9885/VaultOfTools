@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB, isDBConnected } from "@/app/lib/config/db";
-import Tool from "@/app/lib/models/Tool";
-import memoryStore from "@/app/lib/data/memoryStore";
-import { staticToolCatalog } from "@/app/lib/data/static-tool-catalog";
+import { listPublicTools } from "@/app/lib/data/public-tools";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
-  await connectDB();
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
@@ -13,55 +11,23 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get("sort");
     const page = Number(searchParams.get("page")) || 1;
     const limit = Number(searchParams.get("limit")) || 20;
-
-    const filter: any = { category, search, sort };
     const skip = (page - 1) * limit;
 
-    if (isDBConnected()) {
-      const mongoFilter: any = {};
-      if (category) mongoFilter.category = category;
-      if (search) {
-        mongoFilter.$or = [
-          { name: { $regex: search, $options: "i" } },
-          { desc: { $regex: search, $options: "i" } },
-          { tags: { $regex: search, $options: "i" } },
-        ];
-      }
-      let sortObj: any = { rating: -1 };
-      if (sort === "newest") sortObj = { createdAt: -1 };
-      if (sort === "name") sortObj = { name: 1 };
+    const { tools, total } = await listPublicTools({
+      category,
+      search,
+      sort,
+      skip,
+      limit,
+      publishedOnly: true,
+    });
 
-      const [tools, total] = await Promise.all([
-        Tool.find(mongoFilter).sort(sortObj).skip(skip).limit(limit),
-        Tool.countDocuments(mongoFilter),
-      ]);
-      return NextResponse.json({ tools, total, page, pages: Math.ceil(total / limit) });
-    }
-
-    let all = await memoryStore.getTools(filter);
-    if (memoryStore.tools.length === 0) {
-      all = staticToolCatalog.slice();
-      if (category) {
-        all = all.filter((tool) => tool.category === category);
-      }
-      if (search) {
-        const query = search.toLowerCase();
-        all = all.filter(
-          (tool) =>
-            tool.name.toLowerCase().includes(query) ||
-            tool.desc.toLowerCase().includes(query) ||
-            tool.tags.some((tag) => tag.toLowerCase().includes(query))
-        );
-      }
-      if (sort === "name") {
-        all.sort((a, b) => a.name.localeCompare(b.name));
-      } else {
-        all.sort((a, b) => b.rating - a.rating);
-      }
-    }
-    const total = all.length;
-    const tools = all.slice(skip, skip + limit);
-    return NextResponse.json({ tools, total, page, pages: Math.ceil(total / limit) });
+    return NextResponse.json({
+      tools,
+      total,
+      page,
+      pages: Math.max(1, Math.ceil(total / limit)),
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
   }

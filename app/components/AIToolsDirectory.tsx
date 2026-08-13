@@ -20,6 +20,7 @@ import {
 } from "react-icons/fi";
 import { ToolLogo } from "./ToolLogo";
 import { withResolvedLogo } from "../lib/tool-logos";
+import { useSavedTools } from "../lib/saved-tools-context";
 
 interface Tool {
   name: string;
@@ -40,7 +41,7 @@ interface Category {
 
 type TabKey = "popular" | "recent";
 
-const categories: Category[] = [
+const FALLBACK_CATEGORIES: Category[] = [
   { key: "Customer Service & Support", label: "Customer Service & Support", icon: <FiHeadphones /> },
   { key: "Sales", label: "Sales", icon: <FiBarChart2 /> },
   { key: "Back Office", label: "Back Office", icon: <FiBriefcase /> },
@@ -51,6 +52,22 @@ const categories: Category[] = [
   { key: "Technology & IT", label: "Technology & IT", icon: <FiCode /> },
   { key: "Workflow Automation", label: "Workflow Automation", icon: <FiRepeat /> },
 ];
+
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  "customer service & support": <FiHeadphones />,
+  sales: <FiBarChart2 />,
+  "back office": <FiBriefcase />,
+  operations: <FiSettings />,
+  "growth & marketing": <FiZap />,
+  "writing & editing": <FiEdit3 />,
+  "design & creative": <FiPenTool />,
+  "technology & it": <FiCode />,
+  "workflow automation": <FiRepeat />,
+};
+
+function categoryIconFor(name: string) {
+  return CATEGORY_ICONS[name.toLowerCase()] || <FiZap />;
+}
 
 function fmtNum(n: number): string {
   return n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") + "k" : String(n);
@@ -65,10 +82,27 @@ function toSlug(name: string) {
 
 function toolHref(tool: Tool) {
   const slug = tool.slug || toSlug(tool.name);
-  return `/discover?q=${encodeURIComponent(tool.name)}&tool=${encodeURIComponent(slug)}`;
+  return `/tool/${encodeURIComponent(slug)}`;
 }
 
 function DirectoryToolCard({ tool }: { tool: Tool }) {
+  const { isSaved, isPending, toggleSave } = useSavedTools();
+  const slug = tool.slug || toSlug(tool.name);
+  const saved = isSaved(slug);
+  const pending = isPending(slug);
+
+  function onSaveClick(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    void toggleSave({
+      slug,
+      name: tool.name,
+      desc: tool.desc,
+      logo: tool.logo,
+      tags: tool.tags,
+    });
+  }
+
   return (
     <Link
       href={toolHref(tool)}
@@ -105,10 +139,21 @@ function DirectoryToolCard({ tool }: { tool: Tool }) {
       </div>
 
       <div className="flex shrink-0 flex-col items-end gap-1.5 sm:flex-row sm:items-center sm:gap-2">
-        <span className="inline-flex items-center gap-1 rounded-lg border border-[#E5E7EB] bg-white px-2 py-1 text-[11px] text-[#6B7280] transition-colors group-hover:border-[#D1D5DB]">
-          <FiBookmark size={12} className="shrink-0" />
-          {fmtNum(tool.saves)}
-        </span>
+        <button
+          type="button"
+          onClick={onSaveClick}
+          disabled={pending}
+          aria-pressed={saved}
+          aria-label={saved ? `Remove ${tool.name} from saved tools` : `Save ${tool.name}`}
+          className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[11px] transition-colors disabled:opacity-60 ${
+            saved
+              ? "border-[#6366F1]/40 bg-[#EEF2FF] text-[#4F46E5]"
+              : "border-[#E5E7EB] bg-white text-[#6B7280] hover:border-[#6366F1]/40 hover:bg-[#EEF2FF] hover:text-[#4F46E5]"
+          }`}
+        >
+          <FiBookmark size={12} className={`shrink-0 ${saved ? "fill-current" : ""}`} />
+          {fmtNum(tool.saves + (saved ? 1 : 0))}
+        </button>
         <span className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] font-medium text-emerald-600">
           <FiArrowUp size={12} className="shrink-0" />
           {fmtNum(tool.upvotes)}
@@ -121,6 +166,7 @@ function DirectoryToolCard({ tool }: { tool: Tool }) {
 export default function AIToolsDirectory() {
   const [activeTab, setActiveTab] = useState<TabKey>("popular");
   const [activeCat, setActiveCat] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
   const [popularTools, setPopularTools] = useState<Tool[]>([]);
   const [recentTools, setRecentTools] = useState<Tool[]>([]);
   const [categoryTools, setCategoryTools] = useState<Tool[]>([]);
@@ -144,11 +190,24 @@ export default function AIToolsDirectory() {
     Promise.all([
       fetch("/api/static/explore/popular").then((r) => r.json()),
       fetch("/api/static/explore/recent").then((r) => r.json()),
+      fetch("/api/tools/categories").then((r) => r.json()),
     ])
-      .then(([popular, recent]) => {
+      .then(([popular, recent, cats]) => {
         if (cancelled) return;
         setPopularTools((Array.isArray(popular) ? popular : []).map(withResolvedLogo));
         setRecentTools((Array.isArray(recent) ? recent : []).map(withResolvedLogo));
+        if (Array.isArray(cats) && cats.length > 0) {
+          setCategories(
+            cats.map((c: any) => {
+              const name = String(c.name || c.label || c.key || "");
+              return {
+                key: name,
+                label: name,
+                icon: categoryIconFor(name),
+              };
+            })
+          );
+        }
       })
       .catch(() => {})
       .finally(() => {

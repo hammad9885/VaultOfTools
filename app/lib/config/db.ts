@@ -41,5 +41,10 @@ export async function connectDB() {
 }
 
 export function isDBConnected() {
-  return dbConnected;
+  if (isFirestore()) return dbConnected;
+  return dbConnected && mongoose.connection.readyState === 1;
+}
+
+export function isMongoObjectId(id: string) {
+  return /^[a-f\d]{24}$/i.test(String(id || ""));
 }

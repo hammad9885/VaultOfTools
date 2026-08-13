@@ -34,8 +34,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             name: submission.name,
             category: submission.category,
             pricing: submission.pricing || "Free",
+            shortDescription: submission.description || "",
+            description: submission.description || "",
             desc: submission.description,
             website: submission.website,
+            status: "published",
+            publishDate: new Date(),
             tags: [submission.category.toLowerCase().replace(/\s+/g, "-")],
           });
         }

@@ -41,6 +41,7 @@ export async function POST(request: Request) {
           url: row["url"] || undefined,
           shortDescription: row["shortdescription"] || "",
           description: row["description"] || row["fulldescription"] || "",
+          desc: row["shortdescription"] || row["description"] || row["fulldescription"] || "",
           features: String(row["features"] || "").split(";").map((s) => s.trim()).filter(Boolean),
           tags: String(row["tags"] || "").split(";").map((s) => s.trim()).filter(Boolean),
           featured: asBool(row["featured"]),

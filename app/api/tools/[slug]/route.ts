@@ -1,22 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB, isDBConnected } from "@/app/lib/config/db";
-import Tool from "@/app/lib/models/Tool";
-import memoryStore from "@/app/lib/data/memoryStore";
-import { staticToolCatalog } from "@/app/lib/data/static-tool-catalog";
+import { getPublicToolBySlug } from "@/app/lib/data/public-tools";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
-  await connectDB();
+export const dynamic = "force-dynamic";
+
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
   try {
     const { slug } = await params;
-    let tool;
-    if (isDBConnected()) {
-      tool = await Tool.findOne({ slug });
-    } else {
-      tool = await memoryStore.getToolBySlug(slug);
-      if (!tool && memoryStore.tools.length === 0) {
-        tool = staticToolCatalog.find((entry) => entry.slug === slug);
-      }
-    }
+    const tool = await getPublicToolBySlug(slug);
     if (!tool) return NextResponse.json({ error: "Tool not found" }, { status: 404 });
     return NextResponse.json(tool);
   } catch (err: any) {

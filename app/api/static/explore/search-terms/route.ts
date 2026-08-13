@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
-import { popularSearchTerms } from "@/app/lib/data/categories";
+import { listPublicSearchTerms } from "@/app/lib/data/public-tools";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  return NextResponse.json(popularSearchTerms);
+  try {
+    const terms = await listPublicSearchTerms(12);
+    return NextResponse.json(terms);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+  }
 }
