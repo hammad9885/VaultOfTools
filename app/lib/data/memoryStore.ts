@@ -221,6 +221,8 @@ class MemoryStore {
       pricing: data.pricing || "Free",
       rating: data.rating || 0,
       reviews: data.reviews || 0,
+      clicks: data.clicks || 0,
+      upvotes: data.upvotes || 0,
       features: data.features || [],
       pros: data.pros || [],
       cons: data.cons || [],

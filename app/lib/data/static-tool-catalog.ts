@@ -22,6 +22,8 @@ export type StaticCatalogTool = {
   pricing: "Freemium";
   rating: number;
   reviews: number;
+  clicks: number;
+  upvotes: number;
   desc: string;
   website: string;
   tags: string[];
@@ -65,6 +67,8 @@ export const staticToolCatalog: StaticCatalogTool[] = sources.flatMap(
           pricing: "Freemium" as const,
           rating: 4.5,
           reviews: tool.upvotes || 0,
+          clicks: 0,
+          upvotes: tool.upvotes || 0,
           desc: tool.desc || "",
           website: resolveToolDomain(tool.name) ? `https://${resolveToolDomain(tool.name)}` : "#",
           tags: tool.tags || [],

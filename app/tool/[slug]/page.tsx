@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, notFound } from "next/navigation";
-import { Star, ExternalLink, Check, X } from "lucide-react";
+import { Star, ExternalLink, Check, X, ArrowUp, Eye } from "lucide-react";
 import Link from "next/link";
 import { SiteNav, SiteFooter, ToolCard, trending } from "../../routes/index";
 import { ToolLogo } from "../../components/ToolLogo";
@@ -13,6 +13,8 @@ export default function ToolPage() {
   const [tool, setTool] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [voted, setVoted] = useState(false);
+  const [voteBusy, setVoteBusy] = useState(false);
   const [staticData, setStaticData] = useState<{
     fallbackFeatures: string[];
     fallbackPros: string[];
@@ -46,6 +48,75 @@ export default function ToolPage() {
       cancelled = true;
     };
   }, [params.slug]);
+
+  // Count a page open as a click (once per browser session per tool).
+  useEffect(() => {
+    if (!params.slug || !tool) return;
+    const key = `vot_clicked_${params.slug}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+    } catch {
+      // continue without session guard
+    }
+    api
+      .recordToolClick(params.slug)
+      .then((res) => {
+        setTool((prev: any) =>
+          prev ? { ...prev, clicks: res.clicks, upvotes: res.upvotes } : prev
+        );
+      })
+      .catch(() => {});
+  }, [params.slug, tool?.slug]);
+
+  useEffect(() => {
+    if (!params.slug) return;
+    try {
+      const raw = localStorage.getItem("vot_upvoted_tools");
+      const list: string[] = raw ? JSON.parse(raw) : [];
+      setVoted(list.includes(params.slug));
+    } catch {
+      setVoted(false);
+    }
+  }, [params.slug]);
+
+  async function handleUpvote() {
+    if (!tool?.slug || voteBusy) return;
+    setVoteBusy(true);
+    const nextVoted = !voted;
+    setVoted(nextVoted);
+    setTool((prev: any) =>
+      prev
+        ? { ...prev, upvotes: Math.max(0, Number(prev.upvotes || 0) + (nextVoted ? 1 : -1)) }
+        : prev
+    );
+    try {
+      const res = nextVoted
+        ? await api.upvoteTool(tool.slug)
+        : await api.removeToolUpvote(tool.slug);
+      setTool((prev: any) =>
+        prev ? { ...prev, upvotes: res.upvotes, clicks: res.clicks } : prev
+      );
+      const raw = localStorage.getItem("vot_upvoted_tools");
+      const list: string[] = raw ? JSON.parse(raw) : [];
+      const next = nextVoted
+        ? Array.from(new Set([...list, tool.slug]))
+        : list.filter((s) => s !== tool.slug);
+      localStorage.setItem("vot_upvoted_tools", JSON.stringify(next));
+    } catch {
+      setVoted(!nextVoted);
+      setTool((prev: any) =>
+        prev
+          ? {
+              ...prev,
+              upvotes: Math.max(0, Number(prev.upvotes || 0) + (nextVoted ? -1 : 1)),
+            }
+          : prev
+      );
+    } finally {
+      setVoteBusy(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -85,10 +156,30 @@ export default function ToolPage() {
           <div className="flex-1">
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">{tool.name}</h1>
             <p className="mt-1 text-muted-foreground">{tool.category} · {tool.pricing}</p>
-            <div className="mt-3 flex items-center gap-2">
-              <Star className="size-4 fill-amber-400 text-amber-400" />
-              <span className="font-bold">{tool.rating}</span>
-              <span className="text-sm text-muted-foreground">({tool.reviews} reviews)</span>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Star className="size-4 fill-amber-400 text-amber-400" />
+                <span className="font-bold">{tool.rating}</span>
+                <span className="text-sm text-muted-foreground">({tool.reviews} reviews)</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleUpvote}
+                disabled={voteBusy}
+                aria-pressed={voted}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition disabled:opacity-60 ${
+                  voted
+                    ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                    : "border-border bg-card text-foreground hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+                }`}
+              >
+                <ArrowUp className="size-3.5" />
+                {tool.upvotes || 0} upvotes
+              </button>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+                <Eye className="size-3.5" />
+                {tool.clicks || 0} views
+              </span>
             </div>
           </div>
           <a

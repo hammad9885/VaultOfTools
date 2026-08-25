@@ -22,6 +22,10 @@ export interface ITool {
   pricing: string;
   rating: number;
   reviews: number;
+  /** Page views / card opens — drives trending. */
+  clicks: number;
+  /** Community upvotes — drives trending. */
+  upvotes: number;
   website?: string;
   features: string[];
   pros: string[];
@@ -66,6 +70,8 @@ const toolSchema = new mongoose.Schema<ITool>(
     },
     rating: { type: Number, default: 0 },
     reviews: { type: Number, default: 0 },
+    clicks: { type: Number, default: 0 },
+    upvotes: { type: Number, default: 0 },
     website: { type: String, trim: true },
     features: [{ type: String, trim: true }],
     pros: [{ type: String, trim: true }],
@@ -92,6 +98,7 @@ toolSchema.index({ featured: 1 });
 toolSchema.index({ sponsored: 1 });
 toolSchema.index({ status: 1 });
 toolSchema.index({ category: 1 });
+toolSchema.index({ upvotes: -1, clicks: -1 });
 
 const MongoTool = mongoose.models.Tool || mongoose.model<ITool>("Tool", toolSchema);
 const FirestoreTool = createFirestoreModel("tools");

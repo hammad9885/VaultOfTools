@@ -18,6 +18,8 @@ import {
   Menu,
   X,
   Grid2x2,
+  ArrowUp,
+  Eye,
 } from "lucide-react";
 import { AuthMenu } from "../components/auth-menu";
 import { ToolLogo } from "../components/ToolLogo";
@@ -147,7 +149,10 @@ function logoSrc(logo: unknown): string | undefined {
   return undefined;
 }
 
-export function ToolCard({ tool }: { tool: (typeof fallbackTrending)[number] }) {
+export function ToolCard({ tool }: { tool: (typeof fallbackTrending)[number] & { upvotes?: number; clicks?: number } }) {
+  const upvotes = Number((tool as any).upvotes || 0);
+  const clicks = Number((tool as any).clicks || 0);
+
   return (
     <Link
       href={`/tool/${tool.slug}`}
@@ -167,6 +172,16 @@ export function ToolCard({ tool }: { tool: (typeof fallbackTrending)[number] }) 
         <div className="sm:self-auto self-start">
           <PricingBadge pricing={tool.pricing} />
         </div>
+      </div>
+      <div className="mt-3 flex items-center gap-2 text-[11px] text-gray-500">
+        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-700">
+          <ArrowUp className="h-3 w-3" />
+          {upvotes >= 1000 ? `${(upvotes / 1000).toFixed(1).replace(/\.0$/, "")}k` : upvotes}
+        </span>
+        <span className="inline-flex items-center gap-1 rounded-md bg-slate-50 px-1.5 py-0.5 font-medium text-slate-600">
+          <Eye className="h-3 w-3" />
+          {clicks >= 1000 ? `${(clicks / 1000).toFixed(1).replace(/\.0$/, "")}k` : clicks}
+        </span>
       </div>
     </Link>
   );
@@ -360,14 +375,14 @@ export function HomePage() {
     let cancelled = false;
 
     Promise.allSettled([
-      api.getTools({ limit: 10, sort: "newest" }),
+      api.getHomeTrending(),
       api.getHomeComparisons(),
       api.getHomeFaqs(),
     ]).then(([toolsRes, comparisonsRes, faqsRes]) => {
       if (cancelled) return;
 
-      if (toolsRes.status === "fulfilled" && toolsRes.value.tools.length > 0) {
-        const mapped = toolsRes.value.tools.map((t: ApiTool) => {
+      if (toolsRes.status === "fulfilled" && Array.isArray(toolsRes.value) && toolsRes.value.length > 0) {
+        const mapped = toolsRes.value.map((t: any) => {
           const fallback = fallbackTrending.find((f) => f.slug === t.slug);
           return {
             slug: t.slug,
@@ -379,10 +394,12 @@ export function HomePage() {
             reviews: t.reviews || 0,
             desc: t.desc || "",
             website: t.website || "#",
-          } as (typeof fallbackTrending)[number];
+            upvotes: t.upvotes || 0,
+            clicks: t.clicks || 0,
+          } as (typeof fallbackTrending)[number] & { upvotes: number; clicks: number };
         });
-        setTools(mapped);
-        trending = mapped;
+        setTools(mapped as any);
+        trending = mapped as any;
       }
 
       if (comparisonsRes.status === "fulfilled" && Array.isArray(comparisonsRes.value) && comparisonsRes.value.length > 0) {

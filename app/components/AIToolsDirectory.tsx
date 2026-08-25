@@ -21,6 +21,7 @@ import {
 import { ToolLogo } from "./ToolLogo";
 import { withResolvedLogo } from "../lib/tool-logos";
 import { useSavedTools } from "../lib/saved-tools-context";
+import { api } from "../lib/api";
 
 interface Tool {
   name: string;
@@ -29,6 +30,7 @@ interface Tool {
   logo: string;
   website?: string;
   upvotes: number;
+  clicks?: number;
   saves: number;
   isNew?: boolean;
   slug?: string;
@@ -91,6 +93,23 @@ function DirectoryToolCard({ tool }: { tool: Tool }) {
   const slug = tool.slug || toSlug(tool.name);
   const saved = isSaved(slug);
   const pending = isPending(slug);
+  const [upvotes, setUpvotes] = useState(tool.upvotes || 0);
+  const [voted, setVoted] = useState(false);
+  const [voteBusy, setVoteBusy] = useState(false);
+
+  useEffect(() => {
+    setUpvotes(tool.upvotes || 0);
+  }, [tool.upvotes, slug]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("vot_upvoted_tools");
+      const list: string[] = raw ? JSON.parse(raw) : [];
+      setVoted(list.includes(slug));
+    } catch {
+      setVoted(false);
+    }
+  }, [slug]);
 
   function onSaveClick(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
@@ -102,6 +121,33 @@ function DirectoryToolCard({ tool }: { tool: Tool }) {
       logo: tool.logo,
       tags: tool.tags,
     });
+  }
+
+  async function onUpvoteClick(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (voteBusy) return;
+    setVoteBusy(true);
+    const nextVoted = !voted;
+    setVoted(nextVoted);
+    setUpvotes((n) => Math.max(0, n + (nextVoted ? 1 : -1)));
+    try {
+      const res = nextVoted
+        ? await api.upvoteTool(slug)
+        : await api.removeToolUpvote(slug);
+      setUpvotes(res.upvotes);
+      const raw = localStorage.getItem("vot_upvoted_tools");
+      const list: string[] = raw ? JSON.parse(raw) : [];
+      const next = nextVoted
+        ? Array.from(new Set([...list, slug]))
+        : list.filter((s) => s !== slug);
+      localStorage.setItem("vot_upvoted_tools", JSON.stringify(next));
+    } catch {
+      setVoted(!nextVoted);
+      setUpvotes((n) => Math.max(0, n + (nextVoted ? -1 : 1)));
+    } finally {
+      setVoteBusy(false);
+    }
   }
 
   return (
@@ -155,10 +201,21 @@ function DirectoryToolCard({ tool }: { tool: Tool }) {
           <FiBookmark size={12} className={`shrink-0 ${saved ? "fill-current" : ""}`} />
           {fmtNum(tool.saves + (saved ? 1 : 0))}
         </button>
-        <span className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] font-medium text-emerald-600">
+        <button
+          type="button"
+          onClick={onUpvoteClick}
+          disabled={voteBusy}
+          aria-pressed={voted}
+          aria-label={voted ? `Remove upvote from ${tool.name}` : `Upvote ${tool.name}`}
+          className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[11px] font-medium transition-colors disabled:opacity-60 ${
+            voted
+              ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+              : "border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-50"
+          }`}
+        >
           <FiArrowUp size={12} className="shrink-0" />
-          {fmtNum(tool.upvotes)}
-        </span>
+          {fmtNum(upvotes)}
+        </button>
       </div>
     </Link>
   );

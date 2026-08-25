@@ -4,6 +4,7 @@ import Category from "../models/Category";
 import memoryStore from "./memoryStore";
 import { staticToolCatalog } from "./static-tool-catalog";
 import { getToolLogoCandidates, resolveToolDomain } from "../tool-logos";
+import { getAllEngagement, trendScore } from "./tool-engagement";
 
 export type PublicTool = {
   _id?: string;
@@ -27,6 +28,8 @@ export type PublicTool = {
   sponsored?: boolean;
   status?: string;
   upvotes: number;
+  clicks: number;
+  trendScore: number;
   saves: number;
   isNew?: boolean;
   createdAt?: string | Date;
@@ -73,6 +76,20 @@ export function normalizePublicTool(raw: any): PublicTool {
     (rawWebsite && rawWebsite !== "#" ? rawWebsite : "") ||
     (resolveToolDomain(name) ? `https://${resolveToolDomain(name)}` : undefined);
   const logoCandidates = getToolLogoCandidates(name, raw?.logo || raw?.logoUrl, website);
+  const clicks = Math.max(0, Number(raw?.clicks || 0));
+  // Prefer real counters; soft-seed only when neither clicks nor upvotes exist yet.
+  const hasLiveCounters =
+    raw?.upvotes != null || raw?.clicks != null || Number(raw?.upvotes) > 0 || Number(raw?.clicks) > 0;
+  const upvotes = Math.max(
+    0,
+    Number(
+      raw?.upvotes != null
+        ? raw.upvotes
+        : hasLiveCounters
+          ? 0
+          : Math.max(Math.round(rating * 40), hashScore(slug, 7) % 120)
+    )
+  );
 
   return {
     _id: raw?._id ? String(raw._id) : undefined,
@@ -95,7 +112,9 @@ export function normalizePublicTool(raw: any): PublicTool {
     featured: Boolean(raw?.featured),
     sponsored: Boolean(raw?.sponsored),
     status: raw?.status || "published",
-    upvotes: Number(raw?.upvotes ?? Math.max(reviews * 12, Math.round(rating * 180), hashScore(slug, 7))),
+    clicks,
+    upvotes,
+    trendScore: trendScore(clicks, upvotes),
     saves: Number(raw?.saves ?? Math.max(Math.round(reviews * 4), hashScore(slug, 13))),
     isNew,
     createdAt: raw?.createdAt,
@@ -132,15 +151,17 @@ function sortTools(list: PublicTool[], sort?: string | null) {
     );
   } else if (sort === "name") {
     next.sort((a, b) => a.name.localeCompare(b.name));
-  } else if (sort === "popular" || sort === "featured") {
+  } else if (sort === "trending" || sort === "popular" || sort === "featured") {
     next.sort((a, b) => {
+      if (b.trendScore !== a.trendScore) return b.trendScore - a.trendScore;
+      if (b.upvotes !== a.upvotes) return b.upvotes - a.upvotes;
+      if (b.clicks !== a.clicks) return b.clicks - a.clicks;
       const featuredDelta = Number(b.featured) - Number(a.featured);
       if (featuredDelta) return featuredDelta;
-      if (b.rating !== a.rating) return b.rating - a.rating;
-      return b.reviews - a.reviews;
+      return b.rating - a.rating || b.reviews - a.reviews;
     });
   } else {
-    next.sort((a, b) => b.rating - a.rating || b.reviews - a.reviews);
+    next.sort((a, b) => b.trendScore - a.trendScore || b.rating - a.rating || b.reviews - a.reviews);
   }
   return next;
 }
@@ -149,6 +170,7 @@ export async function getMergedSiteTools(opts: { publishedOnly?: boolean } = {})
   await connectDB();
   const publishedOnly = opts.publishedOnly !== false;
   const bySlug = new Map<string, PublicTool>();
+  const engagement = await getAllEngagement();
 
   for (const tool of staticToolCatalog) {
     bySlug.set(tool.slug, normalizePublicTool({ ...tool, status: "published" }));
@@ -167,6 +189,18 @@ export async function getMergedSiteTools(opts: { publishedOnly?: boolean } = {})
       const tool = normalizePublicTool(raw);
       if (tool.slug) bySlug.set(tool.slug, tool);
     }
+  }
+
+  // Overlay live engagement counters (clicks / upvotes) onto every tool.
+  for (const [slug, tool] of bySlug.entries()) {
+    const eng = engagement.get(slug);
+    if (!eng) continue;
+    bySlug.set(slug, {
+      ...tool,
+      clicks: eng.clicks,
+      upvotes: eng.upvotes,
+      trendScore: trendScore(eng.clicks, eng.upvotes),
+    });
   }
 
   return [...bySlug.values()];
@@ -204,15 +238,12 @@ export async function getPublicToolBySlug(slug: string) {
 }
 
 export async function listPopularPublicTools(limit = 15) {
-  const featured = await listPublicTools({
-    sort: "popular",
-    featured: true,
-    limit,
-  });
-  if (featured.tools.length >= Math.min(limit, 5)) return featured.tools;
-
-  const all = await listPublicTools({ sort: "popular", limit });
+  const all = await listPublicTools({ sort: "trending", limit });
   return all.tools;
+}
+
+export async function listTrendingPublicTools(limit = 12) {
+  return listPopularPublicTools(limit);
 }
 
 export async function listRecentPublicTools(limit = 15) {

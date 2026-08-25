@@ -160,6 +160,30 @@ export const api = {
   getTool: (slug: string) =>
     request<any>(`/tools/${slug}`),
 
+  recordToolClick: (slug: string) =>
+    request<{ ok: boolean; slug: string; clicks: number; upvotes: number }>(`/tools/${slug}`, {
+      method: "POST",
+      body: JSON.stringify({ action: "click" }),
+    }),
+
+  upvoteTool: (slug: string) =>
+    request<{ ok: boolean; slug: string; clicks: number; upvotes: number; voted: boolean }>(
+      `/tools/${slug}`,
+      {
+        method: "POST",
+        body: JSON.stringify({ action: "upvote" }),
+      }
+    ),
+
+  removeToolUpvote: (slug: string) =>
+    request<{ ok: boolean; slug: string; clicks: number; upvotes: number; voted: boolean }>(
+      `/tools/${slug}`,
+      {
+        method: "POST",
+        body: JSON.stringify({ action: "remove-upvote" }),
+      }
+    ),
+
   getCategories: () =>
     request<{ name: string; slug: string; count: number }[]>("/tools/categories"),
 
