@@ -48,6 +48,14 @@ class MemoryStore {
     return bcrypt.compare(candidate, user.password);
   }
 
+  async updatePassword(email: string, password: string) {
+    const user = await this.findUserByEmail(email);
+    if (!user) return null;
+    user.password = await bcrypt.hash(password, 12);
+    user.updatedAt = new Date();
+    return user;
+  }
+
   toProfile(user: any) {
     return {
       id: user._id,

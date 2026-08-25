@@ -1,17 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { Eye, EyeOff, ArrowLeft, Lock, Mail, ShieldCheck } from "lucide-react";
 import { useAuth } from "../hooks/use-auth";
 import {
   signInWithGoogle,
   signInWithEmail,
   signUpWithEmail,
   completeGoogleRedirectIfAny,
+  sendPasswordReset,
+  confirmNewPassword,
+  verifyResetCode,
 } from "../lib/auth";
 import { api } from "../lib/api";
 import Link from "next/link";
+
+type AuthMode = "signin" | "signup" | "forgot";
 
 function friendlyAuthError(err: unknown): string {
   if (!(err instanceof Error)) return "Something went wrong.";
@@ -22,7 +28,7 @@ function friendlyAuthError(err: unknown): string {
   const map: Record<string, string> = {
     "auth/email-already-in-use": "This email is already registered. Try signing in.",
     "auth/invalid-email": "Please enter a valid email address.",
-    "auth/weak-password": "Password should be at least 6 characters.",
+    "auth/weak-password": "Password should be at least 8 characters.",
     "auth/user-not-found": "No account found with this email.",
     "auth/wrong-password": "Incorrect password.",
     "auth/invalid-credential": "Incorrect email or password.",
@@ -33,6 +39,9 @@ function friendlyAuthError(err: unknown): string {
     "auth/unauthorized-domain":
       "This domain is not allowed in Firebase. Add localhost in Firebase Auth settings.",
     "auth/operation-not-allowed": "This sign-in method is disabled in Firebase Console.",
+    "auth/expired-action-code": "This reset link has expired. Request a new one.",
+    "auth/invalid-action-code": "This reset link is invalid or already used.",
+    "auth/missing-password": "Please enter a new password.",
   };
 
   if (code && map[code]) return map[code];
@@ -45,15 +54,90 @@ function friendlyAuthError(err: unknown): string {
   );
 }
 
+function passwordScore(password: string) {
+  let score = 0;
+  if (password.length >= 8) score += 1;
+  if (password.length >= 12) score += 1;
+  if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score += 1;
+  if (/\d/.test(password)) score += 1;
+  if (/[^A-Za-z0-9]/.test(password)) score += 1;
+  return score;
+}
+
+function PasswordField({
+  label,
+  value,
+  onChange,
+  autoComplete,
+  placeholder,
+  minLength = 8,
+}: {
+  label?: string;
+  value: string;
+  onChange: (value: string) => void;
+  autoComplete: string;
+  placeholder?: string;
+  minLength?: number;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <label className="block">
+      {label ? <span className="text-sm font-medium text-foreground">{label}</span> : null}
+      <div className={label ? "relative mt-1.5" : "relative"}>
+        <input
+          type={show ? "text" : "password"}
+          autoComplete={autoComplete}
+          required
+          minLength={minLength}
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full rounded-xl border border-border bg-background px-4 py-2.5 pr-11 text-sm outline-none transition focus:border-primary/50 focus:ring-4 focus:ring-primary/5"
+        />
+        <button
+          type="button"
+          onClick={() => setShow((v) => !v)}
+          className="absolute inset-y-0 right-0 grid w-11 place-items-center text-muted-foreground hover:text-foreground"
+          aria-label={show ? "Hide password" : "Show password"}
+        >
+          {show ? <EyeOff size={16} /> : <Eye size={16} />}
+        </button>
+      </div>
+    </label>
+  );
+}
+
 export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="grid min-h-[100dvh] place-items-center bg-background">
+          <div className="size-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      }
+    >
+      <LoginInner />
+    </Suspense>
+  );
+}
+
+function LoginInner() {
   const { user, loading, refresh, setSession } = useAuth();
   const router = useRouter();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const searchParams = useSearchParams();
+  const oobCode = searchParams.get("oobCode") || "";
+  const resetMode = searchParams.get("mode") === "resetPassword" || Boolean(oobCode);
+
+  const [mode, setMode] = useState<AuthMode>(resetMode ? "forgot" : "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+
+  const score = useMemo(() => passwordScore(password), [password]);
 
   useEffect(() => {
     let cancelled = false;
@@ -74,14 +158,26 @@ export default function LoginPage() {
   }, [router, setSession]);
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && mode !== "forgot") {
       router.replace(user.role === "super_admin" ? "/admin" : "/");
     }
-  }, [loading, user, router]);
+  }, [loading, user, router, mode]);
 
-  function finishLogin(profile: any) {
+  useEffect(() => {
+    if (!oobCode) return;
+    setMode("forgot");
+    verifyResetCode(oobCode)
+      .then((accountEmail) => {
+        setEmail(accountEmail);
+      })
+      .catch((err) => {
+        setError(friendlyAuthError(err));
+      });
+  }, [oobCode]);
+
+  function finishLogin(profile: any, message = "Signed in") {
     if (profile) setSession(profile, api.getToken());
-    toast.success(mode === "signup" ? "Account created" : "Signed in");
+    toast.success(message);
     router.replace(profile?.role === "super_admin" ? "/admin" : "/");
   }
 
@@ -90,8 +186,8 @@ export default function LoginPage() {
     setError(null);
     try {
       const profile = await signInWithGoogle();
-      if (!profile) return; // redirect flow in progress
-      finishLogin(profile);
+      if (!profile) return;
+      finishLogin(profile, "Signed in with Google");
     } catch (err) {
       const msg = friendlyAuthError(err);
       setError(msg);
@@ -110,9 +206,9 @@ export default function LoginPage() {
       toast.error("Please fill in all fields");
       return;
     }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      toast.error("Password must be at least 6 characters");
+    if (password.length < (mode === "signin" ? 6 : 8)) {
+      setError(`Password must be at least ${mode === "signin" ? 6 : 8} characters`);
+      toast.error(`Password must be at least ${mode === "signin" ? 6 : 8} characters`);
       return;
     }
 
@@ -125,7 +221,7 @@ export default function LoginPage() {
         profile = await signInWithEmail(email, password);
       }
       await refresh();
-      finishLogin(profile);
+      finishLogin(profile, mode === "signup" ? "Account created" : "Signed in");
     } catch (err: unknown) {
       const msg = friendlyAuthError(err);
       setError(msg);
@@ -137,117 +233,318 @@ export default function LoginPage() {
     }
   }
 
+  async function handleForgot(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    if (!email) {
+      setError("Please enter your email address.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("New password must be at least 8 characters.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      if (oobCode) {
+        await confirmNewPassword(oobCode, password);
+        await api.resetPassword({ email, password, confirmPassword }).catch(() => {});
+        toast.success("Password updated. Signing you in…");
+        const profile = await signInWithEmail(email, password);
+        await refresh();
+        finishLogin(profile, "Password updated");
+        return;
+      }
+
+      const result = await api.resetPassword({ email, password, confirmPassword });
+
+      try {
+        const profile = await signInWithEmail(email, password);
+        await refresh();
+        finishLogin(profile, "New password created");
+        return;
+      } catch {
+        if (!result.firebaseUpdated) {
+          await sendPasswordReset(email);
+          setResetEmailSent(true);
+          toast.success("New password saved. We also sent a confirmation link to your email.");
+        } else {
+          toast.success("Password updated. Please sign in with your new password.");
+          setMode("signin");
+          setPassword("");
+          setConfirmPassword("");
+        }
+      }
+    } catch (err: unknown) {
+      const msg = friendlyAuthError(err);
+      setError(msg);
+      toast.error("Could not update password", { description: msg });
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen grid place-items-center bg-background">
-        <div className="size-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      <div className="grid min-h-[100dvh] place-items-center bg-background">
+        <div className="size-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
 
+  const title =
+    mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Create a new password";
+  const subtitle =
+    mode === "signin"
+      ? "Sign in to write reviews, save tools, and manage your profile."
+      : mode === "signup"
+        ? "Join Vault of Tools with your email or Google account."
+        : oobCode
+          ? "Choose a strong password for your account."
+          : "Enter your email and set a new password to regain access.";
+
   return (
-    <div className="grid min-h-[100dvh] place-items-center bg-background px-3 py-6 font-sans sm:px-4">
-      <div className="w-full max-w-md">
-        <Link
-          href="/"
-          className="block text-center text-2xl font-bold tracking-tight text-primary mb-8"
-        >
-          Vault<span className="text-foreground"> of Tools</span>
-        </Link>
-
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-8">
-          <h1 className="text-2xl font-bold text-foreground">
-            {mode === "signin" ? "Welcome back" : "Create your account"}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "signin"
-              ? "Sign in with Firebase to write reviews and submit tools."
-              : "Create a Firebase account to join the community."}
+    <div className="relative min-h-[100dvh] overflow-hidden bg-background font-sans">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(99,102,241,0.12),_transparent_55%)]" />
+      <div className="relative mx-auto grid min-h-[100dvh] w-full max-w-6xl items-center gap-8 px-4 py-8 sm:px-6 lg:grid-cols-2 lg:py-12">
+        <div className="hidden lg:block">
+          <Link href="/" className="text-2xl font-bold tracking-tight text-primary">
+            Vault<span className="text-foreground"> of Tools</span>
+          </Link>
+          <h2 className="mt-8 max-w-md text-4xl font-bold tracking-tight text-foreground">
+            Discover, compare, and save the best AI tools.
+          </h2>
+          <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">
+            Reset your password in a few seconds, then pick up where you left off — reviews, saved tools, and submissions stay with your account.
           </p>
-
-          <button
-            type="button"
-            onClick={handleGoogle}
-            disabled={busy}
-            className="mt-6 w-full inline-flex items-center justify-center gap-3 rounded-lg border border-border bg-background py-2.5 text-sm font-medium text-foreground hover:bg-muted transition disabled:opacity-50"
-          >
-            <GoogleIcon /> Continue with Google
-          </button>
-
-          <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" /> OR{" "}
-            <span className="h-px flex-1 bg-border" />
+          <div className="mt-8 flex max-w-md items-start gap-3 rounded-2xl border border-border bg-card/80 p-4">
+            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+              <ShieldCheck size={18} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">Secure account recovery</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Create a new password here. Use at least 8 characters with a mix of letters and numbers.
+              </p>
+            </div>
           </div>
+        </div>
 
-          <form onSubmit={handleEmail} className="space-y-4">
-            {mode === "signup" && (
-              <label className="block">
-                <span className="text-sm font-medium text-foreground">Name</span>
-                <input
-                  type="text"
-                  autoComplete="name"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  className="mt-1.5 w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5"
-                />
-              </label>
+        <div className="mx-auto w-full max-w-md">
+          <Link href="/" className="mb-6 block text-center text-2xl font-bold tracking-tight text-primary lg:hidden">
+            Vault<span className="text-foreground"> of Tools</span>
+          </Link>
+
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-8">
+            {mode === "forgot" && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("signin");
+                  setError(null);
+                  setConfirmPassword("");
+                  setResetEmailSent(false);
+                }}
+                className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+              >
+                <ArrowLeft size={14} /> Back to sign in
+              </button>
             )}
-            <label className="block">
-              <span className="text-sm font-medium text-foreground">Email</span>
-              <input
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1.5 w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5"
-              />
-            </label>
-            <label className="block">
-              <span className="text-sm font-medium text-foreground">Password</span>
-              <input
-                type="password"
-                autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1.5 w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5"
-              />
-            </label>
 
-            {error && (
-              <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {error}
+            <div className="flex items-start gap-3">
+              {mode === "forgot" && (
+                <div className="mt-0.5 grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                  <Lock size={18} />
+                </div>
+              )}
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+                <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+              </div>
+            </div>
+
+            {mode !== "forgot" && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleGoogle}
+                  disabled={busy}
+                  className="mt-6 inline-flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-background py-2.5 text-sm font-medium text-foreground transition hover:bg-muted disabled:opacity-50"
+                >
+                  <GoogleIcon /> Continue with Google
+                </button>
+                <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
+                  <span className="h-px flex-1 bg-border" /> OR{" "}
+                  <span className="h-px flex-1 bg-border" />
+                </div>
+              </>
+            )}
+
+            {mode === "forgot" ? (
+              <form onSubmit={handleForgot} className="mt-6 space-y-4">
+                <label className="block">
+                  <span className="text-sm font-medium text-foreground">Email</span>
+                  <div className="relative mt-1.5">
+                    <Mail size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="email"
+                      autoComplete="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-primary/50 focus:ring-4 focus:ring-primary/5"
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                </label>
+
+                <PasswordField
+                  label="New password"
+                  value={password}
+                  onChange={setPassword}
+                  autoComplete="new-password"
+                  placeholder="At least 8 characters"
+                />
+
+                {password && (
+                  <div>
+                    <div className="flex gap-1">
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <span
+                          key={i}
+                          className={`h-1.5 flex-1 rounded-full ${
+                            score > i + 1
+                              ? "bg-emerald-500"
+                              : score > i
+                                ? "bg-amber-400"
+                                : "bg-muted"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="mt-1.5 text-xs text-muted-foreground">
+                      {score <= 2 ? "Weak" : score <= 3 ? "Good" : "Strong"} password
+                    </p>
+                  </div>
+                )}
+
+                <PasswordField
+                  label="Confirm new password"
+                  value={confirmPassword}
+                  onChange={setConfirmPassword}
+                  autoComplete="new-password"
+                  placeholder="Re-enter password"
+                />
+
+                {resetEmailSent && (
+                  <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                    Password saved. If Firebase still has the old password, check your inbox for a reset link.
+                  </p>
+                )}
+
+                {error && (
+                  <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    {error}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {busy ? "Updating password…" : "Create new password"}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleEmail} className="space-y-4">
+                {mode === "signup" && (
+                  <label className="block">
+                    <span className="text-sm font-medium text-foreground">Name</span>
+                    <input
+                      type="text"
+                      autoComplete="name"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition focus:border-primary/50 focus:ring-4 focus:ring-primary/5"
+                    />
+                  </label>
+                )}
+                <label className="block">
+                  <span className="text-sm font-medium text-foreground">Email</span>
+                  <input
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition focus:border-primary/50 focus:ring-4 focus:ring-primary/5"
+                  />
+                </label>
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between gap-3">
+                    <span className="text-sm font-medium text-foreground">Password</span>
+                    {mode === "signin" && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMode("forgot");
+                          setError(null);
+                          setPassword("");
+                          setConfirmPassword("");
+                        }}
+                        className="text-xs font-semibold text-primary hover:underline"
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+                  </div>
+                  <PasswordField
+                    value={password}
+                    onChange={setPassword}
+                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                    minLength={mode === "signup" ? 8 : 6}
+                  />
+                </div>
+
+                {error && (
+                  <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    {error}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+                </button>
+              </form>
+            )}
+
+            {mode !== "forgot" && (
+              <p className="mt-6 text-center text-sm text-muted-foreground">
+                {mode === "signin" ? "New here?" : "Already have an account?"}{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode(mode === "signin" ? "signup" : "signin");
+                    setError(null);
+                  }}
+                  className="font-medium text-primary hover:underline"
+                >
+                  {mode === "signin" ? "Create an account" : "Sign in"}
+                </button>
               </p>
             )}
-
-            <button
-              type="submit"
-              disabled={busy}
-              className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition disabled:opacity-50"
-            >
-              {busy
-                ? "Please wait…"
-                : mode === "signin"
-                  ? "Sign in"
-                  : "Create account"}
-            </button>
-          </form>
-
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            {mode === "signin" ? "New here?" : "Already have an account?"}{" "}
-            <button
-              type="button"
-              onClick={() => {
-                setMode(mode === "signin" ? "signup" : "signin");
-                setError(null);
-              }}
-              className="font-medium text-primary hover:underline"
-            >
-              {mode === "signin" ? "Create an account" : "Sign in"}
-            </button>
-          </p>
+          </div>
         </div>
       </div>
     </div>

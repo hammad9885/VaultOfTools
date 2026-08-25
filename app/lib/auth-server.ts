@@ -126,6 +126,19 @@ export async function verifyPassword(user: any, password: string) {
   return memoryStore.comparePassword(user, password);
 }
 
+export async function updateAccountPassword(email: string, password: string) {
+  const user = await findUserByEmail(email);
+  if (user) {
+    if (typeof user.save === "function") {
+      user.password = password;
+      await user.save();
+    } else {
+      await memoryStore.updatePassword(email, password);
+    }
+  }
+  return user;
+}
+
 export async function upsertFirebaseUser(data: {
   email: string;
   displayName?: string;

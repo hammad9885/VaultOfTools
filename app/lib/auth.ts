@@ -5,6 +5,9 @@ import {
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
+  sendPasswordResetEmail,
+  confirmPasswordReset,
+  verifyPasswordResetCode,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   updateProfile,
@@ -99,6 +102,25 @@ export async function signUpWithEmail(
     } catch {}
   }
   return syncAppSession(result.user);
+}
+
+export async function sendPasswordReset(email: string): Promise<void> {
+  const trimmed = email.trim();
+  const continueUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/login` : undefined;
+  await sendPasswordResetEmail(
+    auth,
+    trimmed,
+    continueUrl ? { url: continueUrl, handleCodeInApp: false } : undefined
+  );
+}
+
+export async function verifyResetCode(oobCode: string): Promise<string> {
+  return verifyPasswordResetCode(auth, oobCode);
+}
+
+export async function confirmNewPassword(oobCode: string, newPassword: string): Promise<void> {
+  await confirmPasswordReset(auth, oobCode, newPassword);
 }
 
 /** Public sign-in — Firebase Auth is source of truth */

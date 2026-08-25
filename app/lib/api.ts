@@ -79,6 +79,12 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
+  resetPassword: (data: { email: string; password: string; confirmPassword: string }) =>
+    request<{ ok: boolean; firebaseUpdated?: boolean }>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
   googleAuth: (data: { email: string; displayName?: string; photoURL?: string; googleId: string }) =>
     request<{ token: string; user: any }>("/auth/google", {
       method: "POST",

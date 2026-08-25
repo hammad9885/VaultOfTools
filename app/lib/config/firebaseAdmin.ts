@@ -1,8 +1,18 @@
 import { cert, getApps, initializeApp } from "firebase-admin/app";
+import { getAuth, type Auth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import type { Firestore } from "firebase-admin/firestore";
 
 let firestoreDb: Firestore | null = null;
+
+export function tryGetAdminAuth(): Auth | null {
+  try {
+    getFirestoreDb();
+    return getAuth();
+  } catch {
+    return null;
+  }
+}
 
 export function getFirestoreDb(): Firestore {
   if (firestoreDb) return firestoreDb;
