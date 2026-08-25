@@ -232,9 +232,13 @@ export async function listPublicTools(opts: ListOpts = {}) {
 }
 
 export async function getPublicToolBySlug(slug: string) {
-  const clean = decodeURIComponent(slug).trim();
+  const clean = decodeURIComponent(slug).trim().toLowerCase();
   const all = await getMergedSiteTools({ publishedOnly: true });
-  return all.find((tool) => tool.slug === clean) || null;
+  return (
+    all.find((tool) => tool.slug.toLowerCase() === clean) ||
+    all.find((tool) => tool.slug.toLowerCase().replace(/_/g, "-") === clean) ||
+    null
+  );
 }
 
 export async function listPopularPublicTools(limit = 15) {

@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { api } from "../../lib/api";
 import { Check, X } from "lucide-react";
 import { SiteNav, SiteFooter } from "../../routes/index";
+import { ToolLogo } from "../../components/ToolLogo";
 // import Link from "next/link";
 
 // export const Route = createFileRoute("/compare/$slug")({
@@ -73,8 +74,16 @@ export default function ComparePage() {
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         <header className="text-center mb-10">
           <span className="text-xs font-semibold uppercase tracking-widest text-primary">Comparison</span>
-          <h1 className="mt-2 text-3xl sm:text-5xl font-bold tracking-tight">
-            {a} <span className="text-muted-foreground">vs</span> {b}
+          <h1 className="mt-2 text-3xl sm:text-5xl font-bold tracking-tight flex flex-wrap items-center justify-center gap-3">
+            <span className="inline-flex items-center gap-2">
+              <ToolLogo name={String(a)} size={36} className="rounded-lg" />
+              {a}
+            </span>
+            <span className="text-muted-foreground">vs</span>
+            <span className="inline-flex items-center gap-2">
+              <ToolLogo name={String(b)} size={36} className="rounded-lg" />
+              {b}
+            </span>
           </h1>
           <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
             Side-by-side breakdown of pricing, features, and best use cases.
@@ -85,8 +94,14 @@ export default function ComparePage() {
           <div className="min-w-[560px]">
           <div className="grid grid-cols-3 border-b border-border bg-surface-soft">
             <div className="p-4 font-semibold text-muted-foreground text-sm">Feature</div>
-            <div className="p-4 font-bold text-primary text-center">{a}</div>
-            <div className="p-4 font-bold text-foreground text-center">{b}</div>
+            <div className="p-4 font-bold text-primary text-center inline-flex items-center justify-center gap-2 w-full">
+              <ToolLogo name={String(a)} size={22} />
+              {a}
+            </div>
+            <div className="p-4 font-bold text-foreground text-center inline-flex items-center justify-center gap-2 w-full">
+              <ToolLogo name={String(b)} size={22} />
+              {b}
+            </div>
           </div>
           {rows.map((row: { label: string; a: string; b: string }) => (
             <div key={row.label} className="grid grid-cols-3 border-b border-border last:border-0 text-sm">

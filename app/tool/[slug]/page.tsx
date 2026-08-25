@@ -7,6 +7,19 @@ import Link from "next/link";
 import { SiteNav, SiteFooter, ToolCard, trending } from "../../routes/index";
 import { ToolLogo } from "../../components/ToolLogo";
 import { api } from "../../lib/api";
+import { homepageFeaturedTools } from "../../lib/data/homepage-tools";
+
+function fallbackToolFromSlug(slug: string) {
+  const seed = homepageFeaturedTools.find((t) => t.slug === slug);
+  if (!seed) return null;
+  return {
+    ...seed,
+    clicks: 0,
+    saves: Math.round(seed.reviews / 3),
+    featured: true,
+    status: "published",
+  };
+}
 
 export default function ToolPage() {
   const params = useParams<{ slug: string }>();
@@ -39,7 +52,10 @@ export default function ToolPage() {
         if (!cancelled) setTool(data);
       })
       .catch(() => {
-        if (!cancelled) setError(true);
+        if (cancelled) return;
+        const fallback = fallbackToolFromSlug(params.slug);
+        if (fallback) setTool(fallback);
+        else setError(true);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -123,7 +139,7 @@ export default function ToolPage() {
       <div className="min-h-screen bg-background">
         <SiteNav />
         <div className="grid place-items-center py-32">
-          <p className="text-sm text-muted-foreground">Loading…</p>
+          <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
         <SiteFooter />
       </div>

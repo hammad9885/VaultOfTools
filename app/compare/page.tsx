@@ -295,8 +295,10 @@ export default function CompareLandingPage() {
                   {c.category}
                 </span>
                 <div className="mt-3 flex items-center gap-2">
+                  <ToolLogo name={c.a} size={20} className="rounded" />
                   <span className="font-bold text-foreground text-sm">{c.a}</span>
                   <span className="text-xs text-muted-foreground font-medium">vs</span>
+                  <ToolLogo name={c.b} size={20} className="rounded" />
                   <span className="font-bold text-foreground text-sm">{c.b}</span>
                 </div>
                 <div className="mt-4 flex items-center justify-between">

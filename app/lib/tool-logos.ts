@@ -1,4 +1,4 @@
-/** Resolve real brand logos. Avoid guessed *.com hosts and Simple Icons 404s. */
+/** Resolve real brand logos via official domains (favicons), not broken Simple Icons. */
 
 const DOMAIN_BY_NAME: Record<string, string> = {
   chatgpt: "chatgpt.com",
@@ -30,6 +30,7 @@ const DOMAIN_BY_NAME: Record<string, string> = {
   lovable: "lovable.dev",
   ideogram: "ideogram.ai",
   "pika labs": "pika.art",
+  pika: "pika.art",
   gamma: "gamma.app",
   jasper: "jasper.ai",
   "jasper ai": "jasper.ai",
@@ -48,6 +49,7 @@ const DOMAIN_BY_NAME: Record<string, string> = {
   writesonic: "writesonic.com",
   "stable diffusion": "stability.ai",
   "adobe firefly": "adobe.com",
+  adobe: "adobe.com",
   tensorflow: "tensorflow.org",
   pytorch: "pytorch.org",
   "hugging face": "huggingface.co",
@@ -89,6 +91,7 @@ const DOMAIN_BY_NAME: Record<string, string> = {
   "clickup ai": "clickup.com",
   clickup: "clickup.com",
   "quickbooks ai": "quickbooks.intuit.com",
+  quickbooks: "quickbooks.intuit.com",
   "xero ai": "xero.com",
   xero: "xero.com",
   semrush: "semrush.com",
@@ -100,13 +103,19 @@ const DOMAIN_BY_NAME: Record<string, string> = {
   mailchimp: "mailchimp.com",
   klaviyo: "klaviyo.com",
   "amazon codewhisperer": "aws.amazon.com",
+  codewhisperer: "aws.amazon.com",
+  codewhisper: "aws.amazon.com",
   "sourcegraph cody": "sourcegraph.com",
+  sourcegraph: "sourcegraph.com",
+  cody: "sourcegraph.com",
   "sentry ai": "sentry.io",
   sentry: "sentry.io",
   "datadog ai": "datadoghq.com",
   datadog: "datadoghq.com",
   "pagerduty ai": "pagerduty.com",
+  pagerduty: "pagerduty.com",
   "new relic ai": "newrelic.com",
+  "new relic": "newrelic.com",
   airflow: "airflow.apache.org",
   bubble: "bubble.io",
   "airtable ai": "airtable.com",
@@ -119,16 +128,31 @@ const DOMAIN_BY_NAME: Record<string, string> = {
   rytr: "rytr.me",
   sudowrite: "sudowrite.com",
   "hemingway editor": "hemingwayapp.com",
+  hemingway: "hemingwayapp.com",
   prowritingaid: "prowritingaid.com",
   tabnine: "tabnine.com",
   "replit ghostwriter": "replit.com",
+  "replit ai": "replit.com",
   replit: "replit.com",
   codeium: "codeium.com",
   kubeflow: "kubeflow.org",
   datarobot: "datarobot.com",
+  "leonardo ai": "leonardo.ai",
+  leonardo: "leonardo.ai",
+  descript: "descript.com",
+  "flux studio": "blackforestlabs.ai",
+  flux: "blackforestlabs.ai",
+  motionflow: "runwayml.com",
+  synthflow: "elevenlabs.io",
+  "lumina script": "sudowrite.com",
+  lumina: "sudowrite.com",
+  insightlayer: "tableau.com",
+  tableau: "tableau.com",
+  stability: "stability.ai",
+  "stability ai": "stability.ai",
 };
 
-/** Simple Icons slugs that actually exist (wrong slugs 404). */
+/** Curated Simple Icons — only known-good brand SVGs. */
 const SIMPLEICON_BY_NAME: Record<string, string> = {
   chatgpt: "openai",
   openai: "openai",
@@ -167,8 +191,8 @@ const SIMPLEICON_BY_NAME: Record<string, string> = {
   "intercom fin": "intercom",
   asana: "asana",
   "asana intelligence": "asana",
-    "monday ai": "mondaydotcom",
-    monday: "mondaydotcom",
+  "monday ai": "mondaydotcom",
+  monday: "mondaydotcom",
   clickup: "clickup",
   "clickup ai": "clickup",
   mailchimp: "mailchimp",
@@ -186,6 +210,7 @@ const SIMPLEICON_BY_NAME: Record<string, string> = {
   "adobe firefly": "adobe",
   sagemaker: "amazonaws",
   "amazon codewhisperer": "amazonaws",
+  codewhisper: "amazonaws",
   databricks: "databricks",
   "databricks ai": "databricks",
   linear: "linear",
@@ -197,17 +222,30 @@ const SIMPLEICON_BY_NAME: Record<string, string> = {
   datadog: "datadog",
   "datadog ai": "datadog",
   replit: "replit",
+  "replit ai": "replit",
   "replit ghostwriter": "replit",
   n8n: "n8n",
   cursor: "cursor",
+  midjourney: "midjourney",
+  perplexity: "perplexity",
+  runway: "runway",
+  motionflow: "runway",
 };
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Exact / prefix match only — avoids "make" matching "marketo". */
 function lookupMap(name: string, map: Record<string, string>): string | null {
   const key = name.toLowerCase().trim();
   if (map[key]) return map[key];
+
   const ranked = Object.entries(map).sort((a, b) => b[0].length - a[0].length);
   for (const [k, value] of ranked) {
-    if (key === k || key.includes(k)) return value;
+    if (key === k) return value;
+    const re = new RegExp(`^${escapeRegExp(k)}([\\s·\\-_/]|$)`, "i");
+    if (re.test(key)) return value;
   }
   return null;
 }
@@ -225,14 +263,26 @@ export function extractHostname(url?: string | null): string | null {
 }
 
 export function resolveToolDomain(name: string, website?: string | null): string | null {
-  return extractHostname(website) || lookupMap(name, DOMAIN_BY_NAME);
+  // Prefer curated brand domains so fake/demo websites don't win.
+  return lookupMap(name, DOMAIN_BY_NAME) || extractHostname(website);
 }
 
 function isUsableLogoUrl(url?: string | null) {
-  if (!url || !/^https?:\/\//i.test(url)) return false;
+  if (!url) return false;
+  if (url.startsWith("data:") || url.startsWith("/") || url.startsWith("blob:")) return true;
+  if (!/^https?:\/\//i.test(url)) return false;
   if (/simpleicons\.org/i.test(url)) return false;
-  if (url.startsWith("data:")) return true;
   return true;
+}
+
+function faviconCandidates(domain: string): string[] {
+  const d = encodeURIComponent(domain);
+  return [
+    `https://www.google.com/s2/favicons?domain=${d}&sz=128`,
+    `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+    `https://icon.horse/icon/${domain}`,
+    `https://logo.clearbit.com/${domain}`,
+  ];
 }
 
 export function getToolLogoCandidates(
@@ -241,19 +291,26 @@ export function getToolLogoCandidates(
   website?: string | null
 ): string[] {
   const out: string[] = [];
-  const domain = resolveToolDomain(name, website);
+  const mappedDomain = lookupMap(name, DOMAIN_BY_NAME);
+  const websiteDomain = extractHostname(website);
   const iconSlug = lookupMap(name, SIMPLEICON_BY_NAME);
 
-  if (isUsableLogoUrl(existing)) out.push(existing!);
-
-  if (iconSlug) {
-    out.push(`https://cdn.simpleicons.org/${iconSlug}`);
+  // Real brand favicons first (curated domain, then website).
+  if (mappedDomain) {
+    out.push(...faviconCandidates(mappedDomain));
+  }
+  if (websiteDomain && websiteDomain !== mappedDomain) {
+    out.push(...faviconCandidates(websiteDomain));
   }
 
-  if (domain) {
-    out.push(`https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`);
-    out.push(`https://icons.duckduckgo.com/ip3/${domain}.ico`);
-    out.push(`https://logo.clearbit.com/${domain}`);
+  // Then any existing usable asset (uploaded / local / Clearbit), skip broken Simple Icons.
+  if (isUsableLogoUrl(existing) && !/simpleicons\.org/i.test(existing || "")) {
+    out.push(existing!);
+  }
+
+  // Optional SVG brand mark when we know the Simple Icons slug exists.
+  if (iconSlug) {
+    out.push(`https://cdn.simpleicons.org/${iconSlug}`);
   }
 
   return Array.from(new Set(out));

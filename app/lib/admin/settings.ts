@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { connectDB } from "../config/db";
+import { connectDB, isDBConnected } from "../config/db";
 import { isFirestore } from "../config/provider";
 import { createFirestoreModel } from "../firestore/model";
 import { AdminSettings } from "./types";
@@ -191,37 +191,90 @@ const DEFAULTS = {
   },
 };
 
-export async function getSettings(): Promise<AdminSettings & { smtp: any }> {
-  await connectDB();
-  let doc = await Settings.findOne({ key: "site" });
-  if (!doc) {
-    doc = await Settings.create({ key: "site" });
+type SettingsPayload = AdminSettings & { smtp: any };
+
+function memorySettings(): SettingsPayload {
+  const g = globalThis as any;
+  if (!g.__votAdminSettings) {
+    g.__votAdminSettings = {
+      general: { ...DEFAULTS.general },
+      seo: { ...DEFAULTS.seo },
+      branding: { ...DEFAULTS.branding },
+      homepage: { ...DEFAULTS.homepage },
+      smtp: { ...DEFAULTS.smtp },
+      social: { ...DEFAULTS.social },
+      analytics: { ...DEFAULTS.analytics },
+    } as SettingsPayload;
   }
+  return g.__votAdminSettings as SettingsPayload;
+}
+
+function shapeFromDoc(doc: any): SettingsPayload {
   return {
-    general: { ...DEFAULTS.general, ...doc.general },
-    seo: { ...DEFAULTS.seo, ...doc.seo },
-    branding: { ...DEFAULTS.branding, ...doc.branding },
-    homepage: { ...DEFAULTS.homepage, ...doc.homepage },
-    smtp: { ...DEFAULTS.smtp, ...doc.smtp },
-    social: { ...DEFAULTS.social, ...doc.social },
-    analytics: { ...DEFAULTS.analytics, ...doc.analytics },
+    general: { ...DEFAULTS.general, ...(doc?.general || {}) },
+    seo: { ...DEFAULTS.seo, ...(doc?.seo || {}) },
+    branding: { ...DEFAULTS.branding, ...(doc?.branding || {}) },
+    homepage: { ...DEFAULTS.homepage, ...(doc?.homepage || {}) },
+    smtp: { ...DEFAULTS.smtp, ...(doc?.smtp || {}) },
+    social: { ...DEFAULTS.social, ...(doc?.social || {}) },
+    analytics: { ...DEFAULTS.analytics, ...(doc?.analytics || {}) },
   };
 }
 
-export async function updateSettings(patch: Partial<AdminSettings>): Promise<AdminSettings & { smtp: any }> {
+function deepMergeGroup(current: any, patch: any) {
+  if (!patch || typeof patch !== "object") return current;
+  return { ...current, ...patch };
+}
+
+export async function getSettings(): Promise<SettingsPayload> {
   await connectDB();
-  const doc = await Settings.findOneAndUpdate(
-    { key: "site" },
-    { $set: patch },
-    { new: true, upsert: true, runValidators: false }
-  );
-  return {
-    general: { ...DEFAULTS.general, ...doc.general },
-    seo: { ...DEFAULTS.seo, ...doc.seo },
-    branding: { ...DEFAULTS.branding, ...doc.branding },
-    homepage: { ...DEFAULTS.homepage, ...doc.homepage },
-    smtp: { ...DEFAULTS.smtp, ...doc.smtp },
-    social: { ...DEFAULTS.social, ...doc.social },
-    analytics: { ...DEFAULTS.analytics, ...doc.analytics },
+
+  if (!isDBConnected()) {
+    return { ...memorySettings() };
+  }
+
+  try {
+    let doc = await Settings.findOne({ key: "site" });
+    if (!doc) {
+      doc = await Settings.create({ key: "site" });
+    }
+    const shaped = shapeFromDoc(doc);
+    Object.assign(memorySettings(), shaped);
+    return shaped;
+  } catch (err: any) {
+    console.warn("getSettings Mongo failed, using memory:", err?.message || err);
+    return { ...memorySettings() };
+  }
+}
+
+export async function updateSettings(patch: Partial<AdminSettings>): Promise<SettingsPayload> {
+  await connectDB();
+
+  const applyMemoryPatch = () => {
+    const mem = memorySettings();
+    for (const key of Object.keys(patch) as (keyof AdminSettings)[]) {
+      if (patch[key] && typeof patch[key] === "object") {
+        (mem as any)[key] = deepMergeGroup((mem as any)[key], patch[key]);
+      }
+    }
+    return { ...mem };
   };
+
+  if (!isDBConnected()) {
+    return applyMemoryPatch();
+  }
+
+  try {
+    const doc = await Settings.findOneAndUpdate(
+      { key: "site" },
+      { $set: patch },
+      { new: true, upsert: true, runValidators: false }
+    );
+    const shaped = shapeFromDoc(doc);
+    Object.assign(memorySettings(), shaped);
+    return shaped;
+  } catch (err: any) {
+    console.warn("updateSettings Mongo failed, using memory:", err?.message || err);
+    return applyMemoryPatch();
+  }
 }

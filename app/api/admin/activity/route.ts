@@ -11,13 +11,27 @@ export async function GET(request: Request) {
     const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
     const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("limit")) || 20));
 
-    const [total, items] = await Promise.all([
-      countActivities(),
-      getActivities(limit, (page - 1) * limit),
-    ]);
+    let total = 0;
+    let items: any[] = [];
 
-    const pages = Math.max(1, Math.ceil(total / limit));
-    return Response.json({ items, total, page: clampPage(page, pages), pages });
+    try {
+      [total, items] = await Promise.all([
+        countActivities(),
+        getActivities(limit, (page - 1) * limit),
+      ]);
+    } catch (err: any) {
+      console.warn("admin/activity failed, returning empty list:", err?.message || err);
+      total = 0;
+      items = [];
+    }
+
+    const pages = Math.max(1, Math.ceil(total / limit) || 1);
+    return Response.json({
+      items,
+      total,
+      page: clampPage(page, pages),
+      pages,
+    });
   } catch (err: any) {
     return errorResponse(err);
   }

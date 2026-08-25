@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Bookmark, ChevronDown, LogOut, User as UserIcon, FileText } from "lucide-react";
@@ -63,9 +63,12 @@ function Avatar({
 export function AuthMenu() {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
+  // Keep SSR + first client paint identical (auth resolves only after mount).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-  if (loading) {
-    return <div className="size-9 shrink-0 animate-pulse rounded-full bg-muted" />;
+  if (!mounted || loading) {
+    return <div className="size-9 shrink-0 animate-pulse rounded-full bg-muted" aria-hidden="true" />;
   }
 
   if (!user) {

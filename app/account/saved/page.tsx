@@ -114,7 +114,7 @@ export default function SavedToolsPage() {
             className="flex items-start gap-3 rounded-xl border border-border bg-card p-4"
           >
             <div className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-border bg-muted">
-              <ToolLogo name={row.name} logo={row.logo || ""} size={24} />
+              <ToolLogo name={row.name} logo={row.logo || ""} website={(row as any).website} size={24} />
             </div>
             <div className="min-w-0 flex-1">
               <Link

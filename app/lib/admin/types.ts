@@ -29,6 +29,9 @@ export interface ToolRow {
   pricing: string;
   rating: number;
   reviews: number;
+  clicks?: number;
+  upvotes?: number;
+  saves?: number;
   features?: string[];
   pros?: string[];
   cons?: string[];
@@ -86,6 +89,7 @@ export interface PostRow {
   excerpt?: string;
   featured: boolean;
   createdAt: string;
+  source?: "database" | "site";
 }
 
 export interface SubmissionRow {
@@ -134,14 +138,20 @@ export interface Paged<T> {
 export interface OverviewData {
   stats: {
     tools: number;
+    publishedTools?: number;
     users: number;
     reviews: number;
+    toolReviewsListed?: number;
     categories: number;
     tags: number;
     posts: number;
+    featuredPosts?: number;
     subscribers: number;
     submissions: number;
     consultations: number;
+    views?: number;
+    upvotes?: number;
+    saves?: number;
   };
   pending: {
     reviews: number;
@@ -151,12 +161,16 @@ export interface OverviewData {
   featuredCount: number;
   sponsoredCount: number;
   categoryChart: { name: string; count: number }[];
+  pricingChart?: { name: string; count: number }[];
   recentTools: ToolRow[];
+  topViewedTools?: ToolRow[];
+  topUpvotedTools?: ToolRow[];
   recentUsers: UserRow[];
   recentReviews: ReviewRow[];
   recentSubmissions: SubmissionRow[];
   recentPosts: PostRow[];
   activity: ActivityRow[];
+  dataSource?: string;
 }
 
 export interface AdminSettings {

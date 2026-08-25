@@ -59,7 +59,7 @@ const fallbackTrending = [
     rating: 4.9,
     reviews: 128,
     desc: "Create photorealistic imagery with the latest open-source generative model architecture.",
-    website: "https://fluxstudio.ai",
+    website: "https://blackforestlabs.ai",
   },
   {
     slug: "codewhisper",
@@ -70,7 +70,7 @@ const fallbackTrending = [
     rating: 4.7,
     reviews: 850,
     desc: "Real-time code completion and security scanning across 15+ programming languages.",
-    website: "https://codewhisper.dev",
+    website: "https://aws.amazon.com/codewhisperer",
   },
   {
     slug: "motionflow",
@@ -81,7 +81,7 @@ const fallbackTrending = [
     rating: 4.8,
     reviews: 312,
     desc: "Automate B-roll and subtitle generation with one-click cinematic style transfers.",
-    website: "https://motionflow.ai",
+    website: "https://runwayml.com",
   },
   {
     slug: "synthflow",
@@ -92,7 +92,7 @@ const fallbackTrending = [
     rating: 4.9,
     reviews: 421,
     desc: "Studio-quality voiceovers in seconds with realistic neural speech engines.",
-    website: "https://synthflow.ai",
+    website: "https://elevenlabs.io",
   },
   {
     slug: "lumina-script",
@@ -103,7 +103,7 @@ const fallbackTrending = [
     rating: 4.6,
     reviews: 198,
     desc: "Long-form narrative consistency and world-building powered by orchestrated LLMs.",
-    website: "https://luminascript.ai",
+    website: "https://sudowrite.com",
   },
   {
     slug: "insightlayer",
@@ -114,7 +114,7 @@ const fallbackTrending = [
     rating: 4.8,
     reviews: 264,
     desc: "Turn complex business data into readable narratives and actionable reports automatically.",
-    website: "https://insightlayer.ai",
+    website: "https://tableau.com",
   },
 ];
 
@@ -190,6 +190,11 @@ export function ToolCard({ tool }: { tool: (typeof fallbackTrending)[number] & {
 export function SiteNav() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
@@ -272,45 +277,75 @@ export function SiteNav() {
         </div>
       </div>
     </nav>
-      {isOpen && typeof document !== "undefined" && createPortal(
-        <div className="fixed inset-x-0 bottom-0 top-16 touch-none md:hidden">
-          <button
-            type="button"
-            aria-label="Close navigation menu"
-            className="absolute inset-0 bg-black/25"
-            onClick={() => setIsOpen(false)}
-          />
-          <div
-            data-testid="mobile-nav-panel"
-            className="relative z-10 max-h-full overflow-y-auto overscroll-contain border-t border-border bg-background shadow-xl"
-          >
-            <div className="flex flex-col space-y-1 px-3 py-3">
-            <Link href="/discover" onClick={() => setIsOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary">
-              Discover
-            </Link>
-            <Link href="/categories" onClick={() => setIsOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary">
-              Categories
-            </Link>
-            <Link href="/compare" onClick={() => setIsOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary">
-              Compare
-            </Link>
-            <Link href="/toolsreview" onClick={() => setIsOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary">
-              Tools reviews
-            </Link>
-            <Link href="/blog" onClick={() => setIsOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary">
-              Blog
-            </Link>
-            <Link href="/consulting" onClick={() => setIsOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary">
-              Consulting
-            </Link>
-            <Link href="/submit" onClick={() => setIsOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary md:hidden">
-              Submit Tool
-            </Link>
+      {mounted &&
+        isOpen &&
+        createPortal(
+          <div className="fixed inset-x-0 bottom-0 top-16 touch-none md:hidden">
+            <button
+              type="button"
+              aria-label="Close navigation menu"
+              className="absolute inset-0 bg-black/25"
+              onClick={() => setIsOpen(false)}
+            />
+            <div
+              data-testid="mobile-nav-panel"
+              className="relative z-10 max-h-full overflow-y-auto overscroll-contain border-t border-border bg-background shadow-xl"
+            >
+              <div className="flex flex-col space-y-1 px-3 py-3">
+                <Link
+                  href="/discover"
+                  onClick={() => setIsOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary"
+                >
+                  Discover
+                </Link>
+                <Link
+                  href="/categories"
+                  onClick={() => setIsOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary"
+                >
+                  Categories
+                </Link>
+                <Link
+                  href="/compare"
+                  onClick={() => setIsOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary"
+                >
+                  Compare
+                </Link>
+                <Link
+                  href="/toolsreview"
+                  onClick={() => setIsOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary"
+                >
+                  Tools reviews
+                </Link>
+                <Link
+                  href="/blog"
+                  onClick={() => setIsOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary"
+                >
+                  Blog
+                </Link>
+                <Link
+                  href="/consulting"
+                  onClick={() => setIsOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary"
+                >
+                  Consulting
+                </Link>
+                <Link
+                  href="/submit"
+                  onClick={() => setIsOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary md:hidden"
+                >
+                  Submit Tool
+                </Link>
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }

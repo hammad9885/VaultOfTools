@@ -4,13 +4,23 @@ import {
   recentTools,
 } from "./categories";
 import { resolveToolDomain } from "../tool-logos";
+import { homepageFeaturedTools } from "./homepage-tools";
 
 type SourceTool = {
   name: string;
+  slug?: string;
+  category?: string;
   desc?: string;
   tags?: string[];
   logo?: string | null;
   upvotes?: number;
+  pricing?: string;
+  rating?: number;
+  reviews?: number;
+  website?: string;
+  features?: string[];
+  pros?: string[];
+  cons?: string[];
 };
 
 export type StaticCatalogTool = {
@@ -19,7 +29,7 @@ export type StaticCatalogTool = {
   name: string;
   category: string;
   logo: string | null;
-  pricing: "Freemium";
+  pricing: string;
   rating: number;
   reviews: number;
   clicks: number;
@@ -41,6 +51,24 @@ function slugify(name: string) {
 }
 
 const sources: Array<{ category: string; tools: SourceTool[] }> = [
+  {
+    category: "Featured",
+    tools: homepageFeaturedTools.map((t) => ({
+      name: t.name,
+      slug: t.slug,
+      category: t.category,
+      desc: t.desc,
+      tags: t.tags,
+      upvotes: t.upvotes,
+      pricing: t.pricing,
+      rating: t.rating,
+      reviews: t.reviews,
+      website: t.website,
+      features: t.features,
+      pros: t.pros,
+      cons: t.cons,
+    })),
+  },
   ...Object.entries(categoryToolMap).map(([category, tools]) => ({
     category,
     tools: tools as SourceTool[],
@@ -54,27 +82,28 @@ const seen = new Set<string>();
 export const staticToolCatalog: StaticCatalogTool[] = sources.flatMap(
   ({ category, tools }) =>
     tools.flatMap((tool) => {
-      const slug = slugify(tool.name);
+      const slug = (tool.slug || slugify(tool.name)).trim();
       if (!slug || seen.has(slug)) return [];
       seen.add(slug);
+      const domain = resolveToolDomain(tool.name);
       return [
         {
           _id: `static-${slug}`,
           slug,
           name: tool.name,
-          category,
+          category: tool.category || category,
           logo: tool.logo || null,
-          pricing: "Freemium" as const,
-          rating: 4.5,
-          reviews: tool.upvotes || 0,
+          pricing: tool.pricing || "Freemium",
+          rating: tool.rating ?? 4.5,
+          reviews: tool.reviews ?? tool.upvotes ?? 0,
           clicks: 0,
           upvotes: tool.upvotes || 0,
           desc: tool.desc || "",
-          website: resolveToolDomain(tool.name) ? `https://${resolveToolDomain(tool.name)}` : "#",
+          website: tool.website || (domain ? `https://${domain}` : "#"),
           tags: tool.tags || [],
-          features: [],
-          pros: [],
-          cons: [],
+          features: tool.features || [],
+          pros: tool.pros || [],
+          cons: tool.cons || [],
         },
       ];
     })

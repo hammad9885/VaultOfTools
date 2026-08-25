@@ -144,7 +144,14 @@ class MemoryStore {
   }
 
   async addSubscriber(email: string) {
-    const entry = { email: email.toLowerCase(), active: true, createdAt: new Date() };
+    const entry = {
+      _id: String(this._idCounter++),
+      email: email.toLowerCase(),
+      name: null as string | null,
+      active: true,
+      status: "subscribed",
+      createdAt: new Date(),
+    };
     this.subscribers.push(entry);
     return entry;
   }
@@ -434,7 +441,7 @@ class MemoryStore {
       companyName: data.companyName || null,
       launchYear: data.launchYear || null,
       email: data.email || null,
-      status: "pending",
+      status: data.status || "pending",
       createdAt: new Date(),
       updatedAt: new Date(),
     };

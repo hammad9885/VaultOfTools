@@ -24,10 +24,10 @@ export const faqs = [
 ];
 
 export const trending = [
-  { name: "Flux Studio", logo: null, pricing: "Freemium", rating: 4.7, reviews: 312, desc: "AI-powered design and prototyping tool for modern teams.", website: "#" },
-  { name: "CodeWhisper", logo: null, pricing: "Free", rating: 4.8, reviews: 289, desc: "AI code review and suggestion engine for development teams.", website: "#" },
-  { name: "MotionFlow", logo: null, pricing: "Paid", rating: 4.6, reviews: 245, desc: "Automated video creation and motion graphics platform.", website: "#" },
-  { name: "SynthFlow", logo: null, pricing: "Freemium", rating: 4.5, reviews: 198, desc: "AI music and audio generation for content creators.", website: "#" },
-  { name: "Lumina Script", logo: null, pricing: "Free", rating: 4.9, reviews: 167, desc: "AI screenwriting and story development assistant.", website: "#" },
-  { name: "InsightLayer", logo: null, pricing: "Paid", rating: 4.4, reviews: 156, desc: "Business intelligence AI that uncovers hidden patterns in your data.", website: "#" },
+  { slug: "flux-studio", name: "Flux Studio", logo: null, pricing: "Freemium", rating: 4.7, reviews: 312, desc: "AI-powered design and prototyping tool for modern teams.", website: "https://blackforestlabs.ai" },
+  { slug: "codewhisper", name: "CodeWhisper", logo: null, pricing: "Free", rating: 4.8, reviews: 289, desc: "AI code review and suggestion engine for development teams.", website: "https://aws.amazon.com/codewhisperer" },
+  { slug: "motionflow", name: "MotionFlow", logo: null, pricing: "Paid", rating: 4.6, reviews: 245, desc: "Automated video creation and motion graphics platform.", website: "https://runwayml.com" },
+  { slug: "synthflow", name: "SynthFlow", logo: null, pricing: "Freemium", rating: 4.5, reviews: 198, desc: "AI music and audio generation for content creators.", website: "https://elevenlabs.io" },
+  { slug: "lumina-script", name: "Lumina Script", logo: null, pricing: "Free", rating: 4.9, reviews: 167, desc: "AI screenwriting and story development assistant.", website: "https://sudowrite.com" },
+  { slug: "insightlayer", name: "InsightLayer", logo: null, pricing: "Paid", rating: 4.4, reviews: 156, desc: "Business intelligence AI that uncovers hidden patterns in your data.", website: "https://www.tableau.com" },
 ];

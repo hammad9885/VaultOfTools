@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getToolLogoCandidates, toolInitials, toolAccent } from "../lib/tool-logos";
 
 type Props = {
@@ -11,25 +11,63 @@ type Props = {
   className?: string;
 };
 
-export function ToolLogo({ name, logo, website, size = 22, className = "" }: Props) {
-  const candidates = getToolLogoCandidates(name, logo, website);
-  const [index, setIndex] = useState(0);
-  const [failed, setFailed] = useState(candidates.length === 0);
+function InitialsBadge({
+  name,
+  size,
+  className,
+}: {
+  name: string;
+  size: number;
+  className: string;
+}) {
+  return (
+    <span
+      className={`inline-flex items-center justify-center rounded-md text-[10px] font-bold text-white ${className}`}
+      style={{
+        width: size,
+        height: size,
+        background: toolAccent(name),
+      }}
+      aria-hidden="true"
+      title={name}
+    >
+      {toolInitials(name)}
+    </span>
+  );
+}
 
-  if (failed || index >= candidates.length) {
+export function ToolLogo({ name, logo, website, size = 22, className = "" }: Props) {
+  const candidates = useMemo(
+    () => getToolLogoCandidates(name, logo, website),
+    [name, logo, website]
+  );
+  // Defer remote <img> until after mount so SSR HTML matches the first client paint.
+  const [mounted, setMounted] = useState(false);
+  const [index, setIndex] = useState(0);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    setIndex(0);
+    setFailed(candidates.length === 0);
+  }, [candidates]);
+
+  if (!mounted) {
     return (
       <span
-        className={`inline-flex items-center justify-center rounded-md text-[10px] font-bold text-white ${className}`}
-        style={{
-          width: size,
-          height: size,
-          background: toolAccent(name),
-        }}
+        className={`inline-block rounded-md bg-muted/80 ${className}`}
+        style={{ width: size, height: size }}
         aria-hidden="true"
-      >
-        {toolInitials(name)}
-      </span>
+        title={name}
+      />
     );
+  }
+
+  if (failed || index >= candidates.length) {
+    return <InitialsBadge name={name} size={size} className={className} />;
   }
 
   const src = candidates[index];
@@ -37,12 +75,14 @@ export function ToolLogo({ name, logo, website, size = 22, className = "" }: Pro
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
+      key={src}
       src={src}
       alt={`${name} logo`}
       width={size}
       height={size}
       className={`object-contain ${className}`}
       referrerPolicy="no-referrer"
+      loading="lazy"
       onError={() => {
         if (index + 1 < candidates.length) setIndex((i) => i + 1);
         else setFailed(true);

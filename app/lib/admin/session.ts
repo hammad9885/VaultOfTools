@@ -94,7 +94,9 @@ export async function findAdminById(id: string) {
     try {
       const user = await User.findById(id);
       if (user) return user;
-    } catch {}
+    } catch (err: any) {
+      console.warn("findAdminById Mongo failed, using memory:", err?.message);
+    }
   }
   return memoryStore.findUserById(String(id));
 }

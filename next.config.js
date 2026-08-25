@@ -42,6 +42,10 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "icon.horse",
+      },
+      {
+        protocol: "https",
         hostname: "logo.clearbit.com",
       },
     ],
