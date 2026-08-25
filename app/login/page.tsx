@@ -488,9 +488,15 @@ function LoginInner() {
                   />
                 </label>
                 <div>
-                  <div className="mb-1.5 flex items-center justify-between gap-3">
-                    <span className="text-sm font-medium text-foreground">Password</span>
-                    {mode === "signin" && (
+                  <span className="mb-1.5 block text-sm font-medium text-foreground">Password</span>
+                  <PasswordField
+                    value={password}
+                    onChange={setPassword}
+                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                    minLength={mode === "signup" ? 8 : 6}
+                  />
+                  {mode === "signin" && (
+                    <div className="mt-2 flex justify-end">
                       <button
                         type="button"
                         onClick={() => {
@@ -498,19 +504,14 @@ function LoginInner() {
                           setError(null);
                           setPassword("");
                           setConfirmPassword("");
+                          setResetEmailSent(false);
                         }}
-                        className="text-xs font-semibold text-primary hover:underline"
+                        className="inline-flex items-center gap-1 rounded-lg px-1 py-1 text-sm font-semibold text-primary underline-offset-2 hover:underline"
                       >
                         Forgot password?
                       </button>
-                    )}
-                  </div>
-                  <PasswordField
-                    value={password}
-                    onChange={setPassword}
-                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                    minLength={mode === "signup" ? 8 : 6}
-                  />
+                    </div>
+                  )}
                 </div>
 
                 {error && (
@@ -526,6 +527,22 @@ function LoginInner() {
                 >
                   {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
                 </button>
+
+                {mode === "signin" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("forgot");
+                      setError(null);
+                      setPassword("");
+                      setConfirmPassword("");
+                      setResetEmailSent(false);
+                    }}
+                    className="w-full rounded-xl border border-border bg-background py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted"
+                  >
+                    Forgot password? Create a new one
+                  </button>
+                )}
               </form>
             )}
 
