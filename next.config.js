@@ -42,7 +42,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "ui-avatars.com",
+        hostname: "logo.clearbit.com",
       },
     ],
   },

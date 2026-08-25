@@ -77,7 +77,7 @@ export function StatusBadge({ status }: { status: string }) {
     super_admin: { tone: "violet", label: "Super Admin" },
     admin: { tone: "violet", label: "Admin" },
     moderator: { tone: "info", label: "Moderator" },
-    user: { tone: "default", label: "User" },
+    featured: { tone: "violet", label: "Featured" },
   };
   const entry = map[status] || { tone: "default" as const, label: status };
   return <Badge tone={entry.tone}>{entry.label}</Badge>;

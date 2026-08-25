@@ -23,6 +23,7 @@ interface ToolData {
   reviews: number;
   desc: string;
   website: string;
+  logo?: string;
 }
 
 function DiscoverContent() {
@@ -46,7 +47,7 @@ function DiscoverContent() {
       const mapped = data.tools.map((t: ToolData) => ({
         slug: t.slug, name: t.name, category: t.category,
         pricing: t.pricing, rating: t.rating, reviews: t.reviews,
-        desc: t.desc, website: t.website,
+        desc: t.desc, website: t.website, logo: t.logo,
       }));
       setApiTools(mapped);
     }).catch(() => {});
@@ -139,7 +140,7 @@ function DiscoverContent() {
                   slug: t.slug,
                   name: t.name,
                   category: t.category,
-                  logo: fallbackMatch?.logo || fallbackTrending[0]?.logo,
+                  logo: (t as ToolData).logo || fallbackMatch?.logo || fallbackTrending[0]?.logo,
                   pricing: pricing || "Free",
                   rating: t.rating || 0,
                   reviews: t.reviews || 0,

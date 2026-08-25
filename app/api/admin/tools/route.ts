@@ -52,44 +52,57 @@ export async function GET(request: Request) {
     const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
     const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("limit")) || 10));
 
-    if (!isDBConnected()) {
-      const all = await memoryStore.getAdminTools({
-        search,
-        status: status && ["draft", "published", "archived"].includes(status) ? status : undefined,
-        featured: featured === "true" ? true : featured === "false" ? false : undefined,
-        sponsored: sponsored === "true" ? true : sponsored === "false" ? false : undefined,
-      });
-      const total = all.length;
-      const pages = Math.max(1, Math.ceil(total / limit));
-      const items = all.slice((page - 1) * limit, page * limit);
-      return Response.json({ items, total, page: clampPage(page, pages), pages });
-    }
+    const { getMergedSiteTools } = await import("@/app/lib/data/public-tools");
+    let all = await getMergedSiteTools({ publishedOnly: false });
 
-    const filter: Record<string, any> = {};
     if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { slug: { $regex: search, $options: "i" } },
-        { category: { $regex: search, $options: "i" } },
-      ];
+      const q = search.toLowerCase();
+      all = all.filter(
+        (t) =>
+          t.name.toLowerCase().includes(q) ||
+          t.slug.toLowerCase().includes(q) ||
+          t.category.toLowerCase().includes(q)
+      );
     }
-    if (status && ["draft", "published", "archived"].includes(status)) filter.status = status;
-    if (featured === "true") filter.featured = true;
-    if (featured === "false") filter.featured = false;
-    if (sponsored === "true") filter.sponsored = true;
-    if (sponsored === "false") filter.sponsored = false;
+    if (status && ["draft", "published", "archived"].includes(status)) {
+      all = all.filter((t) => (t.status || "published") === status);
+    }
+    if (featured === "true") all = all.filter((t) => t.featured);
+    if (featured === "false") all = all.filter((t) => !t.featured);
+    if (sponsored === "true") all = all.filter((t) => t.sponsored);
+    if (sponsored === "false") all = all.filter((t) => !t.sponsored);
 
-    const [total, items] = await Promise.all([
-      Tool.countDocuments(filter),
-      Tool.find(filter)
-        .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .lean(),
-    ]);
+    all.sort(
+      (a, b) =>
+        new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime() ||
+        a.name.localeCompare(b.name)
+    );
 
+    const total = all.length;
     const pages = Math.max(1, Math.ceil(total / limit));
-    return Response.json({ items, total, page: clampPage(page, pages), pages });
+    const safePage = clampPage(page, pages);
+    const items = all.slice((safePage - 1) * limit, safePage * limit).map((t) => ({
+      _id: t._id || `site-${t.slug}`,
+      slug: t.slug,
+      name: t.name,
+      category: t.category,
+      logo: t.logo,
+      website: t.website,
+      url: t.url,
+      shortDescription: t.shortDescription || t.desc,
+      description: t.description || t.desc,
+      pricing: t.pricing,
+      rating: t.rating,
+      reviews: t.reviews,
+      features: t.features,
+      tags: t.tags,
+      featured: Boolean(t.featured),
+      sponsored: Boolean(t.sponsored),
+      status: t.status || "published",
+      createdAt: t.createdAt || new Date().toISOString(),
+      updatedAt: t.createdAt || new Date().toISOString(),
+    }));
+    return Response.json({ items, total, page: safePage, pages });
   } catch (err: any) {
     return errorResponse(err);
   }

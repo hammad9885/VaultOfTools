@@ -5,7 +5,7 @@ import { useParams, notFound } from "next/navigation";
 import { Star, ExternalLink, Check, X } from "lucide-react";
 import Link from "next/link";
 import { SiteNav, SiteFooter, ToolCard, trending } from "../../routes/index";
-import Image from "next/image";
+import { ToolLogo } from "../../components/ToolLogo";
 import { api } from "../../lib/api";
 
 export default function ToolPage() {
@@ -80,10 +80,7 @@ export default function ToolPage() {
         </nav>
         <header className="flex flex-col sm:flex-row gap-6 sm:items-center">
           <div className="size-20 overflow-hidden rounded-2xl bg-surface-soft ring-1 ring-black/5 grid place-items-center shrink-0">
-            {(() => {
-              const src = tool.logo || alternativeTrends.find((t: any) => t.slug === tool.slug)?.logo;
-              return src ? <Image src={src} alt={`${tool.name} logo`} width={64} height={64} className="size-16 object-contain" unoptimized /> : null;
-            })()}
+            <ToolLogo name={tool.name} logo={tool.logo} website={tool.website || tool.url} size={56} />
           </div>
           <div className="flex-1">
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">{tool.name}</h1>

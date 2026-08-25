@@ -20,13 +20,13 @@ import {
   Grid2x2,
 } from "lucide-react";
 import { AuthMenu } from "../components/auth-menu";
+import { ToolLogo } from "../components/ToolLogo";
 import fluxLogo from "../assets/images/tool-flux.webp";
 import codeLogo from "../assets/images/tool-codewhisper.webp";
 import motionLogo from "../assets/images/tool-motionflow.webp";
 import synthLogo from "../assets/images/tool-synth.webp";
 import luminaLogo from "../assets/images/tool-lumina.webp";
 import insightLogo from "../assets/images/tool-insight.webp";
-import Image from "next/image";
 import Link from "next/link";
 import { api } from "../lib/api";
 import { HeroSection } from "../components/HeroSection";
@@ -139,6 +139,14 @@ function PricingBadge({ pricing }: { pricing: Pricing }) {
   );
 }
 
+function logoSrc(logo: unknown): string | undefined {
+  if (typeof logo === "string") return logo;
+  if (logo && typeof logo === "object" && "src" in (logo as { src?: string })) {
+    return (logo as { src: string }).src;
+  }
+  return undefined;
+}
+
 export function ToolCard({ tool }: { tool: (typeof fallbackTrending)[number] }) {
   return (
     <Link
@@ -146,14 +154,7 @@ export function ToolCard({ tool }: { tool: (typeof fallbackTrending)[number] }) 
       className="group flex flex-col rounded-2xl border border-gray-100 bg-white p-5 hover:shadow-md transition-all"
     >
       <div className="w-14 h-14 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 grid place-items-center mb-4">
-        <Image
-          src={tool.logo}
-          alt={`${tool.name} logo`}
-          width={48}
-          height={48}
-          loading="lazy"
-          className="w-10 h-10 object-contain"
-        />
+        <ToolLogo name={tool.name} logo={logoSrc(tool.logo)} website={(tool as any).website} size={40} />
       </div>
       <h3 className="font-semibold text-gray-900 text-base leading-tight">{tool.name}</h3>
       <p className="text-xs text-gray-400 mt-0.5">{tool.category}</p>
@@ -372,7 +373,7 @@ export function HomePage() {
             slug: t.slug,
             name: t.name,
             category: t.category,
-            logo: fallback?.logo || fluxLogo,
+            logo: t.logo || fallback?.logo || fluxLogo,
             pricing: t.pricing || "Free",
             rating: t.rating || 0,
             reviews: t.reviews || 0,

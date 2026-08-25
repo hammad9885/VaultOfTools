@@ -27,6 +27,7 @@ interface Tool {
   desc: string;
   tags: string[];
   logo: string;
+  website?: string;
   upvotes: number;
   saves: number;
   isNew?: boolean;
@@ -109,7 +110,7 @@ function DirectoryToolCard({ tool }: { tool: Tool }) {
       className="group flex items-start gap-3 rounded-xl border border-[#E5E7EB] bg-white px-3.5 py-3 transition-all duration-200 hover:-translate-y-[1px] hover:border-[#6366F1]/45 hover:bg-[#6366F1]/[0.04] hover:shadow-[0_8px_24px_rgba(99,102,241,0.08)] sm:items-center sm:px-4"
     >
       <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] transition-colors group-hover:border-[#6366F1]/35 sm:mt-0 sm:h-12 sm:w-12">
-        <ToolLogo name={tool.name} logo={tool.logo} size={26} />
+        <ToolLogo name={tool.name} logo={tool.logo} website={tool.website} size={26} />
       </div>
 
       <div className="min-w-0 flex-1">

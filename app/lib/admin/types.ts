@@ -155,6 +155,7 @@ export interface OverviewData {
   recentUsers: UserRow[];
   recentReviews: ReviewRow[];
   recentSubmissions: SubmissionRow[];
+  recentPosts: PostRow[];
   activity: ActivityRow[];
 }
 

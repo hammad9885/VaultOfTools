@@ -3,6 +3,7 @@ import {
   popularTools,
   recentTools,
 } from "./categories";
+import { resolveToolDomain } from "../tool-logos";
 
 type SourceTool = {
   name: string;
@@ -65,7 +66,7 @@ export const staticToolCatalog: StaticCatalogTool[] = sources.flatMap(
           rating: 4.5,
           reviews: tool.upvotes || 0,
           desc: tool.desc || "",
-          website: "#",
+          website: resolveToolDomain(tool.name) ? `https://${resolveToolDomain(tool.name)}` : "#",
           tags: tool.tags || [],
           features: [],
           pros: [],

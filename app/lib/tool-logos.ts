@@ -1,4 +1,4 @@
-/** Resolve reliable logo URLs for AI tools (simpleicons often 404). */
+/** Resolve real brand logos. Avoid guessed *.com hosts and Simple Icons 404s. */
 
 const DOMAIN_BY_NAME: Record<string, string> = {
   chatgpt: "chatgpt.com",
@@ -62,9 +62,13 @@ const DOMAIN_BY_NAME: Record<string, string> = {
   "intercom fin": "intercom.com",
   intercom: "intercom.com",
   "freshdesk freddy": "freshdesk.com",
+  freshdesk: "freshdesk.com",
   "zoho desk zia": "zoho.com",
+  zoho: "zoho.com",
   "tidio ai": "tidio.com",
+  tidio: "tidio.com",
   "crisp ai": "crisp.chat",
+  crisp: "crisp.chat",
   ada: "ada.cx",
   "salesforce einstein": "salesforce.com",
   salesforce: "salesforce.com",
@@ -86,6 +90,7 @@ const DOMAIN_BY_NAME: Record<string, string> = {
   clickup: "clickup.com",
   "quickbooks ai": "quickbooks.intuit.com",
   "xero ai": "xero.com",
+  xero: "xero.com",
   semrush: "semrush.com",
   "semrush ai": "semrush.com",
   "ahrefs ai": "ahrefs.com",
@@ -114,54 +119,142 @@ const DOMAIN_BY_NAME: Record<string, string> = {
   rytr: "rytr.me",
   sudowrite: "sudowrite.com",
   "hemingway editor": "hemingwayapp.com",
-  "prowritingaid": "prowritingaid.com",
-  "tabnine": "tabnine.com",
+  prowritingaid: "prowritingaid.com",
+  tabnine: "tabnine.com",
   "replit ghostwriter": "replit.com",
   replit: "replit.com",
-  "codeium": "codeium.com",
+  codeium: "codeium.com",
+  kubeflow: "kubeflow.org",
+  datarobot: "datarobot.com",
 };
 
-function slugifyName(name: string) {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "")
-    .slice(0, 24);
-}
+/** Simple Icons slugs that actually exist (wrong slugs 404). */
+const SIMPLEICON_BY_NAME: Record<string, string> = {
+  chatgpt: "openai",
+  openai: "openai",
+  "dall·e 3": "openai",
+  "dall-e 3": "openai",
+  sora: "openai",
+  claude: "anthropic",
+  anthropic: "anthropic",
+  "github copilot": "github",
+  github: "github",
+  "notion ai": "notion",
+  notion: "notion",
+  "google gemini": "google",
+  gemini: "google",
+  "vertex ai": "googlecloud",
+  canva: "canva",
+  "canva ai": "canva",
+  figma: "figma",
+  "figma ai": "figma",
+  zapier: "zapier",
+  "zapier ai": "zapier",
+  make: "make",
+  grammarly: "grammarly",
+  tensorflow: "tensorflow",
+  pytorch: "pytorch",
+  "hugging face": "huggingface",
+  "salesforce einstein": "salesforce",
+  salesforce: "salesforce",
+  hubspot: "hubspot",
+  "hubspot service hub": "hubspot",
+  "hubspot sales hub": "hubspot",
+  "hubspot marketing hub": "hubspot",
+  zendesk: "zendesk",
+  "zendesk ai": "zendesk",
+  intercom: "intercom",
+  "intercom fin": "intercom",
+  asana: "asana",
+  "asana intelligence": "asana",
+    "monday ai": "mondaydotcom",
+    monday: "mondaydotcom",
+  clickup: "clickup",
+  "clickup ai": "clickup",
+  mailchimp: "mailchimp",
+  "mailchimp ai": "mailchimp",
+  klaviyo: "klaviyo",
+  deepl: "deepl",
+  "deepl write": "deepl",
+  uipath: "uipath",
+  xero: "xero",
+  "xero ai": "xero",
+  semrush: "semrush",
+  "semrush ai": "semrush",
+  ahrefs: "ahrefs",
+  "ahrefs ai": "ahrefs",
+  "adobe firefly": "adobe",
+  sagemaker: "amazonaws",
+  "amazon codewhisperer": "amazonaws",
+  databricks: "databricks",
+  "databricks ai": "databricks",
+  linear: "linear",
+  "linear ai": "linear",
+  airtable: "airtable",
+  "airtable ai": "airtable",
+  sentry: "sentry",
+  "sentry ai": "sentry",
+  datadog: "datadog",
+  "datadog ai": "datadog",
+  replit: "replit",
+  "replit ghostwriter": "replit",
+  n8n: "n8n",
+  cursor: "cursor",
+};
 
-export function resolveToolDomain(name: string): string | null {
+function lookupMap(name: string, map: Record<string, string>): string | null {
   const key = name.toLowerCase().trim();
-  if (DOMAIN_BY_NAME[key]) return DOMAIN_BY_NAME[key];
-  // fuzzy contains match
-  for (const [k, domain] of Object.entries(DOMAIN_BY_NAME)) {
-    if (key.includes(k) || k.includes(key)) return domain;
+  if (map[key]) return map[key];
+  const ranked = Object.entries(map).sort((a, b) => b[0].length - a[0].length);
+  for (const [k, value] of ranked) {
+    if (key === k || key.includes(k)) return value;
   }
-  // last resort: treat cleaned name as hostname guess (often fails → initials)
-  const slug = slugifyName(name);
-  return slug ? `${slug}.com` : null;
+  return null;
 }
 
-export function getToolLogoCandidates(name: string, existing?: string | null): string[] {
-  const out: string[] = [];
-  const domain = resolveToolDomain(name);
+export function extractHostname(url?: string | null): string | null {
+  if (!url) return null;
+  try {
+    const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    const host = new URL(href).hostname.replace(/^www\./i, "");
+    if (!host || host === "localhost") return null;
+    return host;
+  } catch {
+    return null;
+  }
+}
 
-  if (existing && /^https?:\/\//i.test(existing) && !existing.includes("simpleicons.org")) {
-    out.push(existing);
+export function resolveToolDomain(name: string, website?: string | null): string | null {
+  return extractHostname(website) || lookupMap(name, DOMAIN_BY_NAME);
+}
+
+function isUsableLogoUrl(url?: string | null) {
+  if (!url || !/^https?:\/\//i.test(url)) return false;
+  if (/simpleicons\.org/i.test(url)) return false;
+  if (url.startsWith("data:")) return true;
+  return true;
+}
+
+export function getToolLogoCandidates(
+  name: string,
+  existing?: string | null,
+  website?: string | null
+): string[] {
+  const out: string[] = [];
+  const domain = resolveToolDomain(name, website);
+  const iconSlug = lookupMap(name, SIMPLEICON_BY_NAME);
+
+  if (isUsableLogoUrl(existing)) out.push(existing!);
+
+  if (iconSlug) {
+    out.push(`https://cdn.simpleicons.org/${iconSlug}`);
   }
 
   if (domain) {
     out.push(`https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`);
     out.push(`https://icons.duckduckgo.com/ip3/${domain}.ico`);
+    out.push(`https://logo.clearbit.com/${domain}`);
   }
-
-  if (existing && existing.includes("simpleicons.org")) {
-    out.push(existing);
-  }
-
-  // deterministic colored avatar as last network attempt before initials
-  out.push(
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366F1&color=fff&size=128&bold=true`
-  );
 
   return Array.from(new Set(out));
 }
@@ -181,7 +274,9 @@ export function toolAccent(name: string) {
   return `hsl(${hue} 70% 48%)`;
 }
 
-export function withResolvedLogo<T extends { name: string; logo?: string }>(tool: T): T {
-  const candidates = getToolLogoCandidates(tool.name, tool.logo);
+export function withResolvedLogo<T extends { name: string; logo?: string; website?: string; url?: string }>(
+  tool: T
+): T {
+  const candidates = getToolLogoCandidates(tool.name, tool.logo, tool.website || tool.url);
   return { ...tool, logo: candidates[0] || tool.logo };
 }

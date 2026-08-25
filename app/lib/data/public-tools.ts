@@ -3,6 +3,7 @@ import Tool from "../models/Tool";
 import Category from "../models/Category";
 import memoryStore from "./memoryStore";
 import { staticToolCatalog } from "./static-tool-catalog";
+import { getToolLogoCandidates, resolveToolDomain } from "../tool-logos";
 
 export type PublicTool = {
   _id?: string;
@@ -67,21 +68,26 @@ export function normalizePublicTool(raw: any): PublicTool {
   const isNew =
     Boolean(raw?.isNew) ||
     (createdAt ? Date.now() - createdAt.getTime() < 1000 * 60 * 60 * 24 * 30 : false);
+  const rawWebsite = String(raw?.website || raw?.url || "").trim();
+  const website =
+    (rawWebsite && rawWebsite !== "#" ? rawWebsite : "") ||
+    (resolveToolDomain(name) ? `https://${resolveToolDomain(name)}` : undefined);
+  const logoCandidates = getToolLogoCandidates(name, raw?.logo || raw?.logoUrl, website);
 
   return {
     _id: raw?._id ? String(raw._id) : undefined,
     slug,
     name,
     category: String(raw?.category || "Uncategorized"),
-    logo: String(raw?.logo || raw?.logoUrl || ""),
+    logo: logoCandidates[0] || String(raw?.logo || raw?.logoUrl || ""),
     pricing: String(raw?.pricing || "Free"),
     rating,
     reviews,
     desc,
     shortDescription: raw?.shortDescription || desc,
     description: raw?.description || raw?.fullDescription || desc,
-    website: raw?.website || raw?.url || undefined,
-    url: raw?.url || raw?.website || undefined,
+    website,
+    url: raw?.url || website,
     features: asArray(raw?.features),
     pros: asArray(raw?.pros),
     cons: asArray(raw?.cons),
@@ -139,106 +145,62 @@ function sortTools(list: PublicTool[], sort?: string | null) {
   return next;
 }
 
-async function listFromDb(opts: ListOpts) {
+export async function getMergedSiteTools(opts: { publishedOnly?: boolean } = {}): Promise<PublicTool[]> {
+  await connectDB();
   const publishedOnly = opts.publishedOnly !== false;
-  const mongoFilter: Record<string, any> = {};
-  if (publishedOnly) mongoFilter.status = "published";
-  if (opts.featured) mongoFilter.featured = true;
-  if (opts.category) {
-    const category = opts.category.trim();
-    mongoFilter.$or = [
-      { category: { $regex: `^${category.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" } },
-      { category: { $regex: category.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" } },
-    ];
+  const bySlug = new Map<string, PublicTool>();
+
+  for (const tool of staticToolCatalog) {
+    bySlug.set(tool.slug, normalizePublicTool({ ...tool, status: "published" }));
   }
-  if (opts.search) {
-    const search = opts.search.trim();
-    const searchOr = [
-      { name: { $regex: search, $options: "i" } },
-      { slug: { $regex: search, $options: "i" } },
-      { desc: { $regex: search, $options: "i" } },
-      { shortDescription: { $regex: search, $options: "i" } },
-      { description: { $regex: search, $options: "i" } },
-      { tags: { $regex: search, $options: "i" } },
-    ];
-    if (mongoFilter.$or) {
-      mongoFilter.$and = [{ $or: mongoFilter.$or }, { $or: searchOr }];
-      delete mongoFilter.$or;
-    } else {
-      mongoFilter.$or = searchOr;
+
+  if (isDBConnected()) {
+    const dbTools = await Tool.find(publishedOnly ? { status: "published" } : {}).lean();
+    for (const raw of dbTools) {
+      const tool = normalizePublicTool(raw);
+      if (tool.slug) bySlug.set(tool.slug, tool);
+    }
+  } else {
+    const memoryTools = await memoryStore.getTools({});
+    for (const raw of memoryTools) {
+      if (publishedOnly && raw.status && raw.status !== "published") continue;
+      const tool = normalizePublicTool(raw);
+      if (tool.slug) bySlug.set(tool.slug, tool);
     }
   }
 
-  let sortObj: Record<string, 1 | -1> = { rating: -1, reviews: -1 };
-  if (opts.sort === "newest") sortObj = { createdAt: -1 };
-  if (opts.sort === "name") sortObj = { name: 1 };
-  if (opts.sort === "popular" || opts.sort === "featured") {
-    sortObj = { featured: -1, rating: -1, reviews: -1 };
-  }
-
-  const [items, total] = await Promise.all([
-    Tool.find(mongoFilter)
-      .sort(sortObj)
-      .skip(opts.skip || 0)
-      .limit(opts.limit || 50),
-    Tool.countDocuments(mongoFilter),
-  ]);
-
-  return {
-    tools: items.map(normalizePublicTool),
-    total,
-  };
+  return [...bySlug.values()];
 }
 
-async function listFromFallback(opts: ListOpts) {
-  let all: PublicTool[] = [];
-  const memoryTools = await memoryStore.getTools({});
-  if (memoryTools.length > 0) {
-    all = memoryTools.map(normalizePublicTool);
-  } else {
-    all = staticToolCatalog.map(normalizePublicTool);
-  }
-
-  if (opts.featured) all = all.filter((t) => t.featured);
+function applyListOpts(all: PublicTool[], opts: ListOpts) {
+  let next = all.slice();
+  if (opts.featured) next = next.filter((t) => t.featured);
   if (opts.category) {
     const category = opts.category.toLowerCase();
-    all = all.filter(
+    next = next.filter(
       (t) =>
         t.category.toLowerCase() === category ||
         t.category.toLowerCase().includes(category) ||
         slugify(t.category) === category
     );
   }
-  if (opts.search) all = all.filter((t) => matchesSearch(t, opts.search!));
-
-  all = sortTools(all, opts.sort || "rating");
-  const total = all.length;
+  if (opts.search) next = next.filter((t) => matchesSearch(t, opts.search!));
+  next = sortTools(next, opts.sort || "rating");
+  const total = next.length;
   const skip = opts.skip || 0;
   const limit = opts.limit || 50;
-  return { tools: all.slice(skip, skip + limit), total };
+  return { tools: next.slice(skip, skip + limit), total };
 }
 
 export async function listPublicTools(opts: ListOpts = {}) {
-  await connectDB();
-  if (isDBConnected()) {
-    return listFromDb(opts);
-  }
-  return listFromFallback(opts);
+  const all = await getMergedSiteTools({ publishedOnly: opts.publishedOnly !== false });
+  return applyListOpts(all, opts);
 }
 
 export async function getPublicToolBySlug(slug: string) {
-  await connectDB();
   const clean = decodeURIComponent(slug).trim();
-
-  if (isDBConnected()) {
-    const tool = await Tool.findOne({ slug: clean, status: "published" });
-    return tool ? normalizePublicTool(tool) : null;
-  }
-
-  const memory = await memoryStore.getToolBySlug(clean);
-  if (memory) return normalizePublicTool(memory);
-  const staticHit = staticToolCatalog.find((t) => t.slug === clean);
-  return staticHit ? normalizePublicTool(staticHit) : null;
+  const all = await getMergedSiteTools({ publishedOnly: true });
+  return all.find((tool) => tool.slug === clean) || null;
 }
 
 export async function listPopularPublicTools(limit = 15) {
@@ -277,26 +239,15 @@ export async function listCategoryPublicTools(categoryKey: string, limit = 50) {
 
 export async function listPublicCategories() {
   await connectDB();
+  const tools = await getMergedSiteTools({ publishedOnly: true });
+  const countByName = new Map<string, number>();
+  for (const t of tools) {
+    countByName.set(t.category, (countByName.get(t.category) ?? 0) + 1);
+  }
 
   if (isDBConnected()) {
     try {
-      const [adminCategories, tools] = await Promise.all([
-        Category.find().lean(),
-        Tool.find({ status: "published" }, { category: 1, categoryId: 1 }).lean(),
-      ]);
-
-      const countByName = new Map<string, number>();
-      const countById = new Map<string, number>();
-      for (const t of tools) {
-        if (t.category) {
-          countByName.set(t.category, (countByName.get(t.category) ?? 0) + 1);
-        }
-        if (t.categoryId != null) {
-          const id = String(t.categoryId);
-          countById.set(id, (countById.get(id) ?? 0) + 1);
-        }
-      }
-
+      const adminCategories = await Category.find().lean();
       const merged: Array<{
         name: string;
         slug: string;
@@ -306,7 +257,6 @@ export async function listPublicCategories() {
         key: string;
         label: string;
       }> = [];
-
       const seen = new Set<string>();
 
       for (const c of adminCategories) {
@@ -315,7 +265,7 @@ export async function listPublicCategories() {
         merged.push({
           name,
           slug: c.slug || slugify(name),
-          count: countByName.get(name) ?? countById.get(String(c._id)) ?? 0,
+          count: countByName.get(name) ?? 0,
           icon: c.icon ?? null,
           description: c.description ?? null,
           key: name,
@@ -346,18 +296,13 @@ export async function listPublicCategories() {
     return memoryCats.map((c: any) => ({
       name: c.name,
       slug: c.slug || slugify(c.name),
-      count: c.count || 0,
+      count: countByName.get(c.name) || c.count || 0,
       key: c.name,
       label: c.name,
     }));
   }
 
-  // Last-resort: derive categories from static catalog.
-  const map = new Map<string, number>();
-  for (const tool of staticToolCatalog) {
-    map.set(tool.category, (map.get(tool.category) || 0) + 1);
-  }
-  return [...map.entries()]
+  return [...countByName.entries()]
     .map(([name, count]) => ({
       name,
       slug: slugify(name),

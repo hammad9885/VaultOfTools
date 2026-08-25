@@ -10,6 +10,7 @@ import { DataTable, Column } from "../../components/admin/DataTable";
 import { Pagination } from "../../components/admin/Pagination";
 import { Badge, Button, Field, Input, Modal, Select, StatusBadge, Textarea } from "../../components/admin/ui";
 import { slugify } from "../../lib/admin/utils";
+import { ToolLogo } from "../../components/ToolLogo";
 
 const EMPTY_FORM = {
   name: "",
@@ -155,12 +156,7 @@ export default function AdminToolsPage() {
       render: (t) => (
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
-            {t.logo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={t.logo} alt="" className="h-6 w-6 object-contain" />
-            ) : (
-              <span className="text-[10px] font-bold text-muted-foreground">{t.name.slice(0, 2).toUpperCase()}</span>
-            )}
+            <ToolLogo name={t.name} logo={t.logo} website={t.website || t.url} size={22} />
           </div>
           <div className="min-w-0">
             <p className="truncate font-medium text-foreground">{t.name}</p>

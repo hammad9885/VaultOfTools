@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isDBConnected } from "@/app/lib/config/db";
+import { getMergedSitePosts } from "@/app/lib/data/site-posts";
+import { authenticate } from "@/app/lib/middleware/auth";
+import { connectDB, isDBConnected } from "@/app/lib/config/db";
 import BlogPost from "@/app/lib/models/BlogPost";
 import memoryStore from "@/app/lib/data/memoryStore";
-import { posts as dataPosts } from "@/app/lib/data/blog";
-import { authenticate } from "@/app/lib/middleware/auth";
-
-function normalizePost(p: any) {
-  return { ...p, id: p._id || p.id };
-}
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,43 +14,21 @@ export async function GET(request: NextRequest) {
     const page = Number(searchParams.get("page")) || 1;
     const limit = Number(searchParams.get("limit")) || 20;
 
-    const filter: any = {};
-    if (category) filter.category = category;
-    if (featured === "true") filter.featured = true;
-    if (search) {
-      filter.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { excerpt: { $regex: search, $options: "i" } },
-      ];
-    }
-
-    let posts, total;
-
-    if (isDBConnected()) {
-      const skip = (page - 1) * limit;
-      [posts, total] = await Promise.all([
-        BlogPost.find(filter).sort({ date: -1 }).skip(skip).limit(limit),
-        BlogPost.countDocuments(filter),
-      ]);
-    } else {
-      let all = await memoryStore.getPosts(filter);
-      if (all.length === 0) {
-        all = dataPosts.filter((p: any) => {
-          if (filter.category && p.category !== filter.category) return false;
-          if (filter.featured && !p.featured) return false;
-          if (filter.search) {
-            const q = filter.search.toLowerCase();
-            if (!p.title.toLowerCase().includes(q) && !p.excerpt.toLowerCase().includes(q)) return false;
-          }
-          return true;
-        });
+    const all = await getMergedSitePosts();
+    let posts = all.filter((p) => {
+      if (category && p.category !== category) return false;
+      if (featured === "true" && !p.featured) return false;
+      if (search) {
+        const q = search.toLowerCase();
+        if (!p.title.toLowerCase().includes(q) && !(p.excerpt || "").toLowerCase().includes(q)) return false;
       }
-      total = all.length;
-      const skip = (page - 1) * limit;
-      posts = all.slice(skip, skip + limit).map(normalizePost);
-    }
+      return true;
+    });
+    const total = posts.length;
+    const skip = (page - 1) * limit;
+    posts = posts.slice(skip, skip + limit);
 
-    return NextResponse.json({ posts, total, page, pages: Math.ceil(total / limit) });
+    return NextResponse.json({ posts, total, page, pages: Math.ceil(total / limit) || 1 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
   }
@@ -63,6 +37,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     await authenticate(request);
+    await connectDB();
     const { title, slug, excerpt, category, coverImage, date, readTime, featured, author, content } = await request.json();
 
     if (!title || !slug || !category) {

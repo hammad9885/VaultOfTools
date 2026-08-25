@@ -20,6 +20,7 @@ import { OverviewData } from "../lib/admin/types";
 import { Card, StatCard } from "../components/admin/cards";
 import { BarChart, DonutChart } from "../components/admin/charts";
 import { Spinner, StatusBadge } from "../components/admin/ui";
+import { ToolLogo } from "../components/ToolLogo";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -128,12 +129,7 @@ export default function AdminDashboardPage() {
               <li key={t._id} className="flex items-center justify-between gap-3 py-2.5">
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
-                    {t.logo ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={t.logo} alt="" className="h-6 w-6 object-contain" />
-                    ) : (
-                      <Wrench size={15} className="text-muted-foreground" />
-                    )}
+                    <ToolLogo name={t.name} logo={t.logo} website={t.website || t.url} size={22} />
                   </div>
                   <div className="min-w-0">
                     <Link href={`/tool/${t.slug}`} className="block truncate text-sm font-medium text-foreground hover:text-primary">
@@ -214,6 +210,36 @@ export default function AdminDashboardPage() {
           </ul>
         </Card>
       </div>
+
+      <Card
+        title="Blog posts"
+        description="Published articles from the site catalog and database"
+        actions={
+          <Link href="/admin/posts" className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+            View all <ArrowRight size={12} />
+          </Link>
+        }
+      >
+        <ul className="divide-y divide-border">
+          {(data.recentPosts || []).map((p) => (
+            <li key={p._id} className="flex items-center justify-between gap-3 py-2.5">
+              <div className="min-w-0">
+                <Link href={`/blog/${p.slug}`} className="block truncate text-sm font-medium text-foreground hover:text-primary">
+                  {p.title}
+                </Link>
+                <p className="truncate text-xs text-muted-foreground">
+                  {p.category}
+                  {p.excerpt ? ` · ${p.excerpt}` : ""}
+                </p>
+              </div>
+              <StatusBadge status={p.featured ? "featured" : "published"} />
+            </li>
+          ))}
+          {(!data.recentPosts || data.recentPosts.length === 0) && (
+            <li className="py-6 text-center text-xs text-muted-foreground">No blog posts yet.</li>
+          )}
+        </ul>
+      </Card>
     </div>
   );
 }

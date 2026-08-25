@@ -5,6 +5,7 @@ import { ArrowRight, Search, Zap, Sparkles, Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SiteNav, SiteFooter } from "../routes/index";
+import { ToolLogo } from "../components/ToolLogo";
 import { api } from "../lib/api";
 
 
@@ -340,15 +341,7 @@ export default function CompareLandingPage() {
               className="group rounded-2xl border border-border bg-card p-5 text-center hover:border-primary/30 hover:shadow-md transition-all"
             >
               <div className="w-10 h-10 rounded-xl bg-primary-muted grid place-items-center mx-auto mb-3 group-hover:scale-105 transition-transform overflow-hidden">
-                {alt.logo ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={alt.logo}
-                    alt={`${alt.name} logo`}
-                    className="w-6 h-6 object-contain"
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                  />
-                ) : null}
+                <ToolLogo name={alt.name} logo={alt.logo} size={24} />
               </div>
               <p className="font-semibold text-foreground text-sm truncate">{alt.name}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{alt.altCount} alternatives</p>

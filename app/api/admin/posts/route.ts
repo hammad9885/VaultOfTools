@@ -17,27 +17,24 @@ export async function GET(request: Request) {
     const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
     const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("limit")) || 10));
 
-    const filter: Record<string, any> = {};
+    const { getMergedSitePosts } = await import("@/app/lib/data/site-posts");
+    let all = await getMergedSitePosts();
     if (search) {
-      filter.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { slug: { $regex: search, $options: "i" } },
-        { excerpt: { $regex: search, $options: "i" } },
-      ];
+      const q = search.toLowerCase();
+      all = all.filter(
+        (p) =>
+          p.title.toLowerCase().includes(q) ||
+          p.slug.toLowerCase().includes(q) ||
+          (p.excerpt || "").toLowerCase().includes(q)
+      );
     }
-    if (category) filter.category = category;
+    if (category) all = all.filter((p) => p.category === category);
 
-    const [total, items] = await Promise.all([
-      BlogPost.countDocuments(filter),
-      BlogPost.find(filter)
-        .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .lean(),
-    ]);
-
+    const total = all.length;
     const pages = Math.max(1, Math.ceil(total / limit));
-    return Response.json({ items, total, page: clampPage(page, pages), pages });
+    const safePage = clampPage(page, pages);
+    const items = all.slice((safePage - 1) * limit, safePage * limit);
+    return Response.json({ items, total, page: safePage, pages });
   } catch (err: any) {
     return errorResponse(err);
   }
