@@ -10,6 +10,8 @@ export interface ITool {
   name: string;
   category: string;
   categoryId?: string | null;
+  subcategory?: string;
+  toolType?: string;
   logo?: string;
   logoUrl?: string | null;
   bannerUrl?: string | null;
@@ -54,6 +56,8 @@ const toolSchema = new mongoose.Schema<ITool>(
     name: { type: String, required: true, trim: true },
     category: { type: String, required: true, trim: true },
     categoryId: { type: String, default: null },
+    subcategory: { type: String, trim: true, default: "" },
+    toolType: { type: String, trim: true, default: "" },
     logo: { type: String },
     logoUrl: { type: String, default: null },
     bannerUrl: { type: String, default: null },

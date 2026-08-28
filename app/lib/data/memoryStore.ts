@@ -21,6 +21,7 @@ class MemoryStore {
       location: data.location || null,
       company: data.company || null,
       role: data.role || "user",
+      status: data.status || "active",
       googleId: data.googleId || null,
       createdAt: new Date(),
     };
@@ -215,6 +216,8 @@ class MemoryStore {
       name: data.name,
       category: data.category || "Uncategorized",
       categoryId: data.categoryId || null,
+      subcategory: data.subcategory || "",
+      toolType: data.toolType || "",
       logo: data.logo || data.logoUrl || null,
       logoUrl: data.logoUrl || data.logo || null,
       bannerUrl: data.bannerUrl || null,

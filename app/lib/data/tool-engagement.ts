@@ -36,7 +36,8 @@ async function seedRow(slug: string): Promise<ToolEngagement> {
 
   if (isDBConnected()) {
     try {
-      const tool = await Tool.findOne({ slug }).select("slug clicks upvotes").lean();
+      const rows = await Tool.find({ slug }).select("slug clicks upvotes").lean();
+      const tool = rows[0];
       if (tool) return seedFromTool(tool);
     } catch {
       // fall through

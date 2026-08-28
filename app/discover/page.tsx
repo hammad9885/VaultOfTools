@@ -53,7 +53,20 @@ function DiscoverContent() {
     }).catch(() => {});
   }, []);
 
-  const allTools = apiTools.length > 0 ? apiTools : fallbackTrending;
+  const allTools: ToolData[] =
+    apiTools.length > 0
+      ? apiTools
+      : fallbackTrending.map((t) => ({
+          slug: t.slug,
+          name: t.name,
+          category: t.category,
+          pricing: t.pricing as string,
+          rating: t.rating,
+          reviews: t.reviews,
+          desc: t.desc,
+          website: t.website,
+          logo: typeof t.logo === "string" ? t.logo : undefined,
+        }));
 
   const tools = useMemo(() => {
     return allTools.filter((t: ToolData) => {
@@ -140,7 +153,7 @@ function DiscoverContent() {
                   slug: t.slug,
                   name: t.name,
                   category: t.category,
-                  logo: (t as ToolData).logo || fallbackMatch?.logo || fallbackTrending[0]?.logo,
+                  logo: (t.logo || fallbackMatch?.logo || fallbackTrending[0]?.logo) as typeof fallbackTrending[number]["logo"],
                   pricing: pricing || "Free",
                   rating: t.rating || 0,
                   reviews: t.reviews || 0,

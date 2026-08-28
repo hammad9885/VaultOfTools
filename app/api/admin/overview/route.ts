@@ -85,7 +85,7 @@ export async function GET(request: Request) {
               .sort({ createdAt: -1 })
               .limit(8)
               .select("email displayName role status createdAt")
-              .lean() as Promise<any[]>,
+              .lean() as unknown as Promise<any[]>,
           () =>
             memoryUsers.slice(0, 8).map((u) => ({
               _id: u._id,
@@ -112,7 +112,7 @@ export async function GET(request: Request) {
               .sort({ createdAt: -1 })
               .limit(8)
               .select("toolName toolSlug userName rating text status createdAt")
-              .lean() as Promise<any[]>,
+              .lean() as unknown as Promise<any[]>,
           () =>
             memoryReviews.slice(0, 8).map((r: any) => ({
               _id: r._id,
@@ -143,7 +143,7 @@ export async function GET(request: Request) {
               .sort({ createdAt: -1 })
               .limit(8)
               .select("name website category status createdAt")
-              .lean() as Promise<any[]>,
+              .lean() as unknown as Promise<any[]>,
           () =>
             memorySubmissions.slice(0, 8).map((s: any) => ({
               _id: s._id,

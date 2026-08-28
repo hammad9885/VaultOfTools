@@ -21,7 +21,8 @@ export async function PATCH(request: Request, { params }: Ctx) {
     const { id } = await params;
     const body = await request.json();
     const allowed = [
-      "name", "slug", "category", "categoryId", "logo", "logoUrl", "bannerUrl",
+      "name", "slug", "category", "categoryId", "subcategory", "toolType", "logo",
+      "logoUrl", "bannerUrl",
       "imageUrl", "url", "website", "shortDescription", "fullDescription",
       "description", "pricing", "rating", "reviews", "features", "pros", "cons",
       "tags", "featured", "featuredOrder", "sponsored", "sponsorName",

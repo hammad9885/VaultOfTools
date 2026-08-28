@@ -10,17 +10,20 @@ export const dynamic = "force-dynamic";
 function buildToolPayload(body: any, name: string, slug: string) {
   const shortDescription = String(body.shortDescription || body.desc || "").trim();
   const description = String(body.description || body.fullDescription || shortDescription).trim();
+  const website = String(body.website || body.url || "").trim();
   return {
     slug,
     name,
     category: String(body.category || "Uncategorized").trim(),
     categoryId: body.categoryId || null,
+    subcategory: String(body.subcategory || "").trim(),
+    toolType: String(body.toolType || "").trim(),
     logo: body.logo || body.logoUrl || undefined,
     logoUrl: body.logoUrl || body.logo || null,
     bannerUrl: body.bannerUrl || null,
     imageUrl: body.imageUrl || null,
-    url: body.url || null,
-    website: body.website || body.url || undefined,
+    url: website || (body.url ? body.url : null),
+    website: website || undefined,
     shortDescription,
     fullDescription: body.fullDescription || description,
     description,
@@ -86,7 +89,12 @@ export async function GET(request: Request) {
       slug: t.slug,
       name: t.name,
       category: t.category,
+      subcategory: t.subcategory || "",
+      toolType: t.toolType || "",
       logo: t.logo,
+      logoUrl: t.logoUrl || null,
+      bannerUrl: t.bannerUrl || null,
+      imageUrl: t.imageUrl || null,
       website: t.website,
       url: t.url,
       shortDescription: t.shortDescription || t.desc,

@@ -16,6 +16,10 @@ const EMPTY_FORM = {
   name: "",
   slug: "",
   category: "",
+  subcategory: "",
+  toolType: "",
+  logo: "",
+  imageUrl: "",
   website: "",
   url: "",
   shortDescription: "",
@@ -82,6 +86,10 @@ export default function AdminToolsPage() {
       name: tool.name,
       slug: tool.slug,
       category: tool.category,
+      subcategory: tool.subcategory || "",
+      toolType: tool.toolType || "",
+      logo: tool.logo || tool.logoUrl || tool.imageUrl || "",
+      imageUrl: tool.imageUrl || tool.bannerUrl || "",
       website: tool.website || tool.url || "",
       url: tool.url || "",
       shortDescription: tool.shortDescription || "",
@@ -103,8 +111,11 @@ export default function AdminToolsPage() {
     }
     setSaving(true);
     try {
+      const websiteUrl = form.url.trim() || form.website.trim();
       const payload = {
         ...form,
+        url: websiteUrl,
+        website: websiteUrl,
         slug: form.slug.trim() || slugify(form.name),
         features: form.features.split(",").map((s) => s.trim()).filter(Boolean),
         tags: form.tags.split(",").map((s) => s.trim()).filter(Boolean),
@@ -308,36 +319,73 @@ export default function AdminToolsPage() {
         }
       >
         <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Name *">
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <div>
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Basic</h4>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Name *">
+                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              </Field>
+              <Field label="Slug" hint="Auto-generated from name if empty">
+                <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
+              </Field>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Logo" hint="URL to the tool logo image">
+                <Input value={form.logo} onChange={(e) => setForm({ ...form, logo: e.target.value })} placeholder="https://…/logo.png" />
+              </Field>
+              <Field label="Thumbnail / Cover Image" hint="URL to the cover/thumbnail image">
+                <Input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://…/cover.png" />
+              </Field>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Category *">
+                <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+              </Field>
+              <Field label="Subcategory">
+                <Input value={form.subcategory} onChange={(e) => setForm({ ...form, subcategory: e.target.value })} />
+              </Field>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Tool Type">
+                <Select value={form.toolType} onChange={(e) => setForm({ ...form, toolType: e.target.value })}>
+                  <option value="">— Select —</option>
+                  <option>AI Tool</option>
+                  <option>Software</option>
+                  <option>SaaS</option>
+                  <option>Chrome Extension</option>
+                  <option>Browser Extension</option>
+                  <option>Mobile App</option>
+                  <option>Desktop App</option>
+                  <option>Plugin</option>
+                  <option>Open Source</option>
+                  <option>API</option>
+                  <option>Website</option>
+                  <option>Other</option>
+                </Select>
+              </Field>
+              <Field label="Pricing">
+                <Select value={form.pricing} onChange={(e) => setForm({ ...form, pricing: e.target.value })}>
+                  <option>Free</option>
+                  <option>Freemium</option>
+                  <option>Paid</option>
+                  <option>subscription</option>
+                </Select>
+              </Field>
+            </div>
+            <Field label="Website URL" hint="Regular website or affiliate URL">
+              <Input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} placeholder="https://…" />
             </Field>
-            <Field label="Slug" hint="Auto-generated from name if empty">
-              <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
-            </Field>
+            <div className="mt-4">
+              <Field label="Short description">
+                <Textarea rows={2} value={form.shortDescription} onChange={(e) => setForm({ ...form, shortDescription: e.target.value })} />
+              </Field>
+            </div>
+            <div className="mt-4">
+              <Field label="Full description">
+                <Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              </Field>
+            </div>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Category *">
-              <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
-            </Field>
-            <Field label="Pricing">
-              <Select value={form.pricing} onChange={(e) => setForm({ ...form, pricing: e.target.value })}>
-                <option>Free</option>
-                <option>Freemium</option>
-                <option>Paid</option>
-                <option>subscription</option>
-              </Select>
-            </Field>
-          </div>
-          <Field label="Website URL">
-            <Input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} />
-          </Field>
-          <Field label="Short description">
-            <Textarea rows={2} value={form.shortDescription} onChange={(e) => setForm({ ...form, shortDescription: e.target.value })} />
-          </Field>
-          <Field label="Full description">
-            <Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-          </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Features" hint="Comma separated">
               <Input value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} />

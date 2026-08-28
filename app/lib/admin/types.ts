@@ -17,6 +17,8 @@ export interface ToolRow {
   slug: string;
   name: string;
   category: string;
+  subcategory?: string;
+  toolType?: string;
   logo?: string | null;
   logoUrl?: string | null;
   bannerUrl?: string | null;

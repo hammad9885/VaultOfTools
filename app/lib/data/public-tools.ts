@@ -11,7 +11,12 @@ export type PublicTool = {
   slug: string;
   name: string;
   category: string;
+  subcategory?: string;
+  toolType?: string;
   logo: string;
+  logoUrl?: string | null;
+  bannerUrl?: string | null;
+  imageUrl?: string | null;
   pricing: string;
   rating: number;
   reviews: number;
@@ -96,7 +101,12 @@ export function normalizePublicTool(raw: any): PublicTool {
     slug,
     name,
     category: String(raw?.category || "Uncategorized"),
+    subcategory: raw?.subcategory ? String(raw.subcategory) : undefined,
+    toolType: raw?.toolType ? String(raw.toolType) : undefined,
     logo: logoCandidates[0] || String(raw?.logo || raw?.logoUrl || ""),
+    logoUrl: raw?.logoUrl ? String(raw.logoUrl) : null,
+    bannerUrl: raw?.bannerUrl ? String(raw.bannerUrl) : null,
+    imageUrl: raw?.imageUrl ? String(raw.imageUrl) : null,
     pricing: String(raw?.pricing || "Free"),
     rating,
     reviews,

@@ -149,7 +149,8 @@ export async function POST(request: Request) {
         role,
         status,
       });
-      const raw = await User.findOne({ _id: String(user._id) }).select("-password").lean();
+      const raw = user.toObject ? user.toObject() : { ...user };
+      if (raw.password) delete raw.password;
       return Response.json(raw, { status: 201 });
     } catch (err: any) {
       if (err?.status === 409 || /already exists/i.test(String(err?.message))) {
