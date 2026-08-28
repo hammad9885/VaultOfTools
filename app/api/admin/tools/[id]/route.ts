@@ -28,7 +28,7 @@ export async function PATCH(request: Request, { params }: Ctx) {
       "freeTrial", "trialDuration", "rating", "reviews", "features", "pros", "cons",
       "bestFor", "useCases", "tags", "searchKeywords", "alternatives", "videoUrl", "screenshots", "compare", "featured", "featuredOrder", "sponsored", "sponsorName",
       "sponsorStartDate", "sponsorEndDate", "sponsorPriority", "sponsorActive",
-      "seoTitle", "seoDescription", "ogImage", "status", "publishDate",
+      "seoTitle", "seoDescription", "ogImage", "status", "publishDate", "trending", "editorsChoice", "verified", "displayOrder",
     ];
 
     const patch: Record<string, any> = {};
@@ -45,8 +45,8 @@ export async function PATCH(request: Request, { params }: Ctx) {
       }
     }
 
-    const bools = ["featured", "sponsored", "sponsorActive", "freePlan", "freeTrial"];
-    const numbers = ["rating", "reviews", "featuredOrder", "sponsorPriority"];
+    const bools = ["featured", "sponsored", "sponsorActive", "freePlan", "freeTrial", "trending", "editorsChoice", "verified"];
+    const numbers = ["rating", "reviews", "featuredOrder", "sponsorPriority", "displayOrder"];
     const arrays = ["features", "pros", "cons", "useCases", "tags", "searchKeywords", "alternatives", "screenshots"];
 
     for (const k of ["seoTitle", "seoDescription", "ogImage"]) {

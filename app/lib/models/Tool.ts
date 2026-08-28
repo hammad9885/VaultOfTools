@@ -72,6 +72,10 @@ export interface ITool {
   sponsorEndDate?: Date | null;
   sponsorPriority?: number | null;
   sponsorActive?: boolean;
+  trending?: boolean;
+  editorsChoice?: boolean;
+  verified?: boolean;
+  displayOrder?: number | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
   ogImage?: string | null;
@@ -133,6 +137,10 @@ const toolSchema = new mongoose.Schema<ITool>(
     sponsorEndDate: { type: Date, default: null },
     sponsorPriority: { type: Number, default: null },
     sponsorActive: { type: Boolean, default: false },
+    trending: { type: Boolean, default: false },
+    editorsChoice: { type: Boolean, default: false },
+    verified: { type: Boolean, default: false },
+    displayOrder: { type: Number, default: null },
     seoTitle: { type: String, default: null },
     seoDescription: { type: String, default: null },
     ogImage: { type: String, default: null },

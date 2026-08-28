@@ -3,7 +3,7 @@ import Tool from "@/app/lib/models/Tool";
 import memoryStore from "@/app/lib/data/memoryStore";
 import { requireSuperAdmin, errorResponse } from "@/app/lib/admin/auth";
 import { logActivity } from "@/app/lib/admin/activity";
-import { asBool, asNumber, asStringArray, asCompareData, clampPage, slugify } from "@/app/lib/admin/utils";
+import { asBool, asNumber, asStringArray, asCompareData, asNumberOrNull, clampPage, slugify } from "@/app/lib/admin/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +49,10 @@ function buildToolPayload(body: any, name: string, slug: string) {
     compare: asCompareData(body.compare),
     featured: asBool(body.featured),
     sponsored: asBool(body.sponsored),
+    trending: asBool(body.trending),
+    editorsChoice: asBool(body.editorsChoice),
+    verified: asBool(body.verified),
+    displayOrder: asNumberOrNull(body.displayOrder),
     seoTitle: body.seoTitle ? String(body.seoTitle).trim() : null,
     seoDescription: body.seoDescription ? String(body.seoDescription).trim() : null,
     ogImage: body.ogImage ? String(body.ogImage).trim() : null,
@@ -138,6 +142,10 @@ export async function GET(request: Request) {
       ogImage: t.ogImage || null,
       featured: Boolean(t.featured),
       sponsored: Boolean(t.sponsored),
+      trending: Boolean(t.trending),
+      editorsChoice: Boolean(t.editorsChoice),
+      verified: Boolean(t.verified),
+      displayOrder: t.displayOrder ?? null,
       status: t.status || "published",
       createdAt: t.createdAt || new Date().toISOString(),
       updatedAt: t.createdAt || new Date().toISOString(),

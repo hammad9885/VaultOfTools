@@ -330,6 +330,10 @@ const EMPTY_FORM = {
   compareAttributes: "[]",
   featured: false,
   sponsored: false,
+  trending: false,
+  editorsChoice: false,
+  verified: false,
+  displayOrder: "",
   status: "published",
 };
 
@@ -429,6 +433,10 @@ export default function AdminToolsPage() {
       compareAttributes: JSON.stringify(tool.compare?.attributes || []),
       featured: tool.featured,
       sponsored: tool.sponsored,
+      trending: tool.trending || false,
+      editorsChoice: tool.editorsChoice || false,
+      verified: tool.verified || false,
+      displayOrder: tool.displayOrder != null ? String(tool.displayOrder) : "",
       status: tool.status,
     });
     setModalOpen(true);
@@ -460,6 +468,10 @@ export default function AdminToolsPage() {
         seoTitle: form.seoTitle.trim(),
         seoDescription: form.seoDescription.trim(),
         ogImage: form.ogImage.trim(),
+        trending: form.trending,
+        editorsChoice: form.editorsChoice,
+        verified: form.verified,
+        displayOrder: toNum(form.displayOrder),
         compare: {
           overallRating: toNum(form.compareOverallRating),
           easeOfUse: toNum(form.compareEaseOfUse),
@@ -560,6 +572,9 @@ export default function AdminToolsPage() {
         <div className="flex flex-wrap gap-1">
           {t.featured && <Badge tone="violet">Featured</Badge>}
           {t.sponsored && <Badge tone="info">Sponsored</Badge>}
+          {t.trending && <Badge tone="warning">Trending</Badge>}
+          {t.editorsChoice && <Badge tone="violet">Editor's Choice</Badge>}
+          {t.verified && <Badge tone="success">Verified</Badge>}
           <StatusBadge status={t.status} />
         </div>
       ),
@@ -928,22 +943,42 @@ export default function AdminToolsPage() {
               </Field>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <label className="flex items-center gap-2 text-sm text-foreground">
-              <input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} />
-              Featured
-            </label>
-            <label className="flex items-center gap-2 text-sm text-foreground">
-              <input type="checkbox" checked={form.sponsored} onChange={(e) => setForm({ ...form, sponsored: e.target.checked })} />
-              Sponsored
-            </label>
-            <Field label="Status">
-              <Select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-                <option value="published">Published</option>
-                <option value="draft">Draft</option>
-                <option value="archived">Archived</option>
-              </Select>
-            </Field>
+          <div>
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Publishing</h4>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} />
+                Featured
+              </label>
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input type="checkbox" checked={form.sponsored} onChange={(e) => setForm({ ...form, sponsored: e.target.checked })} />
+                Sponsored
+              </label>
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input type="checkbox" checked={form.trending} onChange={(e) => setForm({ ...form, trending: e.target.checked })} />
+                Trending
+              </label>
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input type="checkbox" checked={form.editorsChoice} onChange={(e) => setForm({ ...form, editorsChoice: e.target.checked })} />
+                Editor&apos;s Choice
+              </label>
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input type="checkbox" checked={form.verified} onChange={(e) => setForm({ ...form, verified: e.target.checked })} />
+                Verified
+              </label>
+              <Field label="Display Order" hint="Lower numbers sort first">
+                <Input type="number" value={form.displayOrder} onChange={(e) => setForm({ ...form, displayOrder: e.target.value })} placeholder="0" />
+              </Field>
+            </div>
+            <div className="mt-4 sm:max-w-xs">
+              <Field label="Status">
+                <Select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
+                  <option value="archived">Archived</option>
+                </Select>
+              </Field>
+            </div>
           </div>
         </div>
       </Modal>

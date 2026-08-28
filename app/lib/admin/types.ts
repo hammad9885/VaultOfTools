@@ -74,6 +74,10 @@ export interface ToolRow {
   ogImage?: string | null;
   featured: boolean;
   sponsored: boolean;
+  trending?: boolean;
+  editorsChoice?: boolean;
+  verified?: boolean;
+  displayOrder?: number | null;
   status: string;
   createdAt: string;
   updatedAt: string;

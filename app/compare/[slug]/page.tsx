@@ -1,7 +1,7 @@
 "use client";
 
 // import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { api } from "../../lib/api";
 import { Check, X } from "lucide-react";
@@ -35,30 +35,127 @@ import { ToolLogo } from "../../components/ToolLogo";
 //   ),
 // });
 
+function display(value: any): string {
+  if (value === null || value === undefined || value === "") return "—";
+  if (Array.isArray(value)) return value.filter(Boolean).join(", ") || "—";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  return String(value);
+}
+
+/** Build comparison rows from two tools' live compare data. */
+function buildRows(aTool: any, bTool: any): { label: string; a: string; b: string }[] {
+  const a = aTool?.compare || {};
+  const b = bTool?.compare || {};
+  const labels: string[] = [];
+  const attrs = new Map<string, { label: string }>();
+
+  const add = (label: string) => {
+    if (!labels.includes(label)) labels.push(label);
+  };
+  const addAttr = (attr: { label?: string; value?: string }) => {
+    const name = String(attr?.label || "").trim();
+    if (name) {
+      if (!attrs.has(name)) attrs.set(name, { label: name });
+      if (!labels.some((l) => l.toUpperCase() === name.toUpperCase())) labels.push(name);
+    }
+  };
+
+  add("Overall Rating");
+  add("Ease of Use");
+  add("Features Score");
+  add("Value for Money");
+  add("AI Powered");
+  add("API Available");
+  add("Free Plan");
+  add("Free Trial");
+  add("Team Collaboration");
+  add("Customer Support");
+  add("Platforms");
+  add("Integrations");
+  (a.attributes || []).forEach(addAttr);
+  (b.attributes || []).forEach(addAttr);
+
+  const valueOf = (tool: any, compare: any, label: string): string => {
+    switch (label) {
+      case "Overall Rating": return display(compare.overallRating);
+      case "Ease of Use": return display(compare.easeOfUse);
+      case "Features Score": return display(compare.featuresScore);
+      case "Value for Money": return display(compare.valueForMoney);
+      case "AI Powered": return display(compare.aiPowered);
+      case "API Available": return display(compare.apiAvailable);
+      case "Free Plan": return display(tool?.freePlan);
+      case "Free Trial": return display(tool?.freeTrial);
+      case "Team Collaboration": return display(compare.teamCollaboration);
+      case "Customer Support": return display(compare.customerSupport);
+      case "Platforms": return display(compare.platforms);
+      case "Integrations": return display(compare.integrations);
+      default: {
+        const attr = [...(compare.attributes || [])].find(
+          (x: any) => String(x?.label || "").trim().toUpperCase() === label.toUpperCase()
+        );
+        return attr ? display(attr.value) : "—";
+      }
+    }
+  };
+
+  return labels
+    .filter((label) => {
+      // Only include when at least one side has a real value.
+      const va = valueOf(aTool, a, label);
+      const vb = valueOf(bTool, b, label);
+      return va !== "—" || vb !== "—";
+    })
+    .map((label) => ({ label, a: valueOf(aTool, a, label), b: valueOf(bTool, b, label) }));
+}
+
 export default function ComparePage() {
   const params = useParams<{ slug: string }>();
   const slug = params.slug ?? "";
 
   const [data, setData] = useState<any>(null);
+  const [toolA, setToolA] = useState<any>(null);
+  const [toolB, setToolB] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (slug) {
-      api.getComparisonDetail(slug).then((res) => {
-        setData(res);
-        setLoading(false);
-      }).catch(() => setLoading(false));
-    }
-  }, [slug]);
 
   const [aRaw, bRaw] = slug.split("-vs-");
   const slugA = (aRaw ?? "Tool A").replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
   const slugB = (bRaw ?? "Tool B").replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
-  const a = data?.a || slugA;
-  const b = data?.b || slugB;
-  const rows = data?.rows || [];
-  const prosA = data?.prosA || [];
-  const prosB = data?.prosB || [];
+  const slugAKey = (aRaw ?? "").toLowerCase();
+  const slugBKey = (bRaw ?? "").toLowerCase();
+
+  useEffect(() => {
+    if (!slug) return;
+    let cancelled = false;
+    setLoading(true);
+    Promise.all([
+      api.getTool(slugAKey).catch(() => null),
+      api.getTool(slugBKey).catch(() => null),
+      api.getComparisonDetail(slug).catch(() => null),
+    ])
+      .then(([ta, tb, detail]) => {
+        if (cancelled) return;
+        setToolA(ta);
+        setToolB(tb);
+        setData(detail);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, slugAKey, slugBKey]);
+
+  const a = toolA?.name || data?.a || slugA;
+  const b = toolB?.name || data?.b || slugB;
+  const rows = useMemo(() => {
+    if (toolA || toolB) {
+      const live = buildRows(toolA || {}, toolB || {});
+      if (live.length > 0) return live;
+    }
+    return data?.rows || [];
+  }, [toolA, toolB, data]);
+  const prosA = data?.prosA || toolA?.pros || [];
+  const prosB = data?.prosB || toolB?.pros || [];
 
   if (loading) {
     return (
@@ -67,6 +164,18 @@ export default function ComparePage() {
       </div>
     );
   }
+
+  const verdict = rows
+    .filter((r: any) => r.a !== "—" && r.b !== "—" && r.a !== r.b)
+    .map((r: any) => {
+      const na = Number(r.a);
+      const nb = Number(r.b);
+      if (Number.isFinite(na) && Number.isFinite(nb)) {
+        return { label: r.label, winner: na > nb ? "a" : na < nb ? "b" : null };
+      }
+      return { label: r.label, winner: null };
+    })
+    .filter((v: any) => v.winner)[0];
 
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
@@ -135,7 +244,9 @@ export default function ComparePage() {
         <div className="mt-10 rounded-2xl bg-primary-muted p-5 text-center sm:p-8">
           <h3 className="text-xl font-bold text-foreground">Verdict</h3>
           <p className="mt-2 text-muted-foreground max-w-2xl mx-auto">
-            Pick <span className="font-semibold text-primary">{b}</span> for coding-heavy and long-document workflows. Pick <span className="font-semibold text-primary">{a}</span> if you need multimodal output and plugin breadth.
+            {verdict
+              ? `${verdict.winner === "a" ? a : b} leads on ${verdict.label.toLowerCase()}. Always test both tools against your specific workflow before committing.`
+              : `Pick ${a} or ${b} based on your budget and priorities — compare the attributes above against your specific workflow.`}
           </p>
         </div>
       </div>

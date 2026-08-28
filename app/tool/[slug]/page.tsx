@@ -149,9 +149,12 @@ export default function ToolPage() {
   if (error || !tool) return notFound();
 
   const alternativeTrends = staticData?.trending || trending;
-  const alternatives = alternativeTrends
-    .filter((t: any) => t.slug !== tool.slug)
-    .slice(0, 3);
+  const altSlugs = Array.isArray(tool.alternatives) ? tool.alternatives.filter(Boolean) : [];
+  const alternatives = altSlugs.length > 0
+    ? alternativeTrends.filter((t: any) => altSlugs.includes(t.slug)).concat(
+        alternativeTrends.filter((t: any) => !altSlugs.includes(t.slug) && t.slug !== tool.slug)
+      ).slice(0, 3)
+    : alternativeTrends.filter((t: any) => t.slug !== tool.slug).slice(0, 3);
   const features = tool.features?.length > 0 ? tool.features : (staticData?.fallbackFeatures || ["API access with simple key auth", "Team workspaces and shared libraries", "Export to PNG, SVG, and JSON", "Integrations with Slack, Notion, Zapier"]);
   const pros = tool.pros?.length > 0 ? tool.pros : (staticData?.fallbackPros || ["Fast and responsive", "Generous free tier"]);
   const cons = tool.cons?.length > 0 ? tool.cons : (staticData?.fallbackCons || ["Limited offline mode"]);

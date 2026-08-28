@@ -47,6 +47,10 @@ export type PublicTool = {
   ogImage?: string | null;
   featured?: boolean;
   sponsored?: boolean;
+  trending?: boolean;
+  editorsChoice?: boolean;
+  verified?: boolean;
+  displayOrder?: number | null;
   status?: string;
   upvotes: number;
   clicks: number;
@@ -152,6 +156,10 @@ export function normalizePublicTool(raw: any): PublicTool {
     ogImage: raw?.ogImage ?? null,
     featured: Boolean(raw?.featured),
     sponsored: Boolean(raw?.sponsored),
+    trending: Boolean(raw?.trending),
+    editorsChoice: Boolean(raw?.editorsChoice),
+    verified: Boolean(raw?.verified),
+    displayOrder: raw?.displayOrder ?? null,
     status: raw?.status || "published",
     clicks,
     upvotes,
