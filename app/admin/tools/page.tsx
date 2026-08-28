@@ -72,6 +72,95 @@ function ListField({ label, value, onChange, addLabel = "Add", placeholder }: Li
   );
 }
 
+function parseAttrList(json: string): { label: string; value: string }[] {
+  try {
+    const parsed = JSON.parse(json);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((a: any) => ({
+        label: String(a?.label || "").trim(),
+        value: String(a?.value || "").trim(),
+      }))
+      .filter((a) => a.label || a.value);
+  } catch {
+    return [];
+  }
+}
+
+function toNum(value: string): number | null {
+  const n = Number(value);
+  return value.trim() !== "" && Number.isFinite(n) ? n : null;
+}
+
+type AttributeListFieldProps = {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  addLabel?: string;
+  labelPlaceholder?: string;
+  valuePlaceholder?: string;
+};
+
+function AttributeListField({
+  label,
+  value,
+  onChange,
+  addLabel = "Add attribute",
+  labelPlaceholder = "e.g. Context Window",
+  valuePlaceholder = "e.g. 200k tokens",
+}: AttributeListFieldProps) {
+  const rows = parseAttrList(value);
+  const serialize = (next: { label: string; value: string }[]) => onChange(JSON.stringify(next));
+  const update = (idx: number, key: "label" | "value", nextValue: string) => {
+    const copy = rows.map((r) => ({ ...r }));
+    copy[idx] = { ...copy[idx], [key]: nextValue };
+    serialize(copy);
+  };
+  const remove = (idx: number) => {
+    serialize(rows.filter((_, i) => i !== idx));
+  };
+  const add = () => {
+    const last = rows[rows.length - 1];
+    if (!last || last.label.trim() || last.value.trim()) {
+      serialize([...rows, { label: "", value: "" }]);
+    }
+  };
+  const cleanup = () => serialize(rows.filter((r) => r.label.trim() || r.value.trim()));
+  return (
+    <Field label={label}>
+      <div className="space-y-2">
+        {rows.map((row, idx) => (
+          <div key={idx} className="flex items-center gap-2">
+            <Input
+              value={row.label}
+              placeholder={labelPlaceholder}
+              onChange={(e) => update(idx, "label", e.target.value)}
+              onBlur={cleanup}
+            />
+            <Input
+              value={row.value}
+              placeholder={valuePlaceholder}
+              onChange={(e) => update(idx, "value", e.target.value)}
+              onBlur={cleanup}
+            />
+            <button
+              type="button"
+              onClick={() => remove(idx)}
+              className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+              aria-label={`Remove ${label} item`}
+            >
+              <X size={14} />
+            </button>
+          </div>
+        ))}
+        <Button type="button" variant="outline" size="sm" onClick={add}>
+          <Plus size={14} /> {addLabel}
+        </Button>
+      </div>
+    </Field>
+  );
+}
+
 const EMPTY_FORM = {
   name: "",
   slug: "",
@@ -97,6 +186,17 @@ const EMPTY_FORM = {
   useCases: "",
   tags: "",
   searchKeywords: "",
+  compareOverallRating: "",
+  compareEaseOfUse: "",
+  compareFeaturesScore: "",
+  compareValueForMoney: "",
+  compareAiPowered: false,
+  compareApiAvailable: false,
+  compareTeamCollaboration: false,
+  compareCustomerSupport: "",
+  comparePlatforms: "",
+  compareIntegrations: "",
+  compareAttributes: "[]",
   featured: false,
   sponsored: false,
   status: "published",
@@ -177,6 +277,17 @@ export default function AdminToolsPage() {
       useCases: (tool.useCases || []).join(", "),
       tags: (tool.tags || []).join(", "),
       searchKeywords: (tool.searchKeywords || []).join(", "),
+      compareOverallRating: tool.compare?.overallRating != null ? String(tool.compare.overallRating) : "",
+      compareEaseOfUse: tool.compare?.easeOfUse != null ? String(tool.compare.easeOfUse) : "",
+      compareFeaturesScore: tool.compare?.featuresScore != null ? String(tool.compare.featuresScore) : "",
+      compareValueForMoney: tool.compare?.valueForMoney != null ? String(tool.compare.valueForMoney) : "",
+      compareAiPowered: tool.compare?.aiPowered || false,
+      compareApiAvailable: tool.compare?.apiAvailable || false,
+      compareTeamCollaboration: tool.compare?.teamCollaboration || false,
+      compareCustomerSupport: tool.compare?.customerSupport || "",
+      comparePlatforms: (tool.compare?.platforms || []).join(", "),
+      compareIntegrations: (tool.compare?.integrations || []).join(", "),
+      compareAttributes: JSON.stringify(tool.compare?.attributes || []),
       featured: tool.featured,
       sponsored: tool.sponsored,
       status: tool.status,
@@ -204,6 +315,19 @@ export default function AdminToolsPage() {
         useCases: splitList(form.useCases),
         tags: splitList(form.tags),
         searchKeywords: splitList(form.searchKeywords),
+        compare: {
+          overallRating: toNum(form.compareOverallRating),
+          easeOfUse: toNum(form.compareEaseOfUse),
+          featuresScore: toNum(form.compareFeaturesScore),
+          valueForMoney: toNum(form.compareValueForMoney),
+          aiPowered: form.compareAiPowered,
+          apiAvailable: form.compareApiAvailable,
+          teamCollaboration: form.compareTeamCollaboration,
+          customerSupport: form.compareCustomerSupport.trim(),
+          platforms: splitList(form.comparePlatforms),
+          integrations: splitList(form.compareIntegrations),
+          attributes: parseAttrList(form.compareAttributes),
+        },
       };
       if (editing) {
         await adminApi.updateTool(editing._id, payload);
@@ -552,6 +676,70 @@ export default function AdminToolsPage() {
                 onChange={(v) => setForm({ ...form, searchKeywords: v })}
                 addLabel="Add keyword"
                 placeholder="e.g. best ai writer"
+              />
+            </div>
+          </div>
+          <div>
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Compare Data</h4>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Overall Rating" hint="0–10 score">
+                <Input type="number" min={0} max={10} step={0.1} value={form.compareOverallRating} placeholder="8.5" onChange={(e) => setForm({ ...form, compareOverallRating: e.target.value })} />
+              </Field>
+              <Field label="Ease of Use" hint="0–10 score">
+                <Input type="number" min={0} max={10} step={0.1} value={form.compareEaseOfUse} placeholder="9" onChange={(e) => setForm({ ...form, compareEaseOfUse: e.target.value })} />
+              </Field>
+              <Field label="Features Score" hint="0–10 score">
+                <Input type="number" min={0} max={10} step={0.1} value={form.compareFeaturesScore} placeholder="9.2" onChange={(e) => setForm({ ...form, compareFeaturesScore: e.target.value })} />
+              </Field>
+              <Field label="Value for Money" hint="0–10 score">
+                <Input type="number" min={0} max={10} step={0.1} value={form.compareValueForMoney} placeholder="8.8" onChange={(e) => setForm({ ...form, compareValueForMoney: e.target.value })} />
+              </Field>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="AI Powered">
+                <Select value={form.compareAiPowered ? "yes" : "no"} onChange={(e) => setForm({ ...form, compareAiPowered: e.target.value === "yes" })}>
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                </Select>
+              </Field>
+              <Field label="API Available">
+                <Select value={form.compareApiAvailable ? "yes" : "no"} onChange={(e) => setForm({ ...form, compareApiAvailable: e.target.value === "yes" })}>
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                </Select>
+              </Field>
+              <Field label="Team Collaboration">
+                <Select value={form.compareTeamCollaboration ? "yes" : "no"} onChange={(e) => setForm({ ...form, compareTeamCollaboration: e.target.value === "yes" })}>
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                </Select>
+              </Field>
+              <Field label="Customer Support" hint="e.g. Email, live chat, 24/7">
+                <Input value={form.compareCustomerSupport} placeholder="Email, live chat" onChange={(e) => setForm({ ...form, compareCustomerSupport: e.target.value })} />
+              </Field>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <ListField
+                label="Platforms"
+                value={form.comparePlatforms}
+                onChange={(v) => setForm({ ...form, comparePlatforms: v })}
+                addLabel="Add platform"
+                placeholder="e.g. Web, iOS, API"
+              />
+              <ListField
+                label="Integrations"
+                value={form.compareIntegrations}
+                onChange={(v) => setForm({ ...form, compareIntegrations: v })}
+                addLabel="Add integration"
+                placeholder="e.g. Slack, Zapier"
+              />
+            </div>
+            <div className="mt-4">
+              <AttributeListField
+                label="Comparison Attributes"
+                value={form.compareAttributes}
+                onChange={(v) => setForm({ ...form, compareAttributes: v })}
+                addLabel="Add attribute"
               />
             </div>
           </div>

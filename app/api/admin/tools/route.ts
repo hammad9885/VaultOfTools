@@ -3,7 +3,7 @@ import Tool from "@/app/lib/models/Tool";
 import memoryStore from "@/app/lib/data/memoryStore";
 import { requireSuperAdmin, errorResponse } from "@/app/lib/admin/auth";
 import { logActivity } from "@/app/lib/admin/activity";
-import { asBool, asNumber, asStringArray, clampPage, slugify } from "@/app/lib/admin/utils";
+import { asBool, asNumber, asStringArray, asCompareData, clampPage, slugify } from "@/app/lib/admin/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +43,7 @@ function buildToolPayload(body: any, name: string, slug: string) {
     useCases: asStringArray(body.useCases),
     tags: asStringArray(body.tags),
     searchKeywords: asStringArray(body.searchKeywords),
+    compare: asCompareData(body.compare),
     featured: asBool(body.featured),
     sponsored: asBool(body.sponsored),
     status: ["draft", "published", "archived"].includes(body.status) ? body.status : "published",
@@ -122,6 +123,7 @@ export async function GET(request: Request) {
       useCases: t.useCases || [],
       tags: t.tags,
       searchKeywords: t.searchKeywords || [],
+      compare: t.compare || null,
       featured: Boolean(t.featured),
       sponsored: Boolean(t.sponsored),
       status: t.status || "published",

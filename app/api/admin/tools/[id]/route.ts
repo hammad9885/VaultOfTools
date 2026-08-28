@@ -3,7 +3,7 @@ import Tool from "@/app/lib/models/Tool";
 import memoryStore from "@/app/lib/data/memoryStore";
 import { requireSuperAdmin, errorResponse } from "@/app/lib/admin/auth";
 import { logActivity } from "@/app/lib/admin/activity";
-import { asBool, asNumber, asStringArray, slugify } from "@/app/lib/admin/utils";
+import { asBool, asNumber, asStringArray, asCompareData, slugify } from "@/app/lib/admin/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +26,7 @@ export async function PATCH(request: Request, { params }: Ctx) {
       "imageUrl", "url", "website", "shortDescription", "fullDescription",
       "description", "pricing", "startingPrice", "billingPeriod", "freePlan",
       "freeTrial", "trialDuration", "rating", "reviews", "features", "pros", "cons",
-      "bestFor", "useCases", "tags", "searchKeywords", "featured", "featuredOrder", "sponsored", "sponsorName",
+      "bestFor", "useCases", "tags", "searchKeywords", "compare", "featured", "featuredOrder", "sponsored", "sponsorName",
       "sponsorStartDate", "sponsorEndDate", "sponsorPriority", "sponsorActive",
       "seoTitle", "seoDescription", "status", "publishDate",
     ];
@@ -34,6 +34,15 @@ export async function PATCH(request: Request, { params }: Ctx) {
     const patch: Record<string, any> = {};
     for (const key of allowed) {
       if (key in body) patch[key] = body[key];
+    }
+
+    if ("compare" in patch) {
+      const normalized = asCompareData(patch.compare);
+      if (normalized === null) {
+        delete patch.compare;
+      } else {
+        patch.compare = normalized;
+      }
     }
 
     const bools = ["featured", "sponsored", "sponsorActive", "freePlan", "freeTrial"];

@@ -245,6 +245,7 @@ class MemoryStore {
       useCases: data.useCases || [],
       tags: data.tags || [],
       searchKeywords: data.searchKeywords || [],
+      compare: data.compare || undefined,
       featured: Boolean(data.featured),
       sponsored: Boolean(data.sponsored),
       status: data.status || "published",

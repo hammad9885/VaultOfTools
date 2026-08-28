@@ -12,6 +12,25 @@ export interface AdminProfile {
   status: UserStatus;
 }
 
+export interface CompareAttributeRow {
+  label: string;
+  value: string;
+}
+
+export interface ToolCompareData {
+  overallRating?: number | null;
+  easeOfUse?: number | null;
+  featuresScore?: number | null;
+  valueForMoney?: number | null;
+  aiPowered?: boolean;
+  apiAvailable?: boolean;
+  teamCollaboration?: boolean;
+  customerSupport?: string;
+  platforms?: string[];
+  integrations?: string[];
+  attributes?: CompareAttributeRow[];
+}
+
 export interface ToolRow {
   _id: string;
   slug: string;
@@ -46,6 +65,7 @@ export interface ToolRow {
   useCases?: string[];
   tags?: string[];
   searchKeywords?: string[];
+  compare?: ToolCompareData;
   featured: boolean;
   sponsored: boolean;
   status: string;

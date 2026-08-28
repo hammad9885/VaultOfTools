@@ -30,6 +30,41 @@ export function asNumber(value: unknown, fallback = 0): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
+export function asNumberOrNull(value: unknown): number | null {
+  if (value === "" || value === null || value === undefined) return null;
+  const n = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+export function asAttributePairs(value: unknown): { label: string; value: string }[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((v): v is { label?: unknown; value?: unknown } => !!v && typeof v === "object")
+    .map((a) => ({
+      label: String(a.label || "").trim(),
+      value: String(a.value || "").trim(),
+    }))
+    .filter((a) => a.label || a.value);
+}
+
+export function asCompareData(value: unknown): Record<string, any> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const c = value as Record<string, any>;
+  return {
+    overallRating: asNumberOrNull(c.overallRating),
+    easeOfUse: asNumberOrNull(c.easeOfUse),
+    featuresScore: asNumberOrNull(c.featuresScore),
+    valueForMoney: asNumberOrNull(c.valueForMoney),
+    aiPowered: asBool(c.aiPowered),
+    apiAvailable: asBool(c.apiAvailable),
+    teamCollaboration: asBool(c.teamCollaboration),
+    customerSupport: c.customerSupport ? String(c.customerSupport).trim() : "",
+    platforms: asStringArray(c.platforms),
+    integrations: asStringArray(c.integrations),
+    attributes: asAttributePairs(c.attributes),
+  };
+}
+
 export function asOptionalString(value: unknown): string | null | undefined {
   if (value === null || value === undefined || value === "") return undefined;
   return String(value);

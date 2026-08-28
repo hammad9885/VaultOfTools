@@ -5,6 +5,25 @@ import { createFirestoreModel, type AppModel } from "../firestore/model";
 // Shared collection: "tools" (same collection written to by AdminDashboard).
 // Fields below marked (shared) mirror the AdminDashboard Tool schema so that
 // every change made in the admin panel is reflected here without duplication.
+export interface IToolCompareAttribute {
+  label: string;
+  value: string;
+}
+
+export interface IToolCompareData {
+  overallRating?: number | null;
+  easeOfUse?: number | null;
+  featuresScore?: number | null;
+  valueForMoney?: number | null;
+  aiPowered?: boolean;
+  apiAvailable?: boolean;
+  teamCollaboration?: boolean;
+  customerSupport?: string;
+  platforms?: string[];
+  integrations?: string[];
+  attributes?: IToolCompareAttribute[];
+}
+
 export interface ITool {
   slug: string;
   name: string;
@@ -54,6 +73,7 @@ export interface ITool {
   seoDescription?: string | null;
   status: "draft" | "published" | "archived";
   publishDate?: Date | null;
+  compare?: IToolCompareData;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -110,6 +130,28 @@ const toolSchema = new mongoose.Schema<ITool>(
     seoDescription: { type: String, default: null },
     status: { type: String, enum: ["draft", "published", "archived"], default: "published" },
     publishDate: { type: Date, default: null },
+    compare: {
+      type: {
+        overallRating: { type: Number, default: null },
+        easeOfUse: { type: Number, default: null },
+        featuresScore: { type: Number, default: null },
+        valueForMoney: { type: Number, default: null },
+        aiPowered: { type: Boolean, default: false },
+        apiAvailable: { type: Boolean, default: false },
+        teamCollaboration: { type: Boolean, default: false },
+        customerSupport: { type: String, trim: true, default: "" },
+        platforms: [{ type: String, trim: true }],
+        integrations: [{ type: String, trim: true }],
+        attributes: [
+          {
+            _id: false,
+            label: { type: String, trim: true, default: "" },
+            value: { type: String, trim: true, default: "" },
+          },
+        ],
+      },
+      default: undefined,
+    },
   },
   { timestamps: true }
 );

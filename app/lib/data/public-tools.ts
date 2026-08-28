@@ -5,6 +5,7 @@ import memoryStore from "./memoryStore";
 import { staticToolCatalog } from "./static-tool-catalog";
 import { getToolLogoCandidates, resolveToolDomain } from "../tool-logos";
 import { getAllEngagement, trendScore } from "./tool-engagement";
+import type { IToolCompareData } from "../models/Tool";
 
 export type PublicTool = {
   _id?: string;
@@ -37,6 +38,7 @@ export type PublicTool = {
   useCases?: string[];
   tags: string[];
   searchKeywords?: string[];
+  compare?: IToolCompareData;
   featured?: boolean;
   sponsored?: boolean;
   status?: string;
@@ -135,6 +137,7 @@ export function normalizePublicTool(raw: any): PublicTool {
     useCases: asArray(raw?.useCases),
     tags: asArray(raw?.tags),
     searchKeywords: asArray(raw?.searchKeywords),
+    compare: raw?.compare ? (raw.compare as any) : undefined,
     featured: Boolean(raw?.featured),
     sponsored: Boolean(raw?.sponsored),
     status: raw?.status || "published",
