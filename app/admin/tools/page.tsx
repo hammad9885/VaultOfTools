@@ -25,6 +25,11 @@ const EMPTY_FORM = {
   shortDescription: "",
   description: "",
   pricing: "Free",
+  startingPrice: "",
+  billingPeriod: "",
+  freePlan: false,
+  freeTrial: false,
+  trialDuration: "",
   features: "",
   tags: "",
   featured: false,
@@ -95,6 +100,11 @@ export default function AdminToolsPage() {
       shortDescription: tool.shortDescription || "",
       description: tool.description || "",
       pricing: tool.pricing,
+      startingPrice: tool.startingPrice || "",
+      billingPeriod: tool.billingPeriod || "",
+      freePlan: tool.freePlan || false,
+      freeTrial: tool.freeTrial || false,
+      trialDuration: tool.trialDuration || "",
       features: (tool.features || []).join(", "),
       tags: (tool.tags || []).join(", "),
       featured: tool.featured,
@@ -363,14 +373,6 @@ export default function AdminToolsPage() {
                   <option>Other</option>
                 </Select>
               </Field>
-              <Field label="Pricing">
-                <Select value={form.pricing} onChange={(e) => setForm({ ...form, pricing: e.target.value })}>
-                  <option>Free</option>
-                  <option>Freemium</option>
-                  <option>Paid</option>
-                  <option>subscription</option>
-                </Select>
-              </Field>
             </div>
             <Field label="Website URL" hint="Regular website or affiliate URL">
               <Input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} placeholder="https://…" />
@@ -383,6 +385,44 @@ export default function AdminToolsPage() {
             <div className="mt-4">
               <Field label="Full description">
                 <Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              </Field>
+            </div>
+          </div>
+          <div>
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Pricing</h4>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Pricing Type">
+                <Select value={form.pricing} onChange={(e) => setForm({ ...form, pricing: e.target.value })}>
+                  <option>Free</option>
+                  <option>Freemium</option>
+                  <option>Paid</option>
+                  <option>Subscription</option>
+                </Select>
+              </Field>
+              <Field label="Starting Price" hint="e.g. $9.99">
+                <Input value={form.startingPrice} onChange={(e) => setForm({ ...form, startingPrice: e.target.value })} placeholder="$0" />
+              </Field>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Billing Period" hint="e.g. monthly, yearly, one-time">
+                <Input value={form.billingPeriod} onChange={(e) => setForm({ ...form, billingPeriod: e.target.value })} placeholder="Monthly" />
+              </Field>
+              <Field label="Trial Duration" hint="e.g. 14 days">
+                <Input value={form.trialDuration} onChange={(e) => setForm({ ...form, trialDuration: e.target.value })} placeholder="7 days" />
+              </Field>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Free Plan">
+                <Select value={form.freePlan ? "yes" : "no"} onChange={(e) => setForm({ ...form, freePlan: e.target.value === "yes" })}>
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                </Select>
+              </Field>
+              <Field label="Free Trial">
+                <Select value={form.freeTrial ? "yes" : "no"} onChange={(e) => setForm({ ...form, freeTrial: e.target.value === "yes" })}>
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                </Select>
               </Field>
             </div>
           </div>

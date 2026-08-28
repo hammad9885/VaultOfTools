@@ -29,6 +29,11 @@ export interface ToolRow {
   fullDescription?: string;
   description?: string;
   pricing: string;
+  startingPrice?: string;
+  billingPeriod?: string;
+  freePlan?: boolean;
+  freeTrial?: boolean;
+  trialDuration?: string;
   rating: number;
   reviews: number;
   clicks?: number;

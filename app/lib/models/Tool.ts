@@ -22,6 +22,11 @@ export interface ITool {
   description?: string;
   desc?: string;
   pricing: string;
+  startingPrice?: string;
+  billingPeriod?: string;
+  freePlan?: boolean;
+  freeTrial?: boolean;
+  trialDuration?: string;
   rating: number;
   reviews: number;
   /** Page views / card opens — drives trending. */
@@ -69,9 +74,14 @@ const toolSchema = new mongoose.Schema<ITool>(
     desc: { type: String, trim: true },
     pricing: {
       type: String,
-      enum: ["Free", "Freemium", "Paid", "free", "freemium", "paid", "subscription"],
+      enum: ["Free", "Freemium", "Paid", "Subscription", "free", "freemium", "paid", "subscription"],
       default: "Free",
     },
+    startingPrice: { type: String, trim: true, default: "" },
+    billingPeriod: { type: String, trim: true, default: "" },
+    freePlan: { type: Boolean, default: false },
+    freeTrial: { type: Boolean, default: false },
+    trialDuration: { type: String, trim: true, default: "" },
     rating: { type: Number, default: 0 },
     reviews: { type: Number, default: 0 },
     clicks: { type: Number, default: 0 },

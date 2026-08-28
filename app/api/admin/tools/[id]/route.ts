@@ -24,7 +24,8 @@ export async function PATCH(request: Request, { params }: Ctx) {
       "name", "slug", "category", "categoryId", "subcategory", "toolType", "logo",
       "logoUrl", "bannerUrl",
       "imageUrl", "url", "website", "shortDescription", "fullDescription",
-      "description", "pricing", "rating", "reviews", "features", "pros", "cons",
+      "description", "pricing", "startingPrice", "billingPeriod", "freePlan",
+      "freeTrial", "trialDuration", "rating", "reviews", "features", "pros", "cons",
       "tags", "featured", "featuredOrder", "sponsored", "sponsorName",
       "sponsorStartDate", "sponsorEndDate", "sponsorPriority", "sponsorActive",
       "seoTitle", "seoDescription", "status", "publishDate",
@@ -35,7 +36,7 @@ export async function PATCH(request: Request, { params }: Ctx) {
       if (key in body) patch[key] = body[key];
     }
 
-    const bools = ["featured", "sponsored", "sponsorActive"];
+    const bools = ["featured", "sponsored", "sponsorActive", "freePlan", "freeTrial"];
     const numbers = ["rating", "reviews", "featuredOrder", "sponsorPriority"];
     const arrays = ["features", "pros", "cons", "tags"];
 

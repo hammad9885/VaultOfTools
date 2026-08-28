@@ -18,6 +18,11 @@ export type PublicTool = {
   bannerUrl?: string | null;
   imageUrl?: string | null;
   pricing: string;
+  startingPrice?: string;
+  billingPeriod?: string;
+  freePlan?: boolean;
+  freeTrial?: boolean;
+  trialDuration?: string;
   rating: number;
   reviews: number;
   desc: string;
@@ -108,6 +113,11 @@ export function normalizePublicTool(raw: any): PublicTool {
     bannerUrl: raw?.bannerUrl ? String(raw.bannerUrl) : null,
     imageUrl: raw?.imageUrl ? String(raw.imageUrl) : null,
     pricing: String(raw?.pricing || "Free"),
+    startingPrice: raw?.startingPrice ? String(raw.startingPrice) : undefined,
+    billingPeriod: raw?.billingPeriod ? String(raw.billingPeriod) : undefined,
+    freePlan: Boolean(raw?.freePlan),
+    freeTrial: Boolean(raw?.freeTrial),
+    trialDuration: raw?.trialDuration ? String(raw.trialDuration) : undefined,
     rating,
     reviews,
     desc,
