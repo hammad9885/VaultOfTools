@@ -203,6 +203,17 @@ function sortTools(list: PublicTool[], sort?: string | null) {
     next.sort((a, b) => a.name.localeCompare(b.name));
   } else if (sort === "trending" || sort === "popular" || sort === "featured") {
     next.sort((a, b) => {
+      // Admin-set display order (lower first) wins when both are provided.
+      const ao = a.displayOrder ?? null;
+      const bo = b.displayOrder ?? null;
+      if (ao != null && bo != null && ao !== bo) return ao - bo;
+      if (ao != null && bo == null) return -1;
+      if (ao == null && bo != null) return 1;
+      const adminDelta = (Number(b.trending) + Number(b.editorsChoice) + Number(b.featured)) -
+        (Number(a.trending) + Number(a.editorsChoice) + Number(a.featured));
+      if (adminDelta) return adminDelta;
+      if (b.trending !== a.trending) return Number(b.trending) - Number(a.trending);
+      if (Number(b.verified) !== Number(a.verified)) return Number(b.verified) - Number(a.verified);
       if (b.trendScore !== a.trendScore) return b.trendScore - a.trendScore;
       if (b.upvotes !== a.upvotes) return b.upvotes - a.upvotes;
       if (b.clicks !== a.clicks) return b.clicks - a.clicks;
@@ -211,7 +222,18 @@ function sortTools(list: PublicTool[], sort?: string | null) {
       return b.rating - a.rating || b.reviews - a.reviews;
     });
   } else {
-    next.sort((a, b) => b.trendScore - a.trendScore || b.rating - a.rating || b.reviews - a.reviews);
+    next.sort((a, b) => {
+      const ao = a.displayOrder ?? null;
+      const bo = b.displayOrder ?? null;
+      if (ao != null && bo != null && ao !== bo) return ao - bo;
+      if (ao != null && bo == null) return -1;
+      if (ao == null && bo != null) return 1;
+      const adminDelta = (Number(b.trending) + Number(b.editorsChoice) + Number(b.featured)) -
+        (Number(a.trending) + Number(a.editorsChoice) + Number(a.featured));
+      if (adminDelta) return adminDelta;
+      if (Number(b.verified) !== Number(a.verified)) return Number(b.verified) - Number(a.verified);
+      return b.trendScore - a.trendScore || b.rating - a.rating || b.reviews - a.reviews;
+    });
   }
   return next;
 }
