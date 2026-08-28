@@ -6,6 +6,15 @@ import {
   toggleToolUpvote,
 } from "@/app/lib/data/tool-engagement";
 import { getActivityBuckets, computeTrendScore, recordActivity } from "@/app/lib/data/tool-activity";
+import {
+  getClientIp,
+  checkRateLimit,
+  GUARDS,
+  hasVoted,
+  recordVoted,
+  removeVoted,
+  isLikelyBot,
+} from "@/app/lib/data/activity-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -47,28 +56,68 @@ export async function POST(
 
     const body = await request.json().catch(() => ({}));
     const action = String(body?.action || "click").toLowerCase();
+    const ip = getClientIp(request);
+
+    // Basic bot/spam protection on every write action.
+    if (isLikelyBot(request)) {
+      return NextResponse.json(
+        { ok: false, throttled: true, reason: "bot_detected", remaining: 0, resetAt: Date.now() + 3600_000 },
+        { status: 429 }
+      );
+    }
 
     if (action === "click") {
+      const limited = checkRateLimit(ip, "view", slug, GUARDS.views);
+      if (!limited.allowed) {
+        return NextResponse.json(
+          { ok: false, throttled: true, reason: limited.reason, remaining: 0, resetAt: limited.resetAt },
+          { status: 429 }
+        );
+      }
+      // One unique view per browser session (client also enforces this); the
+      // rate limit above protects against refresh/bot spamming.
       const engagement = await recordToolClick(slug);
-      // A page open counts as one view in the trending ledger.
       await recordActivity(slug, "views", 1);
       return NextResponse.json({ ok: true, ...engagement });
     }
 
     if (action === "visit") {
-      // The "Visit website" button is a stronger signal than a page open.
+      const limited = checkRateLimit(ip, "visit", slug, GUARDS.visits);
+      if (!limited.allowed) {
+        return NextResponse.json(
+          { ok: false, throttled: true, reason: limited.reason, remaining: 0, resetAt: limited.resetAt },
+          { status: 429 }
+        );
+      }
       await recordActivity(slug, "visits", 1);
       return NextResponse.json({ ok: true });
     }
 
     if (action === "upvote") {
+      const limited = checkRateLimit(ip, "vote", slug, GUARDS.votes);
+      if (!limited.allowed) {
+        return NextResponse.json(
+          { ok: false, throttled: true, reason: limited.reason, remaining: 0, resetAt: limited.resetAt },
+          { status: 429 }
+        );
+      }
+      // Server-side duplicate vote prevention: one vote per voter per tool.
+      if (await hasVoted(slug, ip)) {
+        const engagement = await getEngagement(slug);
+        return NextResponse.json({ ok: true, ...engagement, voted: true, duplicate: true });
+      }
+      await recordVoted(slug, ip);
       const engagement = await toggleToolUpvote(slug, "up");
-      return NextResponse.json({ ok: true, ...engagement });
+      return NextResponse.json({ ok: true, ...engagement, voted: true });
     }
 
     if (action === "remove-upvote" || action === "downvote") {
-      const engagement = await toggleToolUpvote(slug, "down");
-      return NextResponse.json({ ok: true, ...engagement });
+      const wasVoted = await hasVoted(slug, ip);
+      await removeVoted(slug, ip);
+      const engagement = wasVoted
+        ? await toggleToolUpvote(slug, "down")
+        : await getEngagement(slug);
+      return NextResponse.json({ ok: true, ...engagement, voted: false });
     }
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });

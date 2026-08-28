@@ -97,8 +97,10 @@ function distributeLifetime(
   createdAt?: string | Date | null
 ): ActivityBucket[] {
   const buckets: ActivityBucket[] = [];
-  const clicksBase = Math.max(2, Math.round(clicks * 0.06) + 2);
-  const votesBase = Math.max(1, Math.round(upvotes * 0.05) + 1);
+  // Deliberately small: lifetime popularity is only a floor, never the driver.
+  // Real recent activity (views/visits/votes/searches) is what moves the chart.
+  const clicksBase = Math.max(2, Math.round(clicks * 0.02) + 2);
+  const votesBase = Math.max(1, Math.round(upvotes * 0.03) + 1);
   const createdAtTime = createdAt ? new Date(String(createdAt)).getTime() : 0;
   const ageDays = createdAtTime > 0 ? Math.max(0, (Date.now() - createdAtTime) / DAY_MS) : 14;
   // New tools: spread their (likely small) counts mostly into recent days.

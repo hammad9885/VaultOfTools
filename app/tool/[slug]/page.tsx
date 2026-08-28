@@ -206,7 +206,16 @@ export default function ToolPage() {
             target="_blank"
             rel="noreferrer"
             onClick={() => {
-              if (tool.slug) {
+              // Count a website visit once per browser session per tool.
+              const visitKey = `vot_visited_${tool.slug}`;
+              let visited = false;
+              try {
+                visited = Boolean(sessionStorage.getItem(visitKey));
+                if (!visited) sessionStorage.setItem(visitKey, "1");
+              } catch {
+                // continue without session guard
+              }
+              if (!visited && tool.slug) {
                 api
                   .recordToolVisit(tool.slug)
                   .catch(() => {});
