@@ -5,6 +5,7 @@ import memoryStore from "./memoryStore";
 import { staticToolCatalog } from "./static-tool-catalog";
 import { getToolLogoCandidates, resolveToolDomain } from "../tool-logos";
 import { getAllEngagement, trendScore } from "./tool-engagement";
+import { getAllActivityBuckets, computeTrendScore } from "./tool-activity";
 import type { IToolCompareData } from "../models/Tool";
 
 export type PublicTool = {
@@ -202,38 +203,16 @@ function sortTools(list: PublicTool[], sort?: string | null) {
   } else if (sort === "name") {
     next.sort((a, b) => a.name.localeCompare(b.name));
   } else if (sort === "trending" || sort === "popular" || sort === "featured") {
+    // Organic trending: score computed from recent views/visits/votes/searches.
     next.sort((a, b) => {
-      // Admin-set display order (lower first) wins when both are provided.
-      const ao = a.displayOrder ?? null;
-      const bo = b.displayOrder ?? null;
-      if (ao != null && bo != null && ao !== bo) return ao - bo;
-      if (ao != null && bo == null) return -1;
-      if (ao == null && bo != null) return 1;
-      const adminDelta = (Number(b.trending) + Number(b.editorsChoice) + Number(b.featured)) -
-        (Number(a.trending) + Number(a.editorsChoice) + Number(a.featured));
-      if (adminDelta) return adminDelta;
-      if (b.trending !== a.trending) return Number(b.trending) - Number(a.trending);
-      if (Number(b.verified) !== Number(a.verified)) return Number(b.verified) - Number(a.verified);
       if (b.trendScore !== a.trendScore) return b.trendScore - a.trendScore;
       if (b.upvotes !== a.upvotes) return b.upvotes - a.upvotes;
       if (b.clicks !== a.clicks) return b.clicks - a.clicks;
-      const featuredDelta = Number(b.featured) - Number(a.featured);
-      if (featuredDelta) return featuredDelta;
-      return b.rating - a.rating || b.reviews - a.reviews;
+      if (b.rating !== a.rating) return b.rating - a.rating;
+      return b.reviews - a.reviews;
     });
   } else {
-    next.sort((a, b) => {
-      const ao = a.displayOrder ?? null;
-      const bo = b.displayOrder ?? null;
-      if (ao != null && bo != null && ao !== bo) return ao - bo;
-      if (ao != null && bo == null) return -1;
-      if (ao == null && bo != null) return 1;
-      const adminDelta = (Number(b.trending) + Number(b.editorsChoice) + Number(b.featured)) -
-        (Number(a.trending) + Number(a.editorsChoice) + Number(a.featured));
-      if (adminDelta) return adminDelta;
-      if (Number(b.verified) !== Number(a.verified)) return Number(b.verified) - Number(a.verified);
-      return b.trendScore - a.trendScore || b.rating - a.rating || b.reviews - a.reviews;
-    });
+    next.sort((a, b) => b.trendScore - a.trendScore || b.rating - a.rating || b.reviews - a.reviews);
   }
   return next;
 }
@@ -264,14 +243,21 @@ export async function getMergedSiteTools(opts: { publishedOnly?: boolean } = {})
   }
 
   // Overlay live engagement counters (clicks / upvotes) onto every tool.
+  const activityMap = await getAllActivityBuckets();
   for (const [slug, tool] of bySlug.entries()) {
     const eng = engagement.get(slug);
-    if (!eng) continue;
+    const buckets = activityMap.get(slug);
+    const organic = buckets
+      ? computeTrendScore(buckets, {
+          rating: tool.rating,
+          createdAt: tool.createdAt,
+        })
+      : trendScore(eng?.clicks || tool.clicks, eng?.upvotes || tool.upvotes);
     bySlug.set(slug, {
       ...tool,
-      clicks: eng.clicks,
-      upvotes: eng.upvotes,
-      trendScore: trendScore(eng.clicks, eng.upvotes),
+      clicks: eng?.clicks ?? tool.clicks,
+      upvotes: eng?.upvotes ?? tool.upvotes,
+      trendScore: organic,
     });
   }
 

@@ -5,6 +5,7 @@ import {
   recordToolClick,
   toggleToolUpvote,
 } from "@/app/lib/data/tool-engagement";
+import { getActivityBuckets, computeTrendScore, recordActivity } from "@/app/lib/data/tool-activity";
 
 export const dynamic = "force-dynamic";
 
@@ -16,12 +17,19 @@ export async function GET(
     const { slug } = await params;
     const tool = await getPublicToolBySlug(slug);
     if (!tool) return NextResponse.json({ error: "Tool not found" }, { status: 404 });
-    const engagement = await getEngagement(slug);
+    const [engagement, buckets] = await Promise.all([
+      getEngagement(slug),
+      getActivityBuckets(slug),
+    ]);
+    const organicScore = computeTrendScore(buckets, {
+      rating: tool.rating,
+      createdAt: tool.createdAt,
+    });
     return NextResponse.json({
       ...tool,
       clicks: engagement.clicks,
       upvotes: engagement.upvotes,
-      trendScore: engagement.upvotes * 5 + engagement.clicks,
+      trendScore: organicScore,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
@@ -42,7 +50,15 @@ export async function POST(
 
     if (action === "click") {
       const engagement = await recordToolClick(slug);
+      // A page open counts as one view in the trending ledger.
+      await recordActivity(slug, "views", 1);
       return NextResponse.json({ ok: true, ...engagement });
+    }
+
+    if (action === "visit") {
+      // The "Visit website" button is a stronger signal than a page open.
+      await recordActivity(slug, "visits", 1);
+      return NextResponse.json({ ok: true });
     }
 
     if (action === "upvote") {

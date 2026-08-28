@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listPublicTools } from "@/app/lib/data/public-tools";
+import { recordActivity } from "@/app/lib/data/tool-activity";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,19 @@ export async function GET(request: NextRequest) {
       limit,
       publishedOnly: true,
     });
+
+    // A search that lands on a tool's name is a precise "searches" signal for trending.
+    if (search) {
+      const q = search.toLowerCase();
+      const matched = tools
+        .filter((t) => t.name.toLowerCase() === q || t.name.toLowerCase().includes(q))
+        .slice(0, 3);
+      for (const t of matched) {
+        if (t?.slug) {
+          void recordActivity(t.slug, "searches", 1).catch(() => {});
+        }
+      }
+    }
 
     return NextResponse.json({
       tools,

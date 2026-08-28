@@ -166,6 +166,12 @@ export const api = {
       body: JSON.stringify({ action: "click" }),
     }),
 
+  recordToolVisit: (slug: string) =>
+    request<{ ok: boolean }>(`/tools/${slug}`, {
+      method: "POST",
+      body: JSON.stringify({ action: "visit" }),
+    }),
+
   upvoteTool: (slug: string) =>
     request<{ ok: boolean; slug: string; clicks: number; upvotes: number; voted: boolean }>(
       `/tools/${slug}`,

@@ -572,7 +572,6 @@ export default function AdminToolsPage() {
         <div className="flex flex-wrap gap-1">
           {t.featured && <Badge tone="violet">Featured</Badge>}
           {t.sponsored && <Badge tone="info">Sponsored</Badge>}
-          {t.trending && <Badge tone="warning">Trending</Badge>}
           {t.editorsChoice && <Badge tone="violet">Editor's Choice</Badge>}
           {t.verified && <Badge tone="success">Verified</Badge>}
           <StatusBadge status={t.status} />
@@ -953,10 +952,6 @@ export default function AdminToolsPage() {
               <label className="flex items-center gap-2 text-sm text-foreground">
                 <input type="checkbox" checked={form.sponsored} onChange={(e) => setForm({ ...form, sponsored: e.target.checked })} />
                 Sponsored
-              </label>
-              <label className="flex items-center gap-2 text-sm text-foreground">
-                <input type="checkbox" checked={form.trending} onChange={(e) => setForm({ ...form, trending: e.target.checked })} />
-                Trending
               </label>
               <label className="flex items-center gap-2 text-sm text-foreground">
                 <input type="checkbox" checked={form.editorsChoice} onChange={(e) => setForm({ ...form, editorsChoice: e.target.checked })} />

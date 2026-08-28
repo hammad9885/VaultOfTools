@@ -2,6 +2,7 @@ import { connectDB, isDBConnected } from "../config/db";
 import Tool from "../models/Tool";
 import memoryStore from "./memoryStore";
 import { staticToolCatalog } from "./static-tool-catalog";
+import { recordActivity } from "./tool-activity";
 
 export type ToolEngagement = {
   slug: string;
@@ -170,5 +171,8 @@ export async function toggleToolUpvote(
   const next = { ...current, upvotes: nextUpvotes };
   store().set(clean, next);
   await persist(clean, { upvotes: next.upvotes });
+  if (direction === "up") {
+    await recordActivity(clean, "votes", 1);
+  }
   return { ...next, voted: direction === "up" };
 }

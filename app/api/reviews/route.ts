@@ -3,6 +3,7 @@ import { connectDB, isDBConnected } from "@/app/lib/config/db";
 import Review from "@/app/lib/models/Review";
 import { authenticate, optionalAuth } from "@/app/lib/middleware/auth";
 import memoryStore from "@/app/lib/data/memoryStore";
+import { recordRating } from "@/app/lib/data/tool-activity";
 
 const SORT_MAP: Record<string, any> = {
   newest: { createdAt: -1 },
@@ -113,6 +114,9 @@ export async function POST(request: NextRequest) {
 
       const populated = await review.populate("userId", "displayName photoURL email");
 
+      // A new review feeds the rating signal for trending.
+      await recordRating(toolSlug, rating);
+
       return NextResponse.json({
         id: populated._id,
         toolSlug: populated.toolSlug,
@@ -140,6 +144,7 @@ export async function POST(request: NextRequest) {
     }))!;
 
     const u = await memoryStore.findUserById(user._id);
+    await recordRating(toolSlug, rating);
     return NextResponse.json({
       id: review._id,
       toolSlug: review.toolSlug,

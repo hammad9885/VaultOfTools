@@ -205,6 +205,13 @@ export default function ToolPage() {
             href={tool.website}
             target="_blank"
             rel="noreferrer"
+            onClick={() => {
+              if (tool.slug) {
+                api
+                  .recordToolVisit(tool.slug)
+                  .catch(() => {});
+              }
+            }}
             className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 sm:w-auto"
           >
             Visit website <ExternalLink className="size-4" />
