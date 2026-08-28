@@ -26,9 +26,9 @@ export async function PATCH(request: Request, { params }: Ctx) {
       "imageUrl", "url", "website", "shortDescription", "fullDescription",
       "description", "pricing", "startingPrice", "billingPeriod", "freePlan",
       "freeTrial", "trialDuration", "rating", "reviews", "features", "pros", "cons",
-      "bestFor", "useCases", "tags", "searchKeywords", "compare", "featured", "featuredOrder", "sponsored", "sponsorName",
+      "bestFor", "useCases", "tags", "searchKeywords", "alternatives", "videoUrl", "screenshots", "compare", "featured", "featuredOrder", "sponsored", "sponsorName",
       "sponsorStartDate", "sponsorEndDate", "sponsorPriority", "sponsorActive",
-      "seoTitle", "seoDescription", "status", "publishDate",
+      "seoTitle", "seoDescription", "ogImage", "status", "publishDate",
     ];
 
     const patch: Record<string, any> = {};
@@ -47,7 +47,13 @@ export async function PATCH(request: Request, { params }: Ctx) {
 
     const bools = ["featured", "sponsored", "sponsorActive", "freePlan", "freeTrial"];
     const numbers = ["rating", "reviews", "featuredOrder", "sponsorPriority"];
-    const arrays = ["features", "pros", "cons", "useCases", "tags", "searchKeywords"];
+    const arrays = ["features", "pros", "cons", "useCases", "tags", "searchKeywords", "alternatives", "screenshots"];
+
+    for (const k of ["seoTitle", "seoDescription", "ogImage"]) {
+      if (k in patch && patch[k] === undefined) patch[k] = null;
+      if (k in patch && typeof patch[k] === "string") patch[k] = patch[k].trim() || null;
+    }
+    if ("videoUrl" in patch) patch.videoUrl = patch.videoUrl ? String(patch.videoUrl).trim() : "";
 
     if (useMemoryStore(id)) {
       const current = await memoryStore.getToolById(id);

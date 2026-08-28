@@ -38,7 +38,13 @@ export type PublicTool = {
   useCases?: string[];
   tags: string[];
   searchKeywords?: string[];
+  alternatives?: string[];
+  videoUrl?: string;
+  screenshots?: string[];
   compare?: IToolCompareData;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  ogImage?: string | null;
   featured?: boolean;
   sponsored?: boolean;
   status?: string;
@@ -137,7 +143,13 @@ export function normalizePublicTool(raw: any): PublicTool {
     useCases: asArray(raw?.useCases),
     tags: asArray(raw?.tags),
     searchKeywords: asArray(raw?.searchKeywords),
+    alternatives: asArray(raw?.alternatives),
+    videoUrl: raw?.videoUrl ? String(raw.videoUrl) : undefined,
+    screenshots: asArray(raw?.screenshots),
     compare: raw?.compare ? (raw.compare as any) : undefined,
+    seoTitle: raw?.seoTitle ?? null,
+    seoDescription: raw?.seoDescription ?? null,
+    ogImage: raw?.ogImage ?? null,
     featured: Boolean(raw?.featured),
     sponsored: Boolean(raw?.sponsored),
     status: raw?.status || "published",

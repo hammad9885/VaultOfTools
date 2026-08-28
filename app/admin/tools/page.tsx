@@ -72,6 +72,131 @@ function ListField({ label, value, onChange, addLabel = "Add", placeholder }: Li
   );
 }
 
+function parseAltList(json: string): { slug: string; name: string }[] {
+  try {
+    const parsed = JSON.parse(json);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((a: any) => ({ slug: String(a?.slug || "").trim(), name: String(a?.name || a?.slug || "").trim() }))
+      .filter((a) => a.slug);
+  } catch {
+    return [];
+  }
+}
+
+type AlternativeFieldProps = {
+  label: string;
+  value: string;
+  currentSlug?: string;
+  onChange: (value: string) => void;
+};
+
+function AlternativeField({ label, value, currentSlug, onChange }: AlternativeFieldProps) {
+  const selected = parseAltList(value);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<ToolRow[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const q = query.trim();
+    if (!q) {
+      setResults([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    const timer = setTimeout(() => {
+      adminApi
+        .getTools({ search: q, limit: 8 })
+        .then((res) => {
+          if (cancelled) return;
+          setResults((res.items as ToolRow[]).filter((t) => t.slug !== currentSlug));
+          setSearching(false);
+          setOpen(true);
+        })
+        .catch(() => {
+          if (!cancelled) setSearching(false);
+        });
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [query, currentSlug]);
+
+  const add = (tool: ToolRow) => {
+    if (selected.some((s) => s.slug === tool.slug)) return;
+    onChange(JSON.stringify([...selected, { slug: tool.slug, name: tool.name }]));
+    setQuery("");
+    setOpen(false);
+  };
+  const remove = (slug: string) => {
+    onChange(JSON.stringify(selected.filter((s) => s.slug !== slug)));
+  };
+
+  const matched = selected.length > 0 ? selected : null;
+
+  return (
+    <Field label={label} hint="Select existing tools as alternatives">
+      <div className="space-y-2">
+        <div className="relative">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {matched?.map((s) => (
+              <span
+                key={s.slug}
+                className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2.5 py-1 text-xs text-foreground"
+              >
+                {s.name}
+                <button
+                  type="button"
+                  onClick={() => remove(s.slug)}
+                  className="rounded-full p-0.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                  aria-label={`Remove ${s.name}`}
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            ))}
+          </div>
+          <Input
+            value={query}
+            placeholder="Search existing tools to add…"
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => {
+              if (results.length > 0) setOpen(true);
+            }}
+            onBlur={() => setTimeout(() => setOpen(false), 150)}
+          />
+          {open && (results.length > 0 || searching) && (
+            <div className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-border bg-card py-1 shadow-xl">
+              {searching && !results.length && <p className="px-3 py-2 text-xs text-muted-foreground">Searching…</p>}
+              {results.map((t) => (
+                <button
+                  key={t.slug}
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    add(t);
+                  }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted"
+                >
+                  <span className="truncate">{t.name}</span>
+                  <span className="ml-auto truncate text-xs text-muted-foreground">/{t.slug}</span>
+                </button>
+              ))}
+              {!searching && results.length === 0 && (
+                <p className="px-3 py-2 text-xs text-muted-foreground">No tools match “{query}”</p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </Field>
+  );
+}
+
 function parseAttrList(json: string): { label: string; value: string }[] {
   try {
     const parsed = JSON.parse(json);
@@ -186,6 +311,12 @@ const EMPTY_FORM = {
   useCases: "",
   tags: "",
   searchKeywords: "",
+  alternatives: "",
+  videoUrl: "",
+  screenshots: "",
+  seoTitle: "",
+  seoDescription: "",
+  ogImage: "",
   compareOverallRating: "",
   compareEaseOfUse: "",
   compareFeaturesScore: "",
@@ -277,6 +408,14 @@ export default function AdminToolsPage() {
       useCases: (tool.useCases || []).join(", "),
       tags: (tool.tags || []).join(", "),
       searchKeywords: (tool.searchKeywords || []).join(", "),
+      alternatives: JSON.stringify(
+        (tool.alternatives || []).map((slug) => ({ slug, name: slug }))
+      ),
+      videoUrl: tool.videoUrl || "",
+      screenshots: (tool.screenshots || []).join(", "),
+      seoTitle: tool.seoTitle || "",
+      seoDescription: tool.seoDescription || "",
+      ogImage: tool.ogImage || "",
       compareOverallRating: tool.compare?.overallRating != null ? String(tool.compare.overallRating) : "",
       compareEaseOfUse: tool.compare?.easeOfUse != null ? String(tool.compare.easeOfUse) : "",
       compareFeaturesScore: tool.compare?.featuresScore != null ? String(tool.compare.featuresScore) : "",
@@ -315,6 +454,12 @@ export default function AdminToolsPage() {
         useCases: splitList(form.useCases),
         tags: splitList(form.tags),
         searchKeywords: splitList(form.searchKeywords),
+        alternatives: parseAltList(form.alternatives).map((a) => a.slug),
+        videoUrl: form.videoUrl.trim(),
+        screenshots: splitList(form.screenshots),
+        seoTitle: form.seoTitle.trim(),
+        seoDescription: form.seoDescription.trim(),
+        ogImage: form.ogImage.trim(),
         compare: {
           overallRating: toNum(form.compareOverallRating),
           easeOfUse: toNum(form.compareEaseOfUse),
@@ -539,14 +684,6 @@ export default function AdminToolsPage() {
               </Field>
             </div>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Logo" hint="URL to the tool logo image">
-                <Input value={form.logo} onChange={(e) => setForm({ ...form, logo: e.target.value })} placeholder="https://…/logo.png" />
-              </Field>
-              <Field label="Thumbnail / Cover Image" hint="URL to the cover/thumbnail image">
-                <Input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://…/cover.png" />
-              </Field>
-            </div>
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Category *">
                 <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
               </Field>
@@ -680,6 +817,15 @@ export default function AdminToolsPage() {
             </div>
           </div>
           <div>
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Alternatives</h4>
+            <AlternativeField
+              label="Alternative Tools"
+              value={form.alternatives}
+              currentSlug={editing?.slug}
+              onChange={(v) => setForm({ ...form, alternatives: v })}
+            />
+          </div>
+          <div>
             <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Compare Data</h4>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Overall Rating" hint="0–10 score">
@@ -741,6 +887,45 @@ export default function AdminToolsPage() {
                 onChange={(v) => setForm({ ...form, compareAttributes: v })}
                 addLabel="Add attribute"
               />
+            </div>
+          </div>
+          <div>
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Media</h4>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Logo" hint="URL to the tool logo image">
+                <Input value={form.logo} onChange={(e) => setForm({ ...form, logo: e.target.value })} placeholder="https://…/logo.png" />
+              </Field>
+              <Field label="Thumbnail" hint="URL to the cover/thumbnail image">
+                <Input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://…/cover.png" />
+              </Field>
+            </div>
+            <div className="mt-4">
+              <ListField
+                label="Screenshots"
+                value={form.screenshots}
+                onChange={(v) => setForm({ ...form, screenshots: v })}
+                addLabel="Add screenshot URL"
+                placeholder="https://…/screenshot.png"
+              />
+            </div>
+            <div className="mt-4">
+              <Field label="Video / Demo URL" hint="YouTube, Vimeo or demo link">
+                <Input value={form.videoUrl} onChange={(e) => setForm({ ...form, videoUrl: e.target.value })} placeholder="https://…" />
+              </Field>
+            </div>
+          </div>
+          <div>
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">SEO</h4>
+            <div className="grid grid-cols-1 gap-4">
+              <Field label="SEO Title" hint="Browser & search title">
+                <Input value={form.seoTitle} onChange={(e) => setForm({ ...form, seoTitle: e.target.value })} placeholder="Tool name — Best AI tool for…" />
+              </Field>
+              <Field label="Meta Description" hint="Shown in search results">
+                <Textarea rows={2} value={form.seoDescription} onChange={(e) => setForm({ ...form, seoDescription: e.target.value })} />
+              </Field>
+              <Field label="OG Image" hint="Social sharing image URL">
+                <Input value={form.ogImage} onChange={(e) => setForm({ ...form, ogImage: e.target.value })} placeholder="https://…/og.png" />
+              </Field>
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

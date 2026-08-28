@@ -60,6 +60,9 @@ export interface ITool {
   useCases?: string[];
   tags: string[];
   searchKeywords?: string[];
+  alternatives?: string[];
+  videoUrl?: string;
+  screenshots?: string[];
   // AdminDashboard managed flags
   featured: boolean;
   featuredOrder?: number | null;
@@ -71,6 +74,7 @@ export interface ITool {
   sponsorActive?: boolean;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  ogImage?: string | null;
   status: "draft" | "published" | "archived";
   publishDate?: Date | null;
   compare?: IToolCompareData;
@@ -117,6 +121,9 @@ const toolSchema = new mongoose.Schema<ITool>(
     useCases: [{ type: String, trim: true }],
     tags: [{ type: String, trim: true }],
     searchKeywords: [{ type: String, trim: true }],
+    alternatives: [{ type: String, trim: true }],
+    videoUrl: { type: String, trim: true, default: "" },
+    screenshots: [{ type: String, trim: true }],
     // AdminDashboard managed flags
     featured: { type: Boolean, default: false },
     featuredOrder: { type: Number, default: null },
@@ -128,6 +135,7 @@ const toolSchema = new mongoose.Schema<ITool>(
     sponsorActive: { type: Boolean, default: false },
     seoTitle: { type: String, default: null },
     seoDescription: { type: String, default: null },
+    ogImage: { type: String, default: null },
     status: { type: String, enum: ["draft", "published", "archived"], default: "published" },
     publishDate: { type: Date, default: null },
     compare: {

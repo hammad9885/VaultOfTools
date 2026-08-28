@@ -65,7 +65,13 @@ export interface ToolRow {
   useCases?: string[];
   tags?: string[];
   searchKeywords?: string[];
+  alternatives?: string[];
+  videoUrl?: string;
+  screenshots?: string[];
   compare?: ToolCompareData;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  ogImage?: string | null;
   featured: boolean;
   sponsored: boolean;
   status: string;
