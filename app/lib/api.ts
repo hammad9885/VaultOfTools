@@ -328,6 +328,9 @@ export const api = {
   getHomeTrending: () =>
     request<any[]>("/static/home/trending"),
 
+  getHomePromoted: () =>
+    request<any[]>("/static/home/promoted"),
+
   // Token helpers
   setToken,
   getToken,

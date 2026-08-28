@@ -136,7 +136,7 @@ export default function ToolPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[#faf8f5]">
         <SiteNav />
         <div className="grid place-items-center py-32">
           <p className="text-sm text-muted-foreground">Loading...</p>
@@ -160,7 +160,7 @@ export default function ToolPage() {
   const cons = tool.cons?.length > 0 ? tool.cons : (staticData?.fallbackCons || ["Limited offline mode"]);
 
   return (
-    <div className="min-h-screen bg-background font-sans text-foreground">
+    <div className="min-h-screen bg-[#faf8f5] font-sans text-[#1a1a1a] antialiased">
       <SiteNav />
       <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
         <nav className="mb-6 flex flex-wrap gap-x-1 text-xs text-muted-foreground">

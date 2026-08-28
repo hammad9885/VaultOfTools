@@ -152,14 +152,29 @@ function logoSrc(logo: unknown): string | undefined {
 export function ToolCard({ tool }: { tool: (typeof fallbackTrending)[number] & { upvotes?: number; clicks?: number } }) {
   const upvotes = Number((tool as any).upvotes || 0);
   const clicks = Number((tool as any).clicks || 0);
+  const tag = (tool as any).tag as string | undefined;
 
   return (
     <Link
       href={`/tool/${tool.slug}`}
       className="group flex flex-col rounded-2xl border border-gray-100 bg-white p-5 hover:shadow-md transition-all"
     >
-      <div className="w-14 h-14 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 grid place-items-center mb-4">
-        <ToolLogo name={tool.name} logo={logoSrc(tool.logo)} website={(tool as any).website} size={40} />
+      <div className="flex items-center justify-between">
+        <div className="w-14 h-14 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 grid place-items-center mb-4">
+          <ToolLogo name={tool.name} logo={logoSrc(tool.logo)} website={(tool as any).website} size={40} />
+        </div>
+        {tag && (
+          <span
+            className={`mb-4 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+              tag === "Sponsored"
+                ? "bg-amber-100 text-amber-700"
+                : "bg-violet-100 text-violet-700"
+            }`}
+          >
+            {tag === "Sponsored" && <Megaphone className="h-3 w-3" />}
+            {tag}
+          </span>
+        )}
       </div>
       <h3 className="font-semibold text-gray-900 text-base leading-tight">{tool.name}</h3>
       <p className="text-xs text-gray-400 mt-0.5">{tool.category}</p>
@@ -238,6 +253,9 @@ export function SiteNav() {
         </Link>
 
         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
+          <Link href="/" className="hover:text-primary transition-colors font-medium">
+            Home
+          </Link>
           <Link href="/discover" className="hover:text-primary transition-colors">
             Discover
           </Link>
@@ -292,6 +310,13 @@ export function SiteNav() {
               className="relative z-10 max-h-full overflow-y-auto overscroll-contain border-t border-border bg-background shadow-xl"
             >
               <div className="flex flex-col space-y-1 px-3 py-3">
+<Link
+                  href="/"
+                  onClick={() => setIsOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary"
+                >
+                  Home
+                </Link>
                 <Link
                   href="/discover"
                   onClick={() => setIsOpen(false)}
@@ -363,6 +388,7 @@ interface ApiTool {
 
 export function HomePage() {
   const [tools, setTools] = useState(fallbackTrending);
+  const [promoted, setPromoted] = useState<any[]>([]);
 
   const fallbackComparisons = [
     { slug: "chatgpt-vs-claude", a: "ChatGPT", b: "Claude", category: "AI Chatbots" },
@@ -411,9 +437,10 @@ export function HomePage() {
 
     Promise.allSettled([
       api.getHomeTrending(),
+      api.getHomePromoted(),
       api.getHomeComparisons(),
       api.getHomeFaqs(),
-    ]).then(([toolsRes, comparisonsRes, faqsRes]) => {
+    ]).then(([toolsRes, promotedRes, comparisonsRes, faqsRes]) => {
       if (cancelled) return;
 
       if (toolsRes.status === "fulfilled" && Array.isArray(toolsRes.value) && toolsRes.value.length > 0) {
@@ -437,6 +464,24 @@ export function HomePage() {
         trending = mapped as any;
       }
 
+      if (promotedRes.status === "fulfilled" && Array.isArray(promotedRes.value) && promotedRes.value.length > 0) {
+        setPromoted(
+          promotedRes.value.map((t: any) => ({
+            slug: t.slug,
+            name: t.name,
+            category: t.category,
+            logo: t.logo || fluxLogo,
+            pricing: t.pricing || "Free",
+            rating: t.rating || 0,
+            reviews: t.reviews || 0,
+            desc: t.desc || "",
+            website: t.website || "#",
+            sponsored: t.sponsored,
+            featured: t.featured,
+          }))
+        );
+      }
+
       if (comparisonsRes.status === "fulfilled" && Array.isArray(comparisonsRes.value) && comparisonsRes.value.length > 0) {
         setComparisons(comparisonsRes.value as unknown as typeof fallbackComparisons);
       }
@@ -452,14 +497,43 @@ export function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background font-sans text-foreground">
+    <div className="min-h-screen bg-[#faf8f5] font-sans text-[#1a1a1a] antialiased">
       <SiteNav />
       <HeroSection />
       <AIToolsDirectory />
+
+{promoted.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+              <span className="grid size-7 place-items-center rounded-lg bg-amber-100 text-amber-600">
+                <Megaphone className="h-4 w-4" />
+              </span>
+              Sponsored & Featured
+            </h2>
+            <span className="text-xs font-medium text-muted-foreground">
+              Paid placements — independent of organic trending &amp; popularity
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+            {promoted.map((t) => (
+              <ToolCard
+                key={t.slug}
+                tool={{
+                  ...t,
+                  logo: t.logo as never,
+                  tag: t.sponsored ? "Sponsored" : "Featured",
+                } as any}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-indigo-500" aria-hidden="true">
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-indigo-500" aria-hidden="true">
               <path
                 d="M5 19L19 5M19 5H9M19 5V15"
                 stroke="currentColor"
@@ -468,7 +542,7 @@ export function HomePage() {
                 strokeLinejoin="round"
               />
             </svg>
-            Trending AI Tools
+            Trending Tools
           </h2>
           <Link href="/discover" className="flex shrink-0 items-center gap-1 text-sm font-medium text-indigo-500 hover:underline">
             View all <ArrowRight className="w-4 h-4" />
@@ -483,8 +557,8 @@ export function HomePage() {
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center gap-2">
-          <Grid2x2 className="w-6 h-6 text-indigo-600" />
-          <h2 className="text-2xl font-bold text-foreground">AI Categories</h2>
+          <Grid2x2 className="w-7 h-7 text-indigo-600" />
+          <h2 className="text-3xl font-bold text-foreground">All Categories</h2>
         </div>
         <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
           {categories.map((c) => (
@@ -615,7 +689,7 @@ export function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
-        <h2 className="text-center text-2xl font-bold text-foreground">Frequently Asked Questions</h2>
+        <h2 className="text-center text-3xl font-bold text-foreground">Frequently Asked Questions</h2>
         <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
           {faqs.map((f) => (
             <details key={f.q} className="group rounded-xl border border-border bg-card p-5 transition-shadow open:shadow-md">

@@ -34,6 +34,8 @@ interface Tool {
   saves: number;
   isNew?: boolean;
   slug?: string;
+  sponsored?: boolean;
+  featured?: boolean;
 }
 
 interface Category {
@@ -167,6 +169,16 @@ function DirectoryToolCard({ tool }: { tool: Tool }) {
           {tool.isNew && (
             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-600">
               New
+            </span>
+          )}
+          {tool.sponsored && (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+              Sponsored
+            </span>
+          )}
+          {!tool.sponsored && tool.featured && (
+            <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700">
+              Featured
             </span>
           )}
         </div>

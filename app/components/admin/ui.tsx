@@ -86,6 +86,24 @@ export function StatusBadge({ status }: { status: string }) {
   return <Badge tone={entry.tone}>{entry.label}</Badge>;
 }
 
+export function PromotionBadge({
+  startDate,
+  endDate,
+  active,
+}: {
+  startDate?: string | null;
+  endDate?: string | null;
+  active?: boolean;
+}) {
+  const now = Date.now();
+  const start = startDate ? new Date(startDate).getTime() : null;
+  const end = endDate ? new Date(endDate).getTime() : null;
+  if (!active) return <Badge tone="default">Off</Badge>;
+  if (start !== null && now < start) return <Badge tone="warning">Scheduled</Badge>;
+  if (end !== null && now > end) return <Badge tone="danger">Expired</Badge>;
+  return <Badge tone="success">Active</Badge>;
+}
+
 export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input

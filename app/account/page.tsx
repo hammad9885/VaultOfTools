@@ -69,7 +69,7 @@ export default function AccountPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background grid place-items-center">
+      <div className="min-h-screen bg-[#faf8f5] grid place-items-center">
         <p className="text-sm text-muted-foreground">Loading…</p>
       </div>
     );
@@ -80,7 +80,7 @@ export default function AccountPage() {
   const showProfile = pathname === "/account";
 
   return (
-    <div className="bg-background font-sans text-foreground">
+    <div className="bg-[#faf8f5] font-sans text-[#1a1a1a] antialiased">
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Your account</h1>
 

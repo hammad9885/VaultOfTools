@@ -150,7 +150,7 @@ export default function CompareLandingPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background font-sans text-foreground">
+    <div className="min-h-screen bg-[#faf8f5] font-sans text-[#1a1a1a] antialiased">
       <SiteNav />
 
       <section className="bg-surface-soft border-b border-border py-16 sm:py-20">

@@ -47,7 +47,15 @@ export type PublicTool = {
   seoDescription?: string | null;
   ogImage?: string | null;
   featured?: boolean;
+  featuredOrder?: number | null;
   sponsored?: boolean;
+  sponsorName?: string | null;
+  sponsorPriority?: number | null;
+  sponsorStartDate?: string | Date | null;
+  sponsorEndDate?: string | Date | null;
+  sponsorActive?: boolean;
+  promotionActive?: boolean;
+  promotionType?: "sponsored" | "featured" | null;
   trending?: boolean;
   editorsChoice?: boolean;
   verified?: boolean;
@@ -78,6 +86,31 @@ function hashScore(input: string, salt: number) {
     hash = (hash * 31 + input.charCodeAt(i)) >>> 0;
   }
   return 40 + (hash % 960);
+}
+
+/** Paid promotion is active only while a sponsored/featured window covers "now". */
+export function isPromotionActive(raw: any, now = Date.now()): boolean {
+  if (!raw) return false;
+  const featured = Boolean(raw.featured);
+  const sponsored = Boolean(raw.sponsored);
+  if (!featured && !sponsored) return false;
+  if (raw.sponsorActive === false) return false;
+  const start = raw.sponsorStartDate ? new Date(raw.sponsorStartDate).getTime() : null;
+  const end = raw.sponsorEndDate ? new Date(raw.sponsorEndDate).getTime() : null;
+  if (Number.isNaN(start ?? 0)) return false;
+  if (Number.isNaN(end ?? 0)) return false;
+  if (start !== null && now < start) return false;
+  if (end !== null && now > end) return false;
+  return true;
+}
+
+function promotionRank(tool: PublicTool) {
+  if (tool.promotionActive) {
+    if (tool.promotionType === "sponsored" && tool.sponsorPriority != null) return tool.sponsorPriority;
+    if (tool.featuredOrder != null) return tool.featuredOrder;
+    if (tool.displayOrder != null) return tool.displayOrder;
+  }
+  return Number.MAX_SAFE_INTEGER;
 }
 
 /** Normalize any tool document (Mongo / memory / static) for public UI. */
@@ -156,7 +189,20 @@ export function normalizePublicTool(raw: any): PublicTool {
     seoDescription: raw?.seoDescription ?? null,
     ogImage: raw?.ogImage ?? null,
     featured: Boolean(raw?.featured),
+    featuredOrder: raw?.featuredOrder ?? null,
     sponsored: Boolean(raw?.sponsored),
+    sponsorName: raw?.sponsorName ?? null,
+    sponsorPriority: raw?.sponsorPriority ?? null,
+    sponsorStartDate: raw?.sponsorStartDate
+      ? new Date(raw.sponsorStartDate).toISOString()
+      : null,
+    sponsorEndDate: raw?.sponsorEndDate ? new Date(raw.sponsorEndDate).toISOString() : null,
+    sponsorActive: Boolean(raw?.sponsorActive),
+    promotionActive: isPromotionActive(raw),
+    promotionType: (() => {
+      if (!isPromotionActive(raw)) return null;
+      return Boolean(raw?.sponsored) ? "sponsored" : "featured";
+    })(),
     trending: Boolean(raw?.trending),
     editorsChoice: Boolean(raw?.editorsChoice),
     verified: Boolean(raw?.verified),
@@ -202,14 +248,32 @@ function sortTools(list: PublicTool[], sort?: string | null) {
     );
   } else if (sort === "name") {
     next.sort((a, b) => a.name.localeCompare(b.name));
-  } else if (sort === "trending" || sort === "popular" || sort === "featured") {
-    // Organic trending: score computed from recent views/visits/votes/searches.
+  } else if (sort === "trending") {
+    // Organic trending: only real recent activity. Paid promotion never adds
+    // score here, and active promotions are surfaced only via the override pin.
     next.sort((a, b) => {
       if (b.trendScore !== a.trendScore) return b.trendScore - a.trendScore;
       if (b.upvotes !== a.upvotes) return b.upvotes - a.upvotes;
       if (b.clicks !== a.clicks) return b.clicks - a.clicks;
       if (b.rating !== a.rating) return b.rating - a.rating;
       return b.reviews - a.reviews;
+    });
+  } else if (sort === "popular") {
+    // Overall / lifetime popularity: all-time upvotes, clicks, then rating.
+    next.sort((a, b) => {
+      if (b.upvotes !== a.upvotes) return b.upvotes - a.upvotes;
+      if (b.clicks !== a.clicks) return b.clicks - a.clicks;
+      if (b.rating !== a.rating) return b.rating - a.rating;
+      if (b.reviews !== a.reviews) return b.reviews - a.reviews;
+      return b.trendScore - a.trendScore;
+    });
+  } else if (sort === "featured") {
+    // Paid placements first (by priority), then organic popularity.
+    next.sort((a, b) => {
+      const ar = promotionRank(a);
+      const br = promotionRank(b);
+      if (ar !== br) return ar - br;
+      return b.upvotes - a.upvotes || b.rating - a.rating;
     });
   } else {
     next.sort((a, b) => b.trendScore - a.trendScore || b.rating - a.rating || b.reviews - a.reviews);
@@ -300,12 +364,55 @@ export async function getPublicToolBySlug(slug: string) {
 }
 
 export async function listPopularPublicTools(limit = 15) {
-  const all = await listPublicTools({ sort: "trending", limit });
+  const all = await listPublicTools({ sort: "popular", limit });
   return all.tools;
 }
 
 export async function listTrendingPublicTools(limit = 12) {
-  return listPopularPublicTools(limit);
+  const all = await getMergedSiteTools({ publishedOnly: true });
+  const organic = sortTools(all, "trending");
+
+  // Paid Trending Override: active sponsored promotions pinned above organic
+  // trending, ordered by priority. These never alter the organic scores of
+  // other tools.
+  const overrides = all
+    .filter((t) => t.promotionActive && t.sponsored && t.trending)
+    .sort((a, b) => {
+      const ap = a.sponsorPriority ?? a.featuredOrder ?? a.displayOrder ?? Number.MAX_SAFE_INTEGER;
+      const bp = b.sponsorPriority ?? b.featuredOrder ?? b.displayOrder ?? Number.MAX_SAFE_INTEGER;
+      return ap - bp;
+    });
+
+  if (overrides.length === 0) return organic.slice(0, limit);
+
+  const seen = new Set<string>();
+  const merged: PublicTool[] = [];
+  for (const t of overrides) {
+    if (seen.has(t.slug)) continue;
+    seen.add(t.slug);
+    merged.push(t);
+  }
+  for (const t of organic) {
+    if (seen.has(t.slug)) continue;
+    seen.add(t.slug);
+    merged.push(t);
+    if (merged.length >= limit) break;
+  }
+  return merged;
+}
+
+/** Paid sponsored/featured placements, separate from organic lists. */
+export async function listPromotedPublicTools(limit = 10) {
+  const all = await getMergedSiteTools({ publishedOnly: true });
+  const promoted = all
+    .filter((t) => t.promotionActive)
+    .sort((a, b) => {
+      const ar = promotionRank(a);
+      const br = promotionRank(b);
+      if (ar !== br) return ar - br;
+      return b.upvotes - a.upvotes || b.rating - a.rating;
+    });
+  return promoted.slice(0, limit);
 }
 
 export async function listRecentPublicTools(limit = 15) {

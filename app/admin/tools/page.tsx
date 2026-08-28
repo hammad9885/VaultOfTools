@@ -8,7 +8,7 @@ import { ToolRow } from "../../lib/admin/types";
 import { PageHeader } from "../../components/admin/cards";
 import { DataTable, Column } from "../../components/admin/DataTable";
 import { Pagination } from "../../components/admin/Pagination";
-import { Badge, Button, Field, Input, Modal, Select, StatusBadge, Textarea } from "../../components/admin/ui";
+import { Badge, Button, Field, Input, Modal, PromotionBadge, Select, StatusBadge, Textarea } from "../../components/admin/ui";
 import { slugify } from "../../lib/admin/utils";
 import { ToolLogo } from "../../components/ToolLogo";
 
@@ -329,7 +329,13 @@ const EMPTY_FORM = {
   compareIntegrations: "",
   compareAttributes: "[]",
   featured: false,
+  featuredOrder: "",
   sponsored: false,
+  sponsorName: "",
+  sponsorStartDate: "",
+  sponsorEndDate: "",
+  sponsorPriority: "",
+  sponsorActive: false,
   trending: false,
   editorsChoice: false,
   verified: false,
@@ -432,7 +438,13 @@ export default function AdminToolsPage() {
       compareIntegrations: (tool.compare?.integrations || []).join(", "),
       compareAttributes: JSON.stringify(tool.compare?.attributes || []),
       featured: tool.featured,
+      featuredOrder: tool.featuredOrder != null ? String(tool.featuredOrder) : "",
       sponsored: tool.sponsored,
+      sponsorName: tool.sponsorName || "",
+      sponsorStartDate: tool.sponsorStartDate ? String(tool.sponsorStartDate).slice(0, 10) : "",
+      sponsorEndDate: tool.sponsorEndDate ? String(tool.sponsorEndDate).slice(0, 10) : "",
+      sponsorPriority: tool.sponsorPriority != null ? String(tool.sponsorPriority) : "",
+      sponsorActive: tool.sponsorActive || false,
       trending: tool.trending || false,
       editorsChoice: tool.editorsChoice || false,
       verified: tool.verified || false,
@@ -472,6 +484,12 @@ export default function AdminToolsPage() {
         editorsChoice: form.editorsChoice,
         verified: form.verified,
         displayOrder: toNum(form.displayOrder),
+        featuredOrder: toNum(form.featuredOrder),
+        sponsorName: form.sponsorName.trim(),
+        sponsorStartDate: form.sponsorStartDate ? new Date(form.sponsorStartDate).toISOString() : null,
+        sponsorEndDate: form.sponsorEndDate ? new Date(form.sponsorEndDate).toISOString() : null,
+        sponsorPriority: toNum(form.sponsorPriority),
+        sponsorActive: form.sponsorActive,
         compare: {
           overallRating: toNum(form.compareOverallRating),
           easeOfUse: toNum(form.compareEaseOfUse),
@@ -574,6 +592,13 @@ export default function AdminToolsPage() {
           {t.sponsored && <Badge tone="info">Sponsored</Badge>}
           {t.editorsChoice && <Badge tone="violet">Editor's Choice</Badge>}
           {t.verified && <Badge tone="success">Verified</Badge>}
+          {(t.featured || t.sponsored) && (
+            <PromotionBadge
+              startDate={t.sponsorStartDate}
+              endDate={t.sponsorEndDate}
+              active={t.sponsorActive}
+            />
+          )}
           <StatusBadge status={t.status} />
         </div>
       ),
@@ -973,6 +998,41 @@ export default function AdminToolsPage() {
                   <option value="archived">Archived</option>
                 </Select>
               </Field>
+            </div>
+            <div className="mt-6 rounded-lg border border-primary/20 bg-primary/5 p-4">
+              <h5 className="mb-3 text-xs font-semibold uppercase tracking-wide text-primary">
+                Paid Promotion <span className="ml-1 font-normal normal-case text-muted-foreground">(Sponsored / Featured / Trending Override)</span>
+              </h5>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <label className="flex items-center gap-2 text-sm text-foreground">
+                  <input type="checkbox" checked={form.sponsorActive} onChange={(e) => setForm({ ...form, sponsorActive: e.target.checked })} />
+                  Promotion Active
+                </label>
+                <label className="flex items-center gap-2 text-sm text-foreground">
+                  <input
+                    type="checkbox"
+                    checked={form.trending}
+                    onChange={(e) => setForm({ ...form, trending: e.target.checked })}
+                  />
+                  Trending Override (paid)
+                </label>
+                <Field label="Sponsor / Company" hint="Optional paid-promotion label">
+                  <Input value={form.sponsorName} onChange={(e) => setForm({ ...form, sponsorName: e.target.value })} placeholder="Company or campaign name" />
+                </Field>
+                <Field label="Priority / Position" hint="Lower = higher placement">
+                  <Input type="number" value={form.sponsorPriority} onChange={(e) => setForm({ ...form, sponsorPriority: e.target.value })} placeholder="1" />
+                </Field>
+                <Field label="Promotion Start Date" hint="Placement starts on this date">
+                  <Input type="date" value={form.sponsorStartDate} onChange={(e) => setForm({ ...form, sponsorStartDate: e.target.value })} />
+                </Field>
+                <Field label="Promotion End Date" hint="Auto-expires after this date">
+                  <Input type="date" value={form.sponsorEndDate} onChange={(e) => setForm({ ...form, sponsorEndDate: e.target.value })} />
+                </Field>
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Promotion runs between Start and End dates, then automatically expires and the tool returns to the
+                normal organic ranking. Sponsored/Featured placement is kept separate from organic trending scores.
+              </p>
             </div>
           </div>
         </div>

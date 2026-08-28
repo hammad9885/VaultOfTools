@@ -73,7 +73,13 @@ export interface ToolRow {
   seoDescription?: string | null;
   ogImage?: string | null;
   featured: boolean;
+  featuredOrder?: number | null;
   sponsored: boolean;
+  sponsorName?: string | null;
+  sponsorStartDate?: string | null;
+  sponsorEndDate?: string | null;
+  sponsorPriority?: number | null;
+  sponsorActive?: boolean;
   trending?: boolean;
   editorsChoice?: boolean;
   verified?: boolean;

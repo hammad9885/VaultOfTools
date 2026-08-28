@@ -229,7 +229,7 @@ export default function ToolsReview() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[#faf8f5]">
         <SiteNav />
         <div className="grid place-items-center py-32">
           <p className="text-sm text-muted-foreground">Loading reviews…</p>
@@ -240,7 +240,7 @@ export default function ToolsReview() {
   }
 
   return (
-    <div className="min-h-screen bg-background font-sans text-foreground">
+    <div className="min-h-screen bg-[#faf8f5] font-sans text-[#1a1a1a] antialiased">
       <SiteNav />
 
       <section className="bg-surface-soft border-b border-border">
