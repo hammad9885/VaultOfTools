@@ -26,7 +26,7 @@ export async function PATCH(request: Request, { params }: Ctx) {
       "imageUrl", "url", "website", "shortDescription", "fullDescription",
       "description", "pricing", "startingPrice", "billingPeriod", "freePlan",
       "freeTrial", "trialDuration", "rating", "reviews", "features", "pros", "cons",
-      "tags", "featured", "featuredOrder", "sponsored", "sponsorName",
+      "bestFor", "useCases", "tags", "searchKeywords", "featured", "featuredOrder", "sponsored", "sponsorName",
       "sponsorStartDate", "sponsorEndDate", "sponsorPriority", "sponsorActive",
       "seoTitle", "seoDescription", "status", "publishDate",
     ];
@@ -38,7 +38,7 @@ export async function PATCH(request: Request, { params }: Ctx) {
 
     const bools = ["featured", "sponsored", "sponsorActive", "freePlan", "freeTrial"];
     const numbers = ["rating", "reviews", "featuredOrder", "sponsorPriority"];
-    const arrays = ["features", "pros", "cons", "tags"];
+    const arrays = ["features", "pros", "cons", "useCases", "tags", "searchKeywords"];
 
     if (useMemoryStore(id)) {
       const current = await memoryStore.getToolById(id);

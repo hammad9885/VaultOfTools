@@ -33,7 +33,10 @@ export type PublicTool = {
   features: string[];
   pros: string[];
   cons: string[];
+  bestFor?: string;
+  useCases?: string[];
   tags: string[];
+  searchKeywords?: string[];
   featured?: boolean;
   sponsored?: boolean;
   status?: string;
@@ -128,7 +131,10 @@ export function normalizePublicTool(raw: any): PublicTool {
     features: asArray(raw?.features),
     pros: asArray(raw?.pros),
     cons: asArray(raw?.cons),
+    bestFor: raw?.bestFor ? String(raw.bestFor) : undefined,
+    useCases: asArray(raw?.useCases),
     tags: asArray(raw?.tags),
+    searchKeywords: asArray(raw?.searchKeywords),
     featured: Boolean(raw?.featured),
     sponsored: Boolean(raw?.sponsored),
     status: raw?.status || "published",
@@ -158,7 +164,8 @@ function matchesSearch(tool: PublicTool, search: string) {
     tool.desc.toLowerCase().includes(q) ||
     tool.slug.toLowerCase().includes(q) ||
     tool.category.toLowerCase().includes(q) ||
-    tool.tags.some((tag) => tag.toLowerCase().includes(q))
+    tool.tags.some((tag) => tag.toLowerCase().includes(q)) ||
+    (tool.searchKeywords || []).some((kw) => kw.toLowerCase().includes(q))
   );
 }
 

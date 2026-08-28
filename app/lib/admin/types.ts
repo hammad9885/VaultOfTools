@@ -42,7 +42,10 @@ export interface ToolRow {
   features?: string[];
   pros?: string[];
   cons?: string[];
+  bestFor?: string;
+  useCases?: string[];
   tags?: string[];
+  searchKeywords?: string[];
   featured: boolean;
   sponsored: boolean;
   status: string;

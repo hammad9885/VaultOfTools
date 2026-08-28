@@ -37,7 +37,10 @@ export interface ITool {
   features: string[];
   pros: string[];
   cons: string[];
+  bestFor?: string;
+  useCases?: string[];
   tags: string[];
+  searchKeywords?: string[];
   // AdminDashboard managed flags
   featured: boolean;
   featuredOrder?: number | null;
@@ -90,7 +93,10 @@ const toolSchema = new mongoose.Schema<ITool>(
     features: [{ type: String, trim: true }],
     pros: [{ type: String, trim: true }],
     cons: [{ type: String, trim: true }],
+    bestFor: { type: String, trim: true, default: "" },
+    useCases: [{ type: String, trim: true }],
     tags: [{ type: String, trim: true }],
+    searchKeywords: [{ type: String, trim: true }],
     // AdminDashboard managed flags
     featured: { type: Boolean, default: false },
     featuredOrder: { type: Number, default: null },

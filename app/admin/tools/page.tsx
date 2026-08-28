@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Pencil, Plus, Star, Trash2 } from "lucide-react";
+import { Pencil, Plus, Star, Trash2, X } from "lucide-react";
 import { adminApi } from "../../lib/admin/api";
 import { ToolRow } from "../../lib/admin/types";
 import { PageHeader } from "../../components/admin/cards";
@@ -11,6 +11,66 @@ import { Pagination } from "../../components/admin/Pagination";
 import { Badge, Button, Field, Input, Modal, Select, StatusBadge, Textarea } from "../../components/admin/ui";
 import { slugify } from "../../lib/admin/utils";
 import { ToolLogo } from "../../components/ToolLogo";
+
+type ListFieldProps = {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  addLabel?: string;
+  placeholder?: string;
+};
+
+function ListField({ label, value, onChange, addLabel = "Add", placeholder }: ListFieldProps) {
+  const items = value.split(",");
+  const update = (idx: number, next: string) => {
+    const copy = [...items];
+    copy[idx] = next;
+    onChange(copy.join(","));
+  };
+  const remove = (idx: number) => {
+    const copy = items.filter((_, i) => i !== idx);
+    onChange(copy.join(","));
+  };
+  const add = () => {
+    if (items[items.length - 1]?.trim()) {
+      onChange(`${value.replace(/,\s*$/, "")}, `);
+    }
+  };
+  const cleanup = () =>
+    onChange(
+      items
+        .map((it) => it.trim())
+        .filter(Boolean)
+        .join(", ")
+    );
+  return (
+    <Field label={label}>
+      <div className="space-y-2">
+        {items.map((item, idx) => (
+          <div key={idx} className="flex items-center gap-2">
+            <Input
+              value={item.trim()}
+              placeholder={placeholder}
+              onChange={(e) => update(idx, e.target.value)}
+              onBlur={cleanup}
+            />
+            <button
+              type="button"
+              onClick={() => remove(idx)}
+              className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+              aria-label={`Remove ${label} item`}
+            >
+              <X size={14} />
+            </button>
+          </div>
+        ))}
+        <Button type="button" variant="outline" size="sm" onClick={add}>
+          <Plus size={14} /> {addLabel}
+        </Button>
+      </div>
+    </Field>
+  );
+}
 
 const EMPTY_FORM = {
   name: "",
@@ -31,7 +91,12 @@ const EMPTY_FORM = {
   freeTrial: false,
   trialDuration: "",
   features: "",
+  pros: "",
+  cons: "",
+  bestFor: "",
+  useCases: "",
   tags: "",
+  searchKeywords: "",
   featured: false,
   sponsored: false,
   status: "published",
@@ -106,7 +171,12 @@ export default function AdminToolsPage() {
       freeTrial: tool.freeTrial || false,
       trialDuration: tool.trialDuration || "",
       features: (tool.features || []).join(", "),
+      pros: (tool.pros || []).join(", "),
+      cons: (tool.cons || []).join(", "),
+      bestFor: tool.bestFor || "",
+      useCases: (tool.useCases || []).join(", "),
       tags: (tool.tags || []).join(", "),
+      searchKeywords: (tool.searchKeywords || []).join(", "),
       featured: tool.featured,
       sponsored: tool.sponsored,
       status: tool.status,
@@ -122,13 +192,18 @@ export default function AdminToolsPage() {
     setSaving(true);
     try {
       const websiteUrl = form.url.trim() || form.website.trim();
+      const splitList = (v: string) => v.split(",").map((s) => s.trim()).filter(Boolean);
       const payload = {
         ...form,
         url: websiteUrl,
         website: websiteUrl,
         slug: form.slug.trim() || slugify(form.name),
-        features: form.features.split(",").map((s) => s.trim()).filter(Boolean),
-        tags: form.tags.split(",").map((s) => s.trim()).filter(Boolean),
+        features: splitList(form.features),
+        pros: splitList(form.pros),
+        cons: splitList(form.cons),
+        useCases: splitList(form.useCases),
+        tags: splitList(form.tags),
+        searchKeywords: splitList(form.searchKeywords),
       };
       if (editing) {
         await adminApi.updateTool(editing._id, payload);
@@ -426,13 +501,59 @@ export default function AdminToolsPage() {
               </Field>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Features" hint="Comma separated">
-              <Input value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} />
-            </Field>
-            <Field label="Tags" hint="Comma separated">
-              <Input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} />
-            </Field>
+          <div>
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Features</h4>
+            <ListField
+              label="Key Features"
+              value={form.features}
+              onChange={(v) => setForm({ ...form, features: v })}
+              addLabel="Add feature"
+              placeholder="e.g. AI-powered search"
+            />
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <ListField
+                label="Pros"
+                value={form.pros}
+                onChange={(v) => setForm({ ...form, pros: v })}
+                addLabel="Add pro"
+                placeholder="e.g. Easy to use"
+              />
+              <ListField
+                label="Cons"
+                value={form.cons}
+                onChange={(v) => setForm({ ...form, cons: v })}
+                addLabel="Add con"
+                placeholder="e.g. Limited free plan"
+              />
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Best For" hint="e.g. Developers, marketers">
+                <Input value={form.bestFor} onChange={(e) => setForm({ ...form, bestFor: e.target.value })} />
+              </Field>
+              <ListField
+                label="Use Cases"
+                value={form.useCases}
+                onChange={(v) => setForm({ ...form, useCases: v })}
+                addLabel="Add use case"
+                placeholder="e.g. Content writing"
+              />
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <ListField
+                label="Tags"
+                value={form.tags}
+                onChange={(v) => setForm({ ...form, tags: v })}
+                addLabel="Add tag"
+                placeholder="e.g. AI"
+              />
+              <ListField
+                label="Search Keywords"
+                value={form.searchKeywords}
+                onChange={(v) => setForm({ ...form, searchKeywords: v })}
+                addLabel="Add keyword"
+                placeholder="e.g. best ai writer"
+              />
+            </div>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <label className="flex items-center gap-2 text-sm text-foreground">
