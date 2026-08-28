@@ -1,13 +1,14 @@
 import { cert, getApps, initializeApp } from "firebase-admin/app";
-import { getAuth, type Auth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import type { Firestore } from "firebase-admin/firestore";
+import type { Auth } from "firebase-admin/auth";
 
 let firestoreDb: Firestore | null = null;
 
-export function tryGetAdminAuth(): Auth | null {
+export async function tryGetAdminAuth(): Promise<Auth | null> {
   try {
     getFirestoreDb();
+    const { getAuth } = await import("firebase-admin/auth");
     return getAuth();
   } catch {
     return null;

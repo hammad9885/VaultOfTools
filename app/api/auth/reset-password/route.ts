@@ -20,16 +20,16 @@ export async function POST(request: NextRequest) {
     }
 
     let firebaseUpdated = false;
-    const adminAuth = tryGetAdminAuth();
-    if (adminAuth) {
-      try {
+    try {
+      const adminAuth = await tryGetAdminAuth();
+      if (adminAuth) {
         const fbUser = await adminAuth.getUserByEmail(normalized);
         await adminAuth.updateUser(fbUser.uid, { password: nextPassword });
         firebaseUpdated = true;
-      } catch (err: any) {
-        if (err?.code !== "auth/user-not-found") {
-          console.warn("Firebase password update failed:", err?.message || err);
-        }
+      }
+    } catch (err: any) {
+      if (err?.code !== "auth/user-not-found") {
+        console.warn("Firebase password update failed:", err?.message || err);
       }
     }
 
