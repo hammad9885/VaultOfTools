@@ -259,7 +259,7 @@ export default function CompareLandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <section id="popular-comparisons" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 scroll-mt-24">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
             <Zap className="w-5 h-5 text-primary" />

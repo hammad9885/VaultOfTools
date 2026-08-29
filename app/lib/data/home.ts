@@ -6,10 +6,10 @@ export const stats = [
 ];
 
 export const comparisons = [
-  { label: "ChatGPT vs Claude" },
-  { label: "Midjourney vs DALL·E" },
-  { label: "Copilot vs Cursor" },
-  { label: "Notion AI vs Mem" },
+  { slug: "chatgpt-vs-claude", a: "ChatGPT-4o", b: "Claude 3.5 Sonnet", label: "ChatGPT vs Claude" },
+  { slug: "midjourney-vs-dalle", a: "Midjourney v6", b: "DALL·E 3", label: "Midjourney vs DALL·E" },
+  { slug: "copilot-vs-cursor", a: "GitHub Copilot", b: "Cursor", label: "Copilot vs Cursor" },
+  { slug: "notion-ai-vs-mem", a: "Notion AI", b: "Mem", label: "Notion AI vs Mem" },
 ];
 
 export const faqs = [

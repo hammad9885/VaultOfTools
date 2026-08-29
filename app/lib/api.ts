@@ -320,7 +320,7 @@ export const api = {
     request<{ value: string; suffix: string; label: string; icon: string }[]>("/static/home/stats"),
 
   getHomeComparisons: () =>
-    request<{ label: string }[]>("/static/home/comparisons"),
+    request<{ slug: string; a: string; b: string; label: string }[]>("/static/home/comparisons"),
 
   getHomeFaqs: () =>
     request<{ q: string; a: string }[]>("/static/home/faqs"),

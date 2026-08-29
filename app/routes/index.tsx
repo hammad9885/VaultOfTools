@@ -392,8 +392,8 @@ export function HomePage() {
 
   const fallbackComparisons = [
     { slug: "chatgpt-vs-claude", a: "ChatGPT", b: "Claude", category: "AI Chatbots" },
-    { slug: "midjourney-vs-dall-e", a: "Midjourney", b: "DALL·E", category: "Image Generation" },
-    { slug: "github-copilot-vs-cursor", a: "Copilot", b: "Cursor", category: "Coding" },
+    { slug: "midjourney-vs-dalle", a: "Midjourney", b: "DALL·E", category: "Image Generation" },
+    { slug: "copilot-vs-cursor", a: "Copilot", b: "Cursor", category: "Coding" },
     { slug: "notion-ai-vs-mem", a: "Notion AI", b: "Mem", category: "Productivity" },
   ];
 
@@ -593,13 +593,13 @@ export function HomePage() {
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
-                  href="/compare/chatgpt-vs-claude"
+                  href="/compare"
                   className="rounded-lg bg-foreground px-6 py-3 text-sm font-semibold text-background shadow-sm hover:bg-foreground/90 transition-all"
                 >
                   Start a Comparison
                 </Link>
                 <Link
-                  href="/discover"
+                  href="/compare#popular-comparisons"
                   className="rounded-lg border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground hover:bg-surface-soft transition-all"
                 >
                   View Popular Versus
@@ -619,28 +619,40 @@ export function HomePage() {
               </ul>
             </div>
             <div className="relative">
-              <div className="rounded-2xl border border-border bg-card p-4 shadow-2xl shadow-primary/5">
-                <div className="grid grid-cols-2 border-b border-border pb-4">
-                  <div className="min-w-0 break-words border-r border-border px-2 text-center text-xs font-semibold text-primary sm:px-4 sm:text-sm">ChatGPT-4o</div>
-                  <div className="min-w-0 break-words px-2 text-center text-xs font-semibold text-foreground sm:px-4 sm:text-sm">Claude 3.5 Sonnet</div>
+              <div className="rounded-2xl border border-border bg-card p-5 shadow-2xl shadow-primary/5">
+                <div className="grid grid-cols-2 items-center gap-3">
+                  <div className="flex flex-col items-center gap-2 rounded-xl bg-primary-muted/60 px-3 py-4">
+                    <ToolLogo name="ChatGPT-4o" size={38} className="rounded-lg" />
+                    <span className="text-center text-sm font-bold text-primary">ChatGPT-4o</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-2 rounded-xl bg-surface-soft px-3 py-4">
+                    <ToolLogo name="Claude 3.5 Sonnet" size={38} className="rounded-lg" />
+                    <span className="text-center text-sm font-bold text-foreground">Claude 3.5 Sonnet</span>
+                  </div>
                 </div>
-                <div className="py-4 space-y-3">
+                <div className="mt-4 space-y-3">
                   {(
                     [
-                      ["Knowledge Cutoff", "Oct 2023 vs Apr 2024"],
-                      ["Context Window", "128k vs 200k"],
-                      ["Pricing", "$20/mo vs $20/mo"],
-                      ["Best For", "General vs Coding"],
-                    ] as const
-                  ).map(([k, v]) => (
-                    <div key={k} className="flex flex-col gap-1 border-b border-border py-1 text-sm last:border-0 sm:flex-row sm:items-center sm:justify-between">
-                      <span className="text-muted-foreground">{k}</span>
-                      <span className="break-words text-left font-medium text-foreground sm:text-right">{v}</span>
+                      { label: "Context Window", a: "128k", b: "200k", win: "b" as "a" | "b" },
+                      { label: "Best For", a: "General", b: "Coding & Long-form", win: "b" as "a" | "b" },
+                    ]
+                  ).map((row) => (
+                    <div key={row.label} className="rounded-xl border border-border p-3">
+                      <div className="text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {row.label}
+                      </div>
+                      <div className="mt-2 grid grid-cols-2 gap-2 text-center">
+                        <span className={`text-base font-bold ${row.win === "a" ? "text-primary" : "text-foreground"}`}>{row.a}</span>
+                        <span className={`text-base font-bold ${row.win === "b" ? "text-primary" : "text-foreground"}`}>{row.b}</span>
+                      </div>
                     </div>
                   ))}
                 </div>
-                <div className="rounded-xl bg-primary/5 p-4 text-center text-xs font-semibold text-primary">
-                  Winner: Claude 3.5 for Coding Tasks
+                <div className="mt-4 rounded-xl bg-primary/5 p-4 text-center text-sm font-bold text-primary">
+                  Winner: Claude 3.5
+                  <span className="mt-0.5 block text-xs font-medium text-muted-foreground">
+                    for Coding &amp; Long-form Tasks
+                  </span>
                 </div>
               </div>
             </div>
