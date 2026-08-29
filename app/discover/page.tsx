@@ -53,6 +53,7 @@ function DiscoverContent() {
   const [apiTools, setApiTools] = useState<ToolData[]>([]);
   const [categoriesLoaded, setCategoriesLoaded] = useState<string[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showMoreCategories, setShowMoreCategories] = useState(false);
   const queryRef = useRef(query);
   queryRef.current = query;
 
@@ -174,9 +175,12 @@ const allTools: ToolData[] = useMemo(() => {
   }
 
   function toggleCategory(cat: string) {
-    setSelectedCategories((prev) =>
-      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
-    );
+    setSelectedCategories((prev) => {
+      const next = prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat];
+      const idx = allCategories.indexOf(cat);
+      if (idx >= 6 && !prev.includes(cat)) setShowMoreCategories(true);
+      return next;
+    });
   }
 
   function clearAllFilters() {
@@ -283,8 +287,8 @@ const allTools: ToolData[] = useMemo(() => {
                   </button>
                 )}
               </div>
-              <div className="space-y-1.5 max-h-60 overflow-y-auto">
-                {allCategories.map((cat) => (
+              <div className="space-y-1.5">
+                {allCategories.slice(0, 6).map((cat) => (
                   <label key={cat} className="flex items-center gap-3 cursor-pointer">
                     <input
                       type="checkbox"
@@ -295,7 +299,32 @@ const allTools: ToolData[] = useMemo(() => {
                     <span className="text-sm text-foreground truncate">{cat}</span>
                   </label>
                 ))}
+                {showMoreCategories && (
+                  <div className="space-y-1.5 pt-1">
+                    {allCategories.slice(6).map((cat) => (
+                      <label key={cat} className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedCategories.includes(cat)}
+                          onChange={() => toggleCategory(cat)}
+                          className="h-4 w-4 text-primary border-border rounded focus:ring-primary"
+                        />
+                        <span className="text-sm text-foreground truncate">{cat}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
               </div>
+              {allCategories.length > 6 && (
+                <button
+                  type="button"
+                  onClick={() => setShowMoreCategories((v) => !v)}
+                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline pt-1"
+                >
+                  {showMoreCategories ? "Less categories" : `More categories (${allCategories.length - 6})`}
+                  <ChevronRight className={`h-3.5 w-3.5 transition-transform ${showMoreCategories ? "rotate-90" : ""}`} />
+                </button>
+              )}
             </div>
 
             {/* Clear Filters */}
