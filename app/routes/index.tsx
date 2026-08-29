@@ -544,7 +544,7 @@ export function HomePage() {
             </svg>
             Trending Tools
           </h2>
-          <Link href="/discover" className="flex shrink-0 items-center gap-1 text-sm font-medium text-indigo-500 hover:underline">
+          <Link href="/discover?sort=trending" className="flex shrink-0 items-center gap-1 text-sm font-medium text-indigo-500 hover:underline">
             View all <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
