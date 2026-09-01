@@ -197,12 +197,12 @@ export default function BlogLanding() {
                 grow.
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-4">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => document.getElementById("latest-articles")?.scrollIntoView({ behavior: "smooth" })}
-                  className="inline-flex items-center gap-2 rounded-2xl px-7 py-3.5 text-sm font-semibold text-white shadow-lg transition-shadow hover:shadow-[#4F46E5]/25 cursor-pointer"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl px-7 py-3.5 text-sm font-semibold text-white shadow-lg transition-shadow hover:shadow-[#4F46E5]/25 cursor-pointer sm:w-auto"
                   style={{ background: "linear-gradient(135deg, #4F46E5, #6D5DF6)" }}
                 >
                   Explore Articles
@@ -212,7 +212,7 @@ export default function BlogLanding() {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => document.getElementById("nl-cta")?.scrollIntoView({ behavior: "smooth" })}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-7 py-3.5 text-sm font-semibold text-[#0F172A] shadow-sm transition hover:shadow-md cursor-pointer"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-7 py-3.5 text-sm font-semibold text-[#0F172A] shadow-sm transition hover:shadow-md cursor-pointer sm:w-auto"
                 >
                   <Mail className="size-4" />
                   Subscribe Newsletter

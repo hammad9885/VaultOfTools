@@ -241,7 +241,7 @@ export default function ConsultingLanding() {
                   AI & Software Consulting
                 </span>
 
-                <h1 className="mt-6 text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl xl:text-7xl">
+                <h1 className="mt-6 text-3xl font-bold leading-tight text-balance text-white sm:text-5xl lg:text-6xl xl:text-7xl">
                   Find The Right{" "}
                   <span className="text-[#4F46E5]">AI Tools</span>
                   <br />
@@ -256,12 +256,12 @@ export default function ConsultingLanding() {
                   budget.
                 </p>
 
-                <div className="mt-8 flex flex-wrap gap-4">
+                <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
                   <motion.button
                     onClick={() => setShowModal(true)}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
-                    className="inline-flex items-center gap-2 rounded-2xl px-7 py-3.5 text-sm font-semibold text-white shadow-lg transition-shadow hover:shadow-[#4F46E5]/25 cursor-pointer"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl px-7 py-3.5 text-sm font-semibold text-white shadow-lg transition-shadow hover:shadow-[#4F46E5]/25 cursor-pointer sm:w-auto"
                     style={{
                       background: "linear-gradient(135deg, #4F46E5, #6D5DF6)",
                     }}
@@ -273,7 +273,7 @@ export default function ConsultingLanding() {
                     onClick={() => setShowModal(true)}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
-                    className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/10 cursor-pointer"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/10 cursor-pointer sm:w-auto"
                   >
                     <svg
                       className="size-4"

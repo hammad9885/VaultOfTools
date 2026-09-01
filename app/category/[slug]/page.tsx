@@ -79,12 +79,12 @@ export default function CategoryPage() {
           <span className="text-foreground">{categoryName}</span>
         </nav>
         <header className="mb-10">
-          <div className="flex items-center gap-4">
-            <div className="size-14 rounded-xl bg-primary-muted text-primary grid place-items-center">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+            <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary-muted text-primary sm:size-14">
               <Layers className="size-6" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold tracking-tight text-balance sm:text-4xl">
                 Best {categoryName} Tools
               </h1>
               <p className="text-muted-foreground mt-1">

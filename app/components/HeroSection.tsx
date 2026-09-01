@@ -1,22 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { SearchBar } from "./ui/SearchBar";
+import StatsSection from "./ui/CountUp";
 import heroBg from "../assets/images/HeroSection.webp";
-
-const StatsSection = dynamic(() => import("./ui/CountUp"), {
-  ssr: false,
-  loading: () => (
-    <div className="mx-auto mt-8 grid max-w-4xl grid-cols-2 gap-2.5 sm:mt-10 sm:gap-4 lg:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="h-[68px] rounded-2xl border border-border bg-card/40 animate-pulse" />
-      ))}
-    </div>
-  ),
-});
 
 export function HeroSection() {
   const [searchTerms, setSearchTerms] = useState<string[]>([

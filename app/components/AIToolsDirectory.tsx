@@ -187,7 +187,7 @@ function DirectoryToolCard({ tool }: { tool: Tool }) {
           {tool.desc}
         </p>
         <div className="mt-1.5 flex flex-wrap gap-1.5">
-          {tool.tags.slice(0, 3).map((tag, i) => (
+          {(tool.tags || []).slice(0, 3).map((tag, i) => (
             <span
               key={i}
               className="rounded-full bg-[#EEF2FF] px-2 py-0.5 text-[10.5px] font-medium text-[#6366F1]"
