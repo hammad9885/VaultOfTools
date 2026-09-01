@@ -192,7 +192,7 @@ export function Modal({
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative flex max-h-[92dvh] w-full max-w-lg flex-col rounded-t-2xl border border-border bg-card shadow-2xl sm:rounded-2xl">
         <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-4 sm:px-6">
-          <h3 className="text-base font-semibold text-foreground">{title}</h3>
+          <h3 className="min-w-0 truncate pr-2 text-base font-semibold text-foreground">{title}</h3>
           <button
             type="button"
             onClick={onClose}

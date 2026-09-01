@@ -145,12 +145,13 @@
 
   html {
     max-width: 100%;
-    overflow-x: clip;
   }
 
   body {
     min-width: 0;
     max-width: 100%;
+    overflow-x: hidden;
+    overflow-wrap: break-word;
     background-color: var(--color-background);
     color: var(--color-foreground);
   }

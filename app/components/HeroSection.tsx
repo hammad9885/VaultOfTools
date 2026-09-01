@@ -10,7 +10,7 @@ import heroBg from "../assets/images/HeroSection.webp";
 const StatsSection = dynamic(() => import("./ui/CountUp"), {
   ssr: false,
   loading: () => (
-    <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-175 mx-auto">
+    <div className="mx-auto mt-8 grid max-w-4xl grid-cols-2 gap-2.5 sm:mt-10 sm:gap-4 lg:grid-cols-4">
       {Array.from({ length: 4 }).map((_, i) => (
         <div key={i} className="h-[68px] rounded-2xl border border-border bg-card/40 animate-pulse" />
       ))}
@@ -49,7 +49,7 @@ export function HeroSection() {
   return (
     <header
       className={`relative pt-4 pb-10 sm:pt-6 sm:pb-16 lg:pt-8 lg:pb-20 ${
-        searchPinned ? "z-[100] overflow-visible" : "overflow-hidden"
+        searchPinned ? "z-[100] overflow-visible" : "overflow-x-hidden"
       }`}
     >
       <div className="absolute inset-0 -z-20">
@@ -71,12 +71,13 @@ export function HeroSection() {
       <div className="absolute bottom-0 left-0 h-52 w-52 rounded-full bg-primary/10 blur-3xl" />
 
       <div className="relative z-0 mx-auto max-w-7xl px-4 text-center">
-        <h1 className="mt-2 text-2xl font-bold leading-snug tracking-tight sm:text-4xl lg:text-5xl">
-          Discover The Best <br className="hidden sm:block" />
+        <h1 className="mt-2 px-1 text-2xl font-bold leading-tight tracking-tight text-balance sm:text-4xl lg:text-5xl lg:leading-snug">
+          Discover The Best{" "}
+          <br className="hidden sm:block" />
           <span className="text-primary">AI Tools</span> For Every Need
         </h1>
 
-        <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground sm:mt-4 sm:text-base">
+        <p className="mx-auto mt-3 max-w-xl px-1 text-sm text-muted-foreground sm:mt-4 sm:text-base">
           Find, compare and review the world best AI tools all in one smart
           directory.
         </p>
@@ -103,7 +104,7 @@ export function HeroSection() {
             />
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-2 sm:mt-6">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2 px-1 sm:mt-6">
             <span className="shrink-0 text-sm font-medium text-muted-foreground">
               Popular:
             </span>

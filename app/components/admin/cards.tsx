@@ -45,12 +45,12 @@ export function StatCard({
     rose: "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-400",
   };
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-          <p className="mt-2 text-2xl font-bold text-foreground">{value}</p>
-          {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
+    <div className="rounded-xl border border-border bg-card p-3 shadow-sm min-w-0 sm:p-5">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground sm:text-xs">{label}</p>
+          <p className="mt-1.5 truncate text-xl font-bold text-foreground sm:mt-2 sm:text-2xl">{value}</p>
+          {hint && <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground sm:text-xs">{hint}</p>}
         </div>
         {icon && (
           <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", accentMap[accent])}>

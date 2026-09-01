@@ -118,7 +118,7 @@ export default function AdminDashboardPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 xl:grid-cols-4">
         <StatCard
           label="AI Tools"
           value={data.stats.tools}

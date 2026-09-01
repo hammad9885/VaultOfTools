@@ -98,7 +98,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-border bg-background/95 px-3 backdrop-blur sm:gap-3 sm:px-6">
+          <header className="sticky top-0 z-30 flex h-16 min-w-0 items-center gap-2 border-b border-border bg-background/95 px-3 backdrop-blur sm:gap-3 sm:px-6">
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
@@ -108,6 +108,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </button>
 
             <Breadcrumbs pathname={pathname} />
+            <p className="min-w-0 truncate text-sm font-semibold text-foreground md:hidden">
+              {BREADCRUMBS[pathname] || "Admin"}
+            </p>
 
             <div className="ml-auto flex items-center gap-2">
               <div className="relative hidden sm:block">
@@ -154,7 +157,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </div>
           </header>
 
-          <main className="min-w-0 flex-1 px-3 py-5 sm:px-6 sm:py-6 lg:px-8">{children}</main>
+          <main className="min-w-0 flex-1 overflow-x-hidden px-3 py-5 sm:px-6 sm:py-6 lg:px-8">{children}</main>
 
           <footer className="border-t border-border px-4 py-4 text-center text-xs text-muted-foreground sm:px-6">
             Vault of Tools Admin — MongoDB super admin only. All actions are logged.

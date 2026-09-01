@@ -155,8 +155,9 @@ function DirectoryToolCard({ tool }: { tool: Tool }) {
   return (
     <Link
       href={toolHref(tool)}
-      className="group flex items-start gap-3 rounded-xl border border-[#E5E7EB] bg-white px-3.5 py-3 transition-all duration-200 hover:-translate-y-[1px] hover:border-[#6366F1]/45 hover:bg-[#6366F1]/[0.04] hover:shadow-[0_8px_24px_rgba(99,102,241,0.08)] sm:items-center sm:px-4"
+      className="group flex flex-col gap-3 rounded-xl border border-[#E5E7EB] bg-white px-3.5 py-3 transition-all duration-200 hover:-translate-y-[1px] hover:border-[#6366F1]/45 hover:bg-[#6366F1]/[0.04] hover:shadow-[0_8px_24px_rgba(99,102,241,0.08)] sm:flex-row sm:items-center sm:px-4"
     >
+      <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center">
       <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] transition-colors group-hover:border-[#6366F1]/35 sm:mt-0 sm:h-12 sm:w-12">
         <ToolLogo name={tool.name} logo={tool.logo} website={tool.website} size={26} />
       </div>
@@ -196,8 +197,9 @@ function DirectoryToolCard({ tool }: { tool: Tool }) {
           ))}
         </div>
       </div>
+      </div>
 
-      <div className="flex shrink-0 flex-col items-end gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+      <div className="flex shrink-0 items-center justify-end gap-2 pl-14 sm:pl-0">
         <button
           type="button"
           onClick={onSaveClick}
@@ -370,7 +372,7 @@ export default function AIToolsDirectory() {
     <section className="border-t border-[#E5E7EB] bg-white">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <div className="mb-6 text-center lg:mb-8 lg:text-left">
-          <h2 className="text-xl font-bold tracking-tight text-[#111827] sm:text-2xl lg:text-[28px]">
+          <h2 className="text-xl font-bold tracking-tight text-balance text-[#111827] sm:text-2xl lg:text-[28px]">
             Find The Best AI Tools & Software
           </h2>
           <p className="mt-1.5 text-sm text-[#6B7280]">
@@ -459,7 +461,7 @@ export default function AIToolsDirectory() {
                     key={tab.key}
                     type="button"
                     onClick={() => handleTabClick(tab.key)}
-                    className={`relative flex shrink-0 items-center gap-2 whitespace-nowrap px-3 py-3.5 text-[13px] font-medium transition-colors sm:px-5 ${
+                    className={`relative flex shrink-0 items-center gap-1.5 whitespace-nowrap px-3 py-3.5 text-[13px] font-medium transition-colors sm:gap-2 sm:px-5 ${
                       isActive ? "text-[#6366F1]" : "text-[#6B7280] hover:text-[#374151]"
                     }`}
                   >

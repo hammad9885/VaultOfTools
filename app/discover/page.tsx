@@ -349,9 +349,10 @@ function DiscoverContent() {
         />
       )}
 
+      <div className="md:flex md:items-start">
       {/* Sidebar - Filters */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-border shadow-xl transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:shadow-none md:border-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed inset-y-0 left-0 z-50 w-[min(18rem,100vw)] bg-white border-r border-border shadow-xl transform transition-transform duration-300 ease-in-out md:sticky md:top-16 md:z-20 md:h-[calc(100dvh-4rem)] md:w-72 md:shrink-0 md:translate-x-0 md:shadow-none md:self-start ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
         aria-label="Filters"
       >
         <div className="flex flex-col h-full">
@@ -591,9 +592,9 @@ function DiscoverContent() {
       </aside>
 
       {/* Main Content */}
-      <main className="md:ml-0 flex-1">
+      <main className="min-w-0 flex-1">
         {/* Top Bar: Search + Sort (Desktop) / Filter Toggle (Mobile) */}
-        <div className="sticky top-16 z-30 md:top-0 bg-white/95 backdrop-blur-sm border-b border-border px-4 py-4 md:px-6 lg:px-8">
+        <div className="sticky top-16 z-30 bg-white/95 backdrop-blur-sm border-b border-border px-4 py-4 md:px-6 lg:px-8">
           <div className="mx-auto max-w-7xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             {/* Search - Desktop */}
             <form onSubmit={handleSearch} className="relative flex-1 max-w-xl md:max-w-md">
@@ -643,7 +644,7 @@ function DiscoverContent() {
         <div className="mx-auto max-w-7xl px-4 py-6 md:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Discover AI tools</h1>
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Discover AI tools</h1>
               <p className="mt-1 text-muted-foreground">
                 {filteredTools.length} tool{filteredTools.length !== 1 ? "s" : ""} found
                 {hasActiveFilters && (
@@ -783,6 +784,7 @@ function DiscoverContent() {
           )}
         </div>
       </main>
+      </div>
 
       <SiteFooter />
     </div>

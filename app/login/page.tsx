@@ -310,7 +310,7 @@ function LoginInner() {
           : "Enter your email and set a new password to regain access.";
 
   return (
-    <div className="relative min-h-[100dvh] overflow-hidden bg-background font-sans">
+    <div className="relative min-h-[100dvh] overflow-x-hidden bg-background font-sans">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(99,102,241,0.12),_transparent_55%)]" />
       <div className="relative mx-auto grid min-h-[100dvh] w-full max-w-6xl items-center gap-8 px-4 py-8 sm:px-6 lg:grid-cols-2 lg:py-12">
         <div className="hidden lg:block">

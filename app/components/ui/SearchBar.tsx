@@ -165,10 +165,10 @@ export function SearchBar({
             }
             if (suggestions.length > 0) setOpen(true);
           }}
-          placeholder="Search AI tools, categories, or keywords..."
+          placeholder="Search AI tools or categories..."
           aria-label="Search AI tools"
           autoComplete="off"
-          className="w-full rounded-2xl border border-border bg-white py-3 pl-10 pr-[5.5rem] text-sm shadow-lg outline-none focus:border-primary sm:py-4 sm:pl-12 sm:pr-28 sm:text-base"
+          className="w-full min-w-0 rounded-2xl border border-border bg-white py-3 pl-10 pr-[5.25rem] text-sm shadow-lg outline-none focus:border-primary sm:py-4 sm:pl-12 sm:pr-28 sm:text-base"
         />
 
         <button

@@ -45,7 +45,7 @@ export default function CategoriesPage() {
       <SiteNav />
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8">
         <header className="mb-12 text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
+          <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-5xl">
             Browse all categories
           </h1>
           <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">

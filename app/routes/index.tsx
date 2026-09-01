@@ -248,7 +248,7 @@ export function SiteNav() {
       }`}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 lg:px-8">
-        <Link href="/" className="min-w-0 shrink text-base font-bold tracking-tight text-primary sm:text-xl">
+        <Link href="/" className="shrink-0 text-base font-bold tracking-tight text-primary sm:text-xl">
           Vault<span className="text-foreground"> of Tools</span>
         </Link>
 
@@ -298,7 +298,7 @@ export function SiteNav() {
       {mounted &&
         isOpen &&
         createPortal(
-          <div className="fixed inset-x-0 bottom-0 top-16 touch-none md:hidden">
+          <div className="fixed inset-x-0 bottom-0 top-16 z-[60] touch-none md:hidden">
             <button
               type="button"
               aria-label="Close navigation menu"
@@ -548,7 +548,7 @@ export function HomePage() {
             View all <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-        <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
           {tools.slice(0, 6).map((t) => (
             <ToolCard key={t.slug} tool={t} />
           ))}
@@ -556,9 +556,9 @@ export function HomePage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-center gap-2">
-          <Grid2x2 className="w-7 h-7 text-indigo-600" />
-          <h2 className="text-3xl font-bold text-foreground">All Categories</h2>
+        <div className="mb-8 flex min-w-0 items-center gap-2">
+          <Grid2x2 className="h-6 w-6 shrink-0 text-indigo-600 sm:h-7 sm:w-7" />
+          <h2 className="text-2xl font-bold text-foreground sm:text-3xl">All Categories</h2>
         </div>
         <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
           {categories.map((c) => (
@@ -579,12 +579,12 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="bg-surface-soft py-20 mt-8">
+      <section className="bg-surface-soft py-12 mt-8 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <span className="text-xs font-semibold uppercase tracking-widest text-primary">Side-by-side</span>
-              <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-balance text-foreground sm:text-4xl">
                 Compare AI models head to head
               </h2>
               <p className="mt-4 text-lg text-muted-foreground">
@@ -701,13 +701,13 @@ export function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
-        <h2 className="text-center text-3xl font-bold text-foreground">Frequently Asked Questions</h2>
+        <h2 className="text-center text-2xl font-bold text-foreground sm:text-3xl">Frequently Asked Questions</h2>
         <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
           {faqs.map((f) => (
-            <details key={f.q} className="group rounded-xl border border-border bg-card p-5 transition-shadow open:shadow-md">
-              <summary className="flex cursor-pointer list-none items-center justify-between font-semibold text-foreground">
-                {f.q}
-                <span className="text-xl leading-none text-primary transition-transform group-open:rotate-45">+</span>
+            <details key={f.q} className="group rounded-xl border border-border bg-card p-4 transition-shadow open:shadow-md sm:p-5">
+              <summary className="flex cursor-pointer list-none items-start justify-between gap-3 font-semibold text-foreground sm:items-center">
+                <span className="min-w-0 text-left text-sm sm:text-base">{f.q}</span>
+                <span className="shrink-0 text-xl leading-none text-primary transition-transform group-open:rotate-45">+</span>
               </summary>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{f.a}</p>
             </details>

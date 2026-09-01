@@ -153,12 +153,12 @@ export default function CompareLandingPage() {
     <div className="min-h-screen bg-[#faf8f5] font-sans text-[#1a1a1a] antialiased">
       <SiteNav />
 
-      <section className="bg-surface-soft border-b border-border py-16 sm:py-20">
+      <section className="bg-surface-soft border-b border-border py-10 sm:py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-xs font-semibold uppercase tracking-widest text-primary">
             Compare & Alternatives
           </span>
-          <h1 className="mt-3 text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
+          <h1 className="mt-3 text-3xl font-bold tracking-tight text-balance text-foreground sm:text-5xl">
             Find the Right Tool,{" "}
             <span className="text-primary">Side by Side</span>
           </h1>
@@ -294,12 +294,16 @@ export default function CompareLandingPage() {
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-primary">
                   {c.category}
                 </span>
-                <div className="mt-3 flex items-center gap-2">
-                  <ToolLogo name={c.a} size={20} className="rounded" />
-                  <span className="font-bold text-foreground text-sm">{c.a}</span>
+                <div className="mt-3 flex flex-wrap items-center gap-2 min-w-0">
+                  <span className="inline-flex min-w-0 items-center gap-2">
+                    <ToolLogo name={c.a} size={20} className="rounded shrink-0" />
+                    <span className="font-bold text-foreground text-sm truncate">{c.a}</span>
+                  </span>
                   <span className="text-xs text-muted-foreground font-medium">vs</span>
-                  <ToolLogo name={c.b} size={20} className="rounded" />
-                  <span className="font-bold text-foreground text-sm">{c.b}</span>
+                  <span className="inline-flex min-w-0 items-center gap-2">
+                    <ToolLogo name={c.b} size={20} className="rounded shrink-0" />
+                    <span className="font-bold text-foreground text-sm truncate">{c.b}</span>
+                  </span>
                 </div>
                 <div className="mt-4 flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">

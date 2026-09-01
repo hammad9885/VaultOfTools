@@ -168,12 +168,12 @@ export default function ToolPage() {
           <Link href="/discover" className="hover:text-primary">Tools</Link> /{" "}
           <span className="inline-block max-w-[200px] truncate align-bottom text-foreground sm:max-w-none">{tool.name}</span>
         </nav>
-        <header className="flex flex-col sm:flex-row gap-6 sm:items-center">
-          <div className="size-20 overflow-hidden rounded-2xl bg-surface-soft ring-1 ring-black/5 grid place-items-center shrink-0">
+        <header className="flex min-w-0 flex-col gap-6 sm:flex-row sm:items-center">
+          <div className="size-16 overflow-hidden rounded-2xl bg-surface-soft ring-1 ring-black/5 grid place-items-center shrink-0 sm:size-20">
             <ToolLogo name={tool.name} logo={tool.logo} website={tool.website || tool.url} size={56} />
           </div>
-          <div className="flex-1">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">{tool.name}</h1>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">{tool.name}</h1>
             <p className="mt-1 text-muted-foreground">{tool.category} · {tool.pricing}</p>
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2">
