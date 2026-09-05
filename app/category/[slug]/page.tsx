@@ -96,7 +96,7 @@ export default function CategoryPage() {
         {loading ? (
           <p className="text-sm text-muted-foreground">Loading tools…</p>
         ) : (
-          <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6">
             {list.map((t: any) => (
               <ToolCard key={t.slug || t.name} tool={t} />
             ))}

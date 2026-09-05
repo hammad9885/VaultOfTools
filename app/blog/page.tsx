@@ -415,7 +415,7 @@ export default function BlogLanding() {
           <SectionTag>Categories</SectionTag>
           <SectionTitle>Browse by Categories</SectionTitle>
 
-          <div className="mt-8 sm:mt-12 grid gap-3 min-[360px]:grid-cols-2 lg:grid-cols-3 sm:gap-5">
+          <div className="mt-8 sm:mt-12 grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-5">
             {displayCategories.map((cat, i) => {
               const meta = (displayCatIcons || catIcons)[cat.name] || { icon: Cpu, color: "#4F46E5", bg: "#EEF2FF" };
               const IconComp = meta.icon;

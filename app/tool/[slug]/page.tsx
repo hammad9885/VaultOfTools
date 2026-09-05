@@ -266,7 +266,7 @@ export default function ToolPage() {
 
         <section className="mt-10 sm:mt-12">
           <h2 className="text-xl font-bold">Alternatives to {tool.name}</h2>
-          <div className="mt-4 grid grid-cols-1 min-[380px]:grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4">
             {alternatives.map((t) => (
               <ToolCard key={t.slug} tool={t} />
             ))}

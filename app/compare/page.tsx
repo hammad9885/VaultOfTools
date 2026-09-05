@@ -284,12 +284,12 @@ export default function CompareLandingPage() {
         </div>
 
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 min-[380px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4">
             {filtered.map((c) => (
               <Link
                 key={c.slug}
                 href={`/compare/${c.slug}`}
-                className="group rounded-2xl border border-border bg-card p-3.5 sm:p-5 hover:border-primary/30 hover:shadow-md transition-all"
+                className="group rounded-2xl border border-border bg-card p-3 sm:p-5 hover:border-primary/30 hover:shadow-md transition-all"
               >
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-primary">
                   {c.category}

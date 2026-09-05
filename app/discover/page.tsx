@@ -745,7 +745,7 @@ function DiscoverContent() {
         {/* Tools Grid */}
         <div className="mx-auto max-w-7xl px-3 pb-12 sm:px-6 lg:px-8">
           {filteredTools.length > 0 ? (
-            <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4">
               {filteredTools.map((t) => {
                 const fallbackMatch = fallbackTrending.find((f) => f.slug === t.slug);
                 const pricing = t.pricing as "Free" | "Freemium" | "Paid";

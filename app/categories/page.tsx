@@ -52,7 +52,7 @@ export default function CategoriesPage() {
             Specialized AI tools for every workflow. Pick a category to explore.
           </p>
         </header>
-        <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 lg:grid-cols-3 sm:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
           {categories.map((c) => {
             const Icon = typeof c.icon === "string"
               ? (iconMap[c.icon.toLowerCase()] ?? Layers)
