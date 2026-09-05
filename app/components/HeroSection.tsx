@@ -59,14 +59,14 @@ export function HeroSection() {
       <div className="absolute top-10 right-0 h-32 w-32 rounded-full bg-primary/20 blur-3xl" />
       <div className="absolute bottom-0 left-0 h-52 w-52 rounded-full bg-primary/10 blur-3xl" />
 
-      <div className="relative z-0 mx-auto max-w-7xl px-4 text-center">
-        <h1 className="mt-2 px-1 text-2xl font-bold leading-tight tracking-tight text-balance sm:text-4xl lg:text-5xl lg:leading-snug">
+      <div className="relative z-0 mx-auto max-w-7xl px-3 text-center sm:px-6">
+        <h1 className="mt-2 text-2xl font-bold leading-tight tracking-tight text-balance sm:text-4xl lg:text-5xl lg:leading-snug">
           Discover The Best{" "}
           <br className="hidden sm:block" />
           <span className="text-primary">AI Tools</span> For Every Need
         </h1>
 
-        <p className="mx-auto mt-3 max-w-xl px-1 text-sm text-muted-foreground sm:mt-4 sm:text-base">
+        <p className="mx-auto mt-2.5 max-w-xl text-xs sm:text-base text-muted-foreground sm:mt-4">
           Find, compare and review the world best AI tools all in one smart
           directory.
         </p>
@@ -93,8 +93,8 @@ export function HeroSection() {
             />
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-2 px-1 sm:mt-6">
-            <span className="shrink-0 text-sm font-medium text-muted-foreground">
+          <div className="mt-4 sm:mt-6 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+            <span className="shrink-0 text-xs sm:text-sm font-medium text-muted-foreground">
               Popular:
             </span>
 
@@ -102,7 +102,7 @@ export function HeroSection() {
               <Link
                 key={item}
                 href={`/discover?q=${encodeURIComponent(item)}`}
-                className="rounded-full border bg-white/70 px-3 py-1.5 text-xs transition-colors hover:border-primary hover:text-primary sm:text-sm sm:py-2"
+                className="rounded-full border border-border/80 bg-white/80 px-2.5 py-1 text-xs transition-colors hover:border-primary hover:text-primary sm:px-3 sm:py-1.5 sm:text-sm shadow-xs"
               >
                 {item}
               </Link>

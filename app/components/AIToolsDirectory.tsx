@@ -336,6 +336,7 @@ export default function AIToolsDirectory() {
   };
 
   function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.pointerType !== "mouse") return;
     const el = sliderRef.current;
     if (!el) return;
     dragRef.current = {
@@ -348,6 +349,7 @@ export default function AIToolsDirectory() {
   }
 
   function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.pointerType !== "mouse") return;
     const el = sliderRef.current;
     if (!el || !dragRef.current.down) return;
     const walk = e.clientX - dragRef.current.startX;
@@ -358,6 +360,7 @@ export default function AIToolsDirectory() {
   }
 
   function onPointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.pointerType !== "mouse") return;
     const el = sliderRef.current;
     dragRef.current.down = false;
     el?.releasePointerCapture(e.pointerId);
@@ -370,7 +373,7 @@ export default function AIToolsDirectory() {
 
   return (
     <section className="border-t border-[#E5E7EB] bg-white">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+      <div className="mx-auto max-w-7xl px-3 py-8 sm:px-6 lg:px-8 lg:py-10">
         <div className="mb-6 text-center lg:mb-8 lg:text-left">
           <h2 className="text-xl font-bold tracking-tight text-balance text-[#111827] sm:text-2xl lg:text-[28px]">
             Find The Best AI Tools & Software
@@ -493,7 +496,7 @@ export default function AIToolsDirectory() {
               </div>
             )}
 
-            <div className="flex flex-col gap-2 p-3 sm:p-4">
+            <div className="flex flex-col gap-2 p-1 py-3 sm:p-4">
               {listLoading ? (
                 <div className="flex flex-col gap-2 py-1">
                   {Array.from({ length: 6 }).map((_, i) => (

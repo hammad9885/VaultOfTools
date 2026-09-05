@@ -58,16 +58,16 @@ function StatCard({
 }) {
   const display = useCountUp(value, animate);
   return (
-    <div className="flex w-full min-w-0 items-center gap-2.5 rounded-2xl border border-border bg-card/60 px-3 py-3 shadow-sm backdrop-blur-md sm:gap-3 sm:px-4">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:h-10 sm:w-10">
-        <Icon className="h-5 w-5" />
+    <div className="flex w-full min-w-0 items-center gap-2 rounded-2xl border border-border bg-card/60 p-2.5 shadow-sm backdrop-blur-md sm:gap-3 sm:px-4 sm:py-3">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:size-10">
+        <Icon className="size-4 sm:size-5" />
       </div>
       <div className="min-w-0 leading-tight">
-        <h3 className="truncate text-base font-bold text-foreground sm:text-lg">
+        <h3 className="truncate text-sm font-bold text-foreground sm:text-lg">
           {display.toLocaleString()}
           {suffix}
         </h3>
-        <p className="truncate text-xs text-muted-foreground">{label}</p>
+        <p className="truncate text-[10.5px] text-muted-foreground sm:text-xs">{label}</p>
       </div>
     </div>
   );
@@ -113,7 +113,7 @@ export default function StatsSection() {
   }, []);
 
   return (
-    <div ref={ref} className="mx-auto mt-8 grid max-w-4xl grid-cols-2 gap-2.5 sm:mt-10 sm:gap-4 lg:grid-cols-4">
+    <div ref={ref} className="mx-auto mt-6 grid max-w-4xl grid-cols-2 gap-2 sm:mt-10 sm:gap-4 lg:grid-cols-4">
       {stats.map((item, index) => (
         <StatCard
           key={index}

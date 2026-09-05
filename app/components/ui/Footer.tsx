@@ -57,9 +57,9 @@ function Footer() {
   ];
 
   return (
-    <footer className="relative mt-16 overflow-hidden border-t border-border bg-white dark:bg-slate-950 sm:mt-24">
-      <div className="mx-auto max-w-7xl px-4 pb-8 pt-12 sm:px-6 sm:pt-16 lg:px-8">
-        <div className="grid grid-cols-2 gap-x-6 gap-y-10 border-b border-gray-200 pb-12 dark:border-slate-800 md:grid-cols-4 xl:grid-cols-5 xl:gap-12 xl:pb-14">
+    <footer className="relative mt-12 sm:mt-24 overflow-hidden border-t border-border bg-white dark:bg-slate-950">
+      <div className="mx-auto max-w-7xl px-3 pb-8 pt-10 sm:px-6 sm:pt-16 lg:px-8">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10 border-b border-gray-200 pb-10 sm:pb-12 dark:border-slate-800 md:grid-cols-4 xl:grid-cols-5 xl:gap-12 xl:pb-14">
           <div className="col-span-2 md:col-span-4 xl:col-span-2">
             <Link
               href="/"
@@ -76,20 +76,20 @@ function Footer() {
               </span>
             </Link>
 
-            <p className="mt-5 max-w-md text-sm leading-7 text-gray-500 dark:text-slate-400">
+            <p className="mt-4 sm:mt-5 max-w-md text-xs sm:text-sm leading-6 sm:leading-7 text-gray-500 dark:text-slate-400">
               VaultOfTools is a curated AI tools directory helping developers,
               founders, creators, and businesses discover powerful tools,
               automate workflows, and stay ahead in the AI ecosystem.
             </p>
-            <div className="mt-6">
-              <div className="flex flex-col sm:flex-row gap-3 max-w-md">
+            <div className="mt-5 sm:mt-6">
+              <div className="flex flex-col sm:flex-row gap-2.5 max-w-md">
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  className="w-full sm:flex-1 h-11 px-4 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-sm text-gray-900 dark:text-slate-200 outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] transition-all"
+                  className="w-full sm:flex-1 h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-sm text-gray-900 dark:text-slate-200 outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] transition-all"
                 />
 
-                <button className="h-11 px-5 rounded-xl bg-[#6366F1] hover:bg-[#4F46E5] text-white text-sm font-semibold transition-all ">
+                <button className="h-10 sm:h-11 px-5 rounded-xl bg-[#6366F1] hover:bg-[#4F46E5] text-white text-sm font-semibold transition-all w-full sm:w-auto">
                   Subscribe
                 </button>
               </div>

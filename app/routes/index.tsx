@@ -228,21 +228,15 @@ export function SiteNav() {
 
   useEffect(() => {
     if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setIsOpen(false);
     };
-    const preventBackgroundScroll = (event: Event) => event.preventDefault();
     window.addEventListener("keydown", onKeyDown);
-    document.addEventListener("touchmove", preventBackgroundScroll, {
-      passive: false,
-    });
-    document.addEventListener("wheel", preventBackgroundScroll, {
-      passive: false,
-    });
     return () => {
+      document.body.style.overflow = prev;
       window.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("touchmove", preventBackgroundScroll);
-      document.removeEventListener("wheel", preventBackgroundScroll);
     };
   }, [isOpen]);
 
@@ -306,7 +300,7 @@ export function SiteNav() {
       {mounted &&
         isOpen &&
         createPortal(
-          <div className="fixed inset-x-0 bottom-0 top-16 z-[60] touch-none md:hidden">
+          <div className="fixed inset-x-0 bottom-0 top-16 z-[60] md:hidden">
             <button
               type="button"
               aria-label="Close navigation menu"
@@ -511,9 +505,9 @@ export function HomePage() {
       <AIToolsDirectory />
 
 {promoted.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-7xl px-3 pt-8 sm:px-6 lg:px-8">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+            <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900 sm:text-2xl">
               <span className="grid size-7 place-items-center rounded-lg bg-amber-100 text-amber-600">
                 <Megaphone className="h-4 w-4" />
               </span>
@@ -538,10 +532,10 @@ export function HomePage() {
         </section>
       )}
 
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-7xl px-3 py-8 sm:px-6 sm:py-12 lg:px-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-indigo-500" aria-hidden="true">
+          <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900 sm:text-2xl">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-indigo-500 shrink-0" aria-hidden="true">
               <path
                 d="M5 19L19 5M19 5H9M19 5V15"
                 stroke="currentColor"
@@ -552,8 +546,8 @@ export function HomePage() {
             </svg>
             Trending Tools
           </h2>
-          <Link href="/discover?sort=trending" className="flex shrink-0 items-center gap-1 text-sm font-medium text-indigo-500 hover:underline">
-            View all <ArrowRight className="w-4 h-4" />
+          <Link href="/discover?sort=trending" className="flex shrink-0 items-center gap-1 text-xs sm:text-sm font-medium text-indigo-500 hover:underline">
+            View all <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 sm:gap-4">
@@ -563,10 +557,10 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mb-8 flex min-w-0 items-center gap-2">
-          <Grid2x2 className="h-6 w-6 shrink-0 text-indigo-600 sm:h-7 sm:w-7" />
-          <h2 className="text-2xl font-bold text-foreground sm:text-3xl">All Categories</h2>
+      <section className="mx-auto max-w-7xl px-3 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <div className="mb-6 sm:mb-8 flex min-w-0 items-center gap-2">
+          <Grid2x2 className="h-5 w-5 shrink-0 text-indigo-600 sm:h-7 sm:w-7" />
+          <h2 className="text-xl font-bold text-foreground sm:text-3xl">All Categories</h2>
         </div>
         <div className="grid grid-cols-1 gap-2.5 min-[360px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 sm:gap-3">
           {categories.map((c) => (
@@ -587,38 +581,38 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="bg-surface-soft py-12 mt-8 sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section className="bg-surface-soft py-10 mt-6 sm:py-20 sm:mt-8">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div>
               <span className="text-xs font-semibold uppercase tracking-widest text-primary">Side-by-side</span>
-              <h2 className="mt-2 text-2xl font-bold tracking-tight text-balance text-foreground sm:text-4xl">
+              <h2 className="mt-2 text-xl font-bold tracking-tight text-balance text-foreground sm:text-4xl">
                 Compare AI models head to head
               </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
+              <p className="mt-2.5 sm:mt-4 text-sm sm:text-lg text-muted-foreground">
                 Cannot decide? Our comparison engine breaks down pricing, context windows, and feature sets so you
                 choose the right stack the first time.
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3">
                 <Link
                   href="/compare"
-                  className="rounded-lg bg-foreground px-6 py-3 text-sm font-semibold text-background shadow-sm hover:bg-foreground/90 transition-all"
+                  className="rounded-xl bg-foreground px-5 py-3 text-center text-sm font-semibold text-background shadow-sm hover:bg-foreground/90 transition-all"
                 >
                   Start a Comparison
                 </Link>
                 <Link
                   href="/compare#popular-comparisons"
-                  className="rounded-lg border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground hover:bg-surface-soft transition-all"
+                  className="rounded-xl border border-border bg-card px-5 py-3 text-center text-sm font-semibold text-foreground hover:bg-surface-soft transition-all"
                 >
                   View Popular Versus
                 </Link>
               </div>
-              <ul className="mt-8 grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
+              <ul className="mt-6 sm:mt-8 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
                 {comparisons.map((c, i) => (
                   <li key={c.slug || `cmp-${i}`}>
                     <Link
                       href={`/compare/${c.slug}`}
-                      className="block rounded-lg border border-border bg-card px-3 py-2 text-sm hover:border-primary/30 hover:text-primary transition-colors"
+                      className="block rounded-lg border border-border bg-card px-3 py-2 text-xs sm:text-sm hover:border-primary/30 hover:text-primary transition-colors truncate"
                     >
                       {c.a} <span className="text-muted-foreground">vs</span> {c.b}
                     </Link>
@@ -627,38 +621,38 @@ export function HomePage() {
               </ul>
             </div>
             <div className="relative">
-              <div className="rounded-2xl border border-border bg-card p-5 shadow-2xl shadow-primary/5">
-                <div className="grid grid-cols-2 items-center gap-3">
-                  <div className="flex flex-col items-center gap-2 rounded-xl bg-primary-muted/60 px-3 py-4">
-                    <ToolLogo name="ChatGPT-4o" size={38} className="rounded-lg" />
-                    <span className="text-center text-sm font-bold text-primary">ChatGPT-4o</span>
+              <div className="rounded-2xl border border-border bg-card p-3.5 sm:p-5 shadow-xl shadow-primary/5">
+                <div className="grid grid-cols-2 items-center gap-2 sm:gap-3">
+                  <div className="flex flex-col items-center gap-1.5 sm:gap-2 rounded-xl bg-primary-muted/60 px-2.5 py-3 sm:px-3 sm:py-4">
+                    <ToolLogo name="ChatGPT-4o" size={32} className="rounded-lg" />
+                    <span className="text-center text-xs sm:text-sm font-bold text-primary truncate w-full px-1">ChatGPT-4o</span>
                   </div>
-                  <div className="flex flex-col items-center gap-2 rounded-xl bg-surface-soft px-3 py-4">
-                    <ToolLogo name="Claude 3.5 Sonnet" size={38} className="rounded-lg" />
-                    <span className="text-center text-sm font-bold text-foreground">Claude 3.5 Sonnet</span>
+                  <div className="flex flex-col items-center gap-1.5 sm:gap-2 rounded-xl bg-surface-soft px-2.5 py-3 sm:px-3 sm:py-4">
+                    <ToolLogo name="Claude 3.5 Sonnet" size={32} className="rounded-lg" />
+                    <span className="text-center text-xs sm:text-sm font-bold text-foreground truncate w-full px-1">Claude 3.5 Sonnet</span>
                   </div>
                 </div>
-                <div className="mt-4 space-y-3">
+                <div className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
                   {(
                     [
                       { label: "Context Window", a: "128k", b: "200k", win: "b" as "a" | "b" },
                       { label: "Best For", a: "General", b: "Coding & Long-form", win: "b" as "a" | "b" },
                     ]
                   ).map((row) => (
-                    <div key={row.label} className="rounded-xl border border-border p-3">
-                      <div className="text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <div key={row.label} className="rounded-xl border border-border p-2.5 sm:p-3">
+                      <div className="text-center text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                         {row.label}
                       </div>
-                      <div className="mt-2 grid grid-cols-2 gap-2 text-center">
-                        <span className={`text-base font-bold ${row.win === "a" ? "text-primary" : "text-foreground"}`}>{row.a}</span>
-                        <span className={`text-base font-bold ${row.win === "b" ? "text-primary" : "text-foreground"}`}>{row.b}</span>
+                      <div className="mt-1.5 sm:mt-2 grid grid-cols-2 gap-2 text-center">
+                        <span className={`text-sm sm:text-base font-bold ${row.win === "a" ? "text-primary" : "text-foreground"}`}>{row.a}</span>
+                        <span className={`text-sm sm:text-base font-bold ${row.win === "b" ? "text-primary" : "text-foreground"}`}>{row.b}</span>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 rounded-xl bg-primary/5 p-4 text-center text-sm font-bold text-primary">
+                <div className="mt-3 sm:mt-4 rounded-xl bg-primary/5 p-3 sm:p-4 text-center text-xs sm:text-sm font-bold text-primary">
                   Winner: Claude 3.5
-                  <span className="mt-0.5 block text-xs font-medium text-muted-foreground">
+                  <span className="mt-0.5 block text-[11px] sm:text-xs font-medium text-muted-foreground">
                     for Coding &amp; Long-form Tasks
                   </span>
                 </div>
@@ -668,56 +662,54 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="rounded-3xl border border-purple-100 bg-white px-6 py-8 sm:px-10 sm:py-10 shadow-sm">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-col items-center gap-5 text-center lg:flex-row lg:text-left">
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary shadow-lg">
-                <Mail size={38} className="text-white" />
+      <section className="mx-auto max-w-7xl px-3 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <div className="rounded-2xl sm:rounded-3xl border border-purple-100 bg-white p-5 sm:px-10 sm:py-10 shadow-sm">
+          <div className="flex flex-col gap-6 sm:gap-8 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-col items-center gap-3.5 sm:gap-5 text-center lg:flex-row lg:text-left">
+              <div className="flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-primary shadow-lg shrink-0">
+                <Mail className="size-7 sm:size-10 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold leading-tight text-gray-900 sm:text-3xl">
-                  Stay Updated With
-                  <br />
-                  The Latest AI Tools
+                <h2 className="text-xl font-bold leading-tight text-gray-900 sm:text-3xl">
+                  Stay Updated With <br className="hidden sm:inline" />The Latest AI Tools
                 </h2>
-                <p className="mt-3 max-w-md text-sm text-gray-500 sm:text-base">
+                <p className="mt-2 sm:mt-3 max-w-md text-xs sm:text-base text-gray-500">
                   Join our newsletter and get the best AI tools, news, and updates delivered to your inbox.
                 </p>
               </div>
             </div>
             <div className="w-full max-w-xl">
-              <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-3 sm:flex-row">
+              <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-2.5 sm:flex-row">
                 <input
                   type="email"
                   placeholder="Enter your email"
                   required
                   aria-label="Email address"
-                  className="w-full sm:flex-1 h-12 rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition-all focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
+                  className="w-full sm:flex-1 h-11 sm:h-12 rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition-all focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
                 />
                 <button
                   type="submit"
-                  className="w-full sm:w-auto h-12 rounded-xl bg-primary px-8 text-sm font-semibold text-white transition-all hover:opacity-90"
+                  className="w-full sm:w-auto h-11 sm:h-12 rounded-xl bg-primary px-8 text-sm font-semibold text-white transition-all hover:opacity-90 shrink-0"
                 >
                   Subscribe
                 </button>
               </form>
-              <p className="mt-3 text-xs text-gray-400">No spam, unsubscribe anytime.</p>
+              <p className="mt-2 sm:mt-3 text-xs text-gray-400 text-center sm:text-left">No spam, unsubscribe anytime.</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
-        <h2 className="text-center text-2xl font-bold text-foreground sm:text-3xl">Frequently Asked Questions</h2>
-        <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <section className="mx-auto max-w-6xl px-3 pb-16 sm:px-6 sm:pb-20 lg:px-8">
+        <h2 className="text-center text-xl font-bold text-foreground sm:text-3xl">Frequently Asked Questions</h2>
+        <div className="mt-6 sm:mt-8 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
           {faqs.map((f) => (
-            <details key={f.q} className="group rounded-xl border border-border bg-card p-4 transition-shadow open:shadow-md sm:p-5">
+            <details key={f.q} className="group rounded-xl border border-border bg-card p-3.5 sm:p-5 transition-shadow open:shadow-md">
               <summary className="flex cursor-pointer list-none items-start justify-between gap-3 font-semibold text-foreground sm:items-center">
-                <span className="min-w-0 text-left text-sm sm:text-base">{f.q}</span>
-                <span className="shrink-0 text-xl leading-none text-primary transition-transform group-open:rotate-45">+</span>
+                <span className="min-w-0 text-left text-xs sm:text-base">{f.q}</span>
+                <span className="shrink-0 text-lg sm:text-xl leading-none text-primary transition-transform group-open:rotate-45">+</span>
               </summary>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{f.a}</p>
+              <p className="mt-2.5 sm:mt-3 text-xs sm:text-sm leading-relaxed text-muted-foreground">{f.a}</p>
             </details>
           ))}
         </div>
