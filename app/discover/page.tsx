@@ -22,6 +22,13 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "rating", label: "Highest Rated" },
 ];
 
+const PRICING_OPTIONS: { value: PricingFilter; label: string }[] = [
+  { value: "All", label: "All Pricing" },
+  { value: "Free", label: "Free" },
+  { value: "Freemium", label: "Freemium" },
+  { value: "Paid", label: "Paid" },
+];
+
 const RATING_OPTIONS = [
   { value: 0, label: "Any rating" },
   { value: 4.5, label: "4.5+" },
@@ -351,7 +358,7 @@ function DiscoverContent() {
     query.length > 0;
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] font-sans text-[#1a1a1a] antialiased">
+    <div className="min-h-screen bg-[#faf8f5] font-sans text-[#1a1a1a] antialiased overflow-x-hidden">
       <SiteNav />
 
       {/* Mobile Sidebar Overlay */}
@@ -435,21 +442,15 @@ function DiscoverContent() {
             {/* Pricing Filter */}
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-2">Pricing</label>
-              <div className="space-y-2">
-                {(["All", "Free", "Freemium", "Paid"] as PricingFilter[]).map((f) => (
-                  <label key={f} className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="pricing"
-                      value={f}
-                      checked={pricing === f}
-                      onChange={() => handlePricingChange(f)}
-                      className="h-4 w-4 text-primary border-border focus:ring-primary"
-                    />
-                    <span className="text-sm text-foreground">{f}</span>
-                  </label>
+              <select
+                value={pricing}
+                onChange={(e) => handlePricingChange(e.target.value as PricingFilter)}
+                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all shadow-sm appearance-none bg-no-repeat bg-right-3 bg-[url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b7280%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M6 9l6 6 6-6%22/></svg>')]"
+              >
+                {PRICING_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
-              </div>
+              </select>
             </div>
 
             {/* Categories Filter */}
@@ -669,31 +670,27 @@ function DiscoverContent() {
               </button>
             </div>
 
-            {/* Mobile Quick Pricing Chips & Mobile Sort Row */}
-            <div className="flex md:hidden items-center justify-between gap-2 pt-0.5">
-              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
-                {(["All", "Free", "Freemium", "Paid"] as PricingFilter[]).map((f) => (
-                  <button
-                    key={f}
-                    type="button"
-                    onClick={() => handlePricingChange(f)}
-                    className={`rounded-lg px-2.5 py-1 text-[11px] font-medium shrink-0 transition-colors ${
-                      pricing === f
-                        ? "bg-primary text-primary-foreground shadow-xs"
-                        : "bg-card border border-border/80 text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {f}
-                  </button>
-                ))}
+            {/* Mobile Dual Dropdowns: Pricing & Sort */}
+            <div className="grid grid-cols-2 gap-2 w-full pt-1 md:hidden">
+              <div className="relative">
+                <label className="sr-only">Pricing</label>
+                <select
+                  value={pricing}
+                  onChange={(e) => handlePricingChange(e.target.value as PricingFilter)}
+                  className="w-full rounded-xl border border-border bg-card px-2.5 py-2 text-xs font-medium outline-none text-foreground shadow-xs appearance-none bg-no-repeat bg-right-2 bg-[url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2214%22 height=%2214%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b7280%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M6 9l6 6 6-6%22/></svg>')]"
+                >
+                  {PRICING_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
               </div>
 
-              <div className="shrink-0">
+              <div className="relative">
                 <label className="sr-only">Sort</label>
                 <select
                   value={sort}
                   onChange={(e) => handleSortChange(e.target.value as SortOption)}
-                  className="rounded-lg border border-border bg-card px-2 py-1 text-[11px] font-medium outline-none text-foreground shadow-xs"
+                  className="w-full rounded-xl border border-border bg-card px-2.5 py-2 text-xs font-medium outline-none text-foreground shadow-xs appearance-none bg-no-repeat bg-right-2 bg-[url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2214%22 height=%2214%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b7280%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M6 9l6 6 6-6%22/></svg>')]"
                 >
                   {SORT_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -702,8 +699,19 @@ function DiscoverContent() {
               </div>
             </div>
 
-            {/* Sort Dropdown - Desktop */}
-            <div className="hidden md:block">
+            {/* Desktop Dropdowns: Pricing & Sort */}
+            <div className="hidden md:flex items-center gap-2">
+              <label className="sr-only">Pricing</label>
+              <select
+                value={pricing}
+                onChange={(e) => handlePricingChange(e.target.value as PricingFilter)}
+                className="rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all shadow-sm appearance-none bg-no-repeat bg-right-3 bg-[url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b7280%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M6 9l6 6 6-6%22/></svg>')]"
+              >
+                {PRICING_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+
               <label className="sr-only">Sort</label>
               <select
                 value={sort}
