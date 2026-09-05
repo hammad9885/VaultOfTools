@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Users,
   Zap,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { MotionProps } from "framer-motion";
@@ -28,18 +29,18 @@ import { posts as dataPosts } from "./[slug]/data";
 
 function fadeUp(delay = 0): MotionProps {
   return {
-    initial: { opacity: 0, y: 30 },
+    initial: { opacity: 0, y: 24 },
     whileInView: { opacity: 1, y: 0 },
-    viewport: { once: true, margin: "-50px" },
-    transition: { duration: 0.6, ease: "easeOut", delay },
+    viewport: { once: true, margin: "-40px" },
+    transition: { duration: 0.5, ease: "easeOut", delay },
   };
 }
 
 function SectionTag({ children }: { children: React.ReactNode }) {
   return (
     <motion.div {...fadeUp(0)} className="inline-block">
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E5E7EB] bg-white px-4 py-1.5 text-xs font-semibold tracking-wide text-[#4F46E5] shadow-sm">
-        <Sparkles className="size-3" />
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E5E7EB] bg-white px-3 sm:px-4 py-1 sm:py-1.5 text-[11px] sm:text-xs font-semibold tracking-wide text-[#4F46E5] shadow-xs">
+        <Sparkles className="size-3 shrink-0" />
         {children}
       </span>
     </motion.div>
@@ -50,7 +51,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <motion.h2
       {...fadeUp(0.05)}
-      className="mt-4 text-3xl font-bold tracking-tight text-[#0F172A] sm:text-4xl lg:text-5xl"
+      className="mt-3 sm:mt-4 text-2xl font-bold tracking-tight text-[#0F172A] sm:text-4xl lg:text-5xl"
     >
       {children}
     </motion.h2>
@@ -92,6 +93,7 @@ const fallbackArticles: ArticleData[] = dataPosts.map((p) => ({
 export default function BlogLanding() {
   const [email, setEmail] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [nlEmail, setNlEmail] = useState("");
   const [blogPosts, setBlogPosts] = useState<{ _id?: string; title: string; slug: string; excerpt: string; category: string; date?: string; readTime?: string; coverImage?: string }[]>([]);
   const [categories, setCategories] = useState<CategoryData[]>([]);
@@ -151,20 +153,37 @@ export default function BlogLanding() {
     ? blogPosts.map((p) => ({ slug: p.slug, cat: p.category, title: p.title, desc: p.excerpt, date: p.date ? new Date(p.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "", time: p.readTime || "", coverImage: p.coverImage }))
     : fallbackArticles;
 
+  const featuredPost = dataPosts.find((p) => p.featured) || dataPosts[0];
+
+  const filteredArticles = useMemo(() => {
+    return displayArticles.filter((a) => {
+      const q = searchQuery.trim().toLowerCase();
+      const matchesSearch =
+        !q ||
+        a.title.toLowerCase().includes(q) ||
+        a.desc.toLowerCase().includes(q) ||
+        a.cat.toLowerCase().includes(q);
+      const matchesCat =
+        selectedCategory === "All" ||
+        a.cat.toLowerCase() === selectedCategory.toLowerCase();
+      return matchesSearch && matchesCat;
+    });
+  }, [displayArticles, searchQuery, selectedCategory]);
+
   return (
     <>
     <SiteNav />
-    <main className="overflow-hidden font-sans">
+    <main className="overflow-x-hidden font-sans">
 
       <section
-        className="relative overflow-hidden px-4 pb-20 pt-10 sm:px-6 sm:pt-16 lg:px-8 lg:pt-16"
+        className="relative overflow-hidden px-3.5 py-10 sm:px-6 sm:py-16 lg:px-8 lg:py-20"
         style={{ background: "linear-gradient(135deg, #FFFFFF 0%, #F8FAFF 60%, #F2F3FF 100%)" }}
       >
         {/* background decorations */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-[#4F46E5]/8 blur-[120px]" />
-          <div className="absolute -bottom-40 left-1/3 h-[400px] w-[400px] rounded-full bg-[#6366F1]/6 blur-[100px]" />
-          <div className="absolute top-1/2 left-1/4 h-60 w-60 rounded-full bg-[#7C3AED]/5 blur-[80px]" />
+          <div className="absolute -top-40 -right-40 h-[350px] w-[350px] sm:h-[500px] sm:w-[500px] rounded-full bg-[#4F46E5]/8 blur-[100px] sm:blur-[120px]" />
+          <div className="absolute -bottom-40 left-1/3 h-[300px] w-[300px] sm:h-[400px] sm:w-[400px] rounded-full bg-[#6366F1]/6 blur-[80px] sm:blur-[100px]" />
+          <div className="absolute top-1/2 left-1/4 h-48 w-48 sm:h-60 sm:w-60 rounded-full bg-[#7C3AED]/5 blur-[60px] sm:blur-[80px]" />
           {/* subtle grid */}
           <svg className="absolute inset-0 h-full w-full opacity-[0.03]" viewBox="0 0 100 100">
             <defs>
@@ -177,42 +196,42 @@ export default function BlogLanding() {
         </div>
 
         <div className="relative mx-auto max-w-7xl">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+          <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-16">
             {/* ---------- Left ---------- */}
             <motion.div
-              initial={{ opacity: 0, y: 40 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
             >
-              <SectionTag>Blog</SectionTag>
+              <SectionTag>Blog &amp; Resources</SectionTag>
 
-              <h1 className="mt-6 text-balance text-3xl font-bold leading-tight text-[#0F172A] sm:text-5xl lg:text-6xl xl:text-7xl">
+              <h1 className="mt-4 sm:mt-6 text-2xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-[#0F172A]">
                 Insights, Reviews &amp;{" "}
                 <span className="text-[#4F46E5]">AI</span> Industry Trends
               </h1>
 
-              <p className="mt-5 max-w-lg text-base leading-relaxed text-[#475569] sm:text-lg">
+              <p className="mt-3 sm:mt-5 max-w-lg text-sm leading-relaxed text-[#475569] sm:text-lg">
                 Stay updated with the latest AI tools, software trends,
                 productivity tips and expert insights to help your business
                 grow.
               </p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
+              <div className="mt-6 sm:mt-8 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:gap-4">
                 <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => document.getElementById("latest-articles")?.scrollIntoView({ behavior: "smooth" })}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl px-7 py-3.5 text-sm font-semibold text-white shadow-lg transition-shadow hover:shadow-[#4F46E5]/25 cursor-pointer sm:w-auto"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl px-6 py-3 sm:px-7 sm:py-3.5 text-xs sm:text-sm font-semibold text-white shadow-md transition-shadow hover:shadow-[#4F46E5]/25 cursor-pointer sm:w-auto"
                   style={{ background: "linear-gradient(135deg, #4F46E5, #6D5DF6)" }}
                 >
                   Explore Articles
                   <ArrowRight className="size-4" />
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => document.getElementById("nl-cta")?.scrollIntoView({ behavior: "smooth" })}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-7 py-3.5 text-sm font-semibold text-[#0F172A] shadow-sm transition hover:shadow-md cursor-pointer sm:w-auto"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl border border-[#E5E7EB] bg-white px-6 py-3 sm:px-7 sm:py-3.5 text-xs sm:text-sm font-semibold text-[#0F172A] shadow-xs transition hover:shadow-md cursor-pointer sm:w-auto"
                 >
                   <Mail className="size-4" />
                   Subscribe Newsletter
@@ -298,55 +317,62 @@ export default function BlogLanding() {
       {/* ================================================================ */}
       {/*  FEATURED ARTICLE                                                 */}
       {/* ================================================================ */}
-      <section className="bg-[#F8FAFF] px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+      <section className="bg-[#F8FAFF] px-3.5 py-10 sm:px-6 sm:py-16 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <motion.div {...fadeUp(0)}>
-            <SectionTag>Featured</SectionTag>
+            <SectionTag>Editor&apos;s Pick</SectionTag>
             <SectionTitle>Featured Article</SectionTitle>
           </motion.div>
 
-          <div className="mt-10 grid gap-10 lg:grid-cols-3">
+          <div className="mt-6 sm:mt-10 grid gap-6 lg:grid-cols-3 lg:gap-10">
             {/* ---------- Left: featured card ---------- */}
-            <Link href="/blog/best-ai-image-generators-2026">
+            <Link
+              href={`/blog/${featuredPost.slug}`}
+              className="lg:col-span-2 block group"
+            >
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="group relative overflow-hidden rounded-3xl border border-[#E5E7EB] bg-white lg:col-span-2 cursor-pointer"
-                style={{ boxShadow: "0 15px 40px rgba(15,23,42,0.08)" }}
+                transition={{ duration: 0.5 }}
+                className="relative h-full overflow-hidden rounded-2xl sm:rounded-3xl border border-[#E5E7EB] bg-white transition-all hover:shadow-xl hover:border-[#4F46E5]/40"
+                style={{ boxShadow: "0 10px 30px rgba(15,23,42,0.06)" }}
               >
-                <div className="relative h-56 w-full sm:h-72 lg:h-80 bg-[#EEF2FF] overflow-hidden">
+                <div className="relative h-48 w-full sm:h-72 lg:h-80 bg-[#EEF2FF] overflow-hidden">
                   <img
-                    src={dataPosts.find(p => p.slug === "best-ai-image-generators-2026")?.coverImage || "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1200&h=630&fit=crop"}
-                    alt="Featured article: AI image generators comparison and review"
-                    className="absolute inset-0 h-full w-full object-cover"
+                    src={featuredPost.coverImage}
+                    alt={featuredPost.title}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                  <span className="absolute left-5 top-5 inline-flex items-center rounded-lg bg-white/90 px-3 py-1.5 text-xs font-semibold text-[#4F46E5] shadow-sm backdrop-blur-sm">
-                    {dataPosts.find(p => p.slug === "best-ai-image-generators-2026")?.category || "Image Generation"}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+                  <span className="absolute left-3 top-3 sm:left-5 sm:top-5 inline-flex items-center rounded-lg bg-white/95 px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-[#4F46E5] shadow-xs backdrop-blur-xs">
+                    {featuredPost.category}
                   </span>
                 </div>
 
-                <div className="p-6 sm:p-8">
-                  <h3 className="text-2xl font-bold text-[#0F172A] sm:text-3xl leading-tight">
-                    The Complete Guide to AI Tools in 2026: What You Need to Know
+                <div className="p-4 sm:p-7">
+                  <h3 className="text-base sm:text-2xl lg:text-3xl font-bold text-[#0F172A] leading-snug group-hover:text-[#4F46E5] transition-colors line-clamp-2">
+                    {featuredPost.title}
                   </h3>
-                  <p className="mt-4 text-sm leading-relaxed text-[#475569] sm:text-base">
-                    From large language models to image generation and workflow
-                    automation — we break down every category of AI tool and help
-                    you build the perfect stack for your needs.
+                  <p className="mt-2 sm:mt-3 text-xs sm:text-sm md:text-base leading-relaxed text-[#475569] line-clamp-3">
+                    {featuredPost.excerpt}
                   </p>
-                  <div className="mt-6 flex flex-wrap items-center gap-4 text-xs text-[#94A3B8]">
+                  <div className="mt-4 sm:mt-6 flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] sm:text-xs text-[#94A3B8]">
                     <span className="flex items-center gap-1.5">
-                      <Calendar className="size-3.5" /> Mar 18, 2026
+                      <Calendar className="size-3.5 text-[#4F46E5]" />{" "}
+                      {new Date(featuredPost.date).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Clock className="size-3.5" /> 15 min read
+                      <Clock className="size-3.5 text-[#4F46E5]" />{" "}
+                      {featuredPost.readTime}
                     </span>
                   </div>
-                  <div className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-[#4F46E5] px-6 py-3 text-sm font-semibold text-white shadow-md transition-shadow hover:shadow-[#4F46E5]/25">
-                    Read Article <ArrowRight className="size-4" />
+                  <div className="mt-5 inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-[#4F46E5] px-5 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-sm transition-all group-hover:bg-[#4338CA]">
+                    Read Full Article <ArrowRight className="size-4" />
                   </div>
                 </div>
               </motion.div>
@@ -354,53 +380,90 @@ export default function BlogLanding() {
 
             {/* ---------- Right sidebar ---------- */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.15 }}
-              className="space-y-6"
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="space-y-4 sm:space-y-6"
             >
               {/* Search */}
-              <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5" style={{ boxShadow: "0 15px 40px rgba(15,23,42,0.06)" }}>
-                <div className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] bg-[#F8FAFF] px-4 py-3">
+              <div
+                className="rounded-2xl border border-[#E5E7EB] bg-white p-3.5 sm:p-5"
+                style={{ boxShadow: "0 10px 30px rgba(15,23,42,0.04)" }}
+              >
+                <label className="text-xs font-bold uppercase tracking-wider text-[#94A3B8] mb-2 block">
+                  Search Articles
+                </label>
+                <div className="flex items-center gap-2.5 rounded-xl border border-[#E5E7EB] bg-[#F8FAFF] px-3.5 py-2.5">
                   <Search className="size-4 text-[#94A3B8] shrink-0" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search articles..."
-                    className="w-full bg-transparent text-sm outline-none placeholder:text-[#94A3B8]"
+                    placeholder="Search by topic, model, or tool..."
+                    className="w-full bg-transparent text-xs sm:text-sm outline-none placeholder:text-[#94A3B8]"
                   />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      className="text-[#94A3B8] hover:text-[#0F172A] p-0.5 cursor-pointer"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
 
               {/* Newsletter */}
-              <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6" style={{ boxShadow: "0 15px 40px rgba(15,23,42,0.06)" }}>
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#EEF2FF] text-[#4F46E5]">
+              <div
+                className="rounded-2xl border border-[#E5E7EB] bg-white p-4 sm:p-6"
+                style={{ boxShadow: "0 10px 30px rgba(15,23,42,0.04)" }}
+              >
+                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-[#EEF2FF] text-[#4F46E5]">
                   <Mail className="size-5" />
                 </div>
-                <h4 className="mt-4 text-base font-bold text-[#0F172A]">Weekly Newsletter</h4>
-                <p className="mt-2 text-sm text-[#475569]">
-                  Get the best AI tools and insights delivered to your inbox every week.
+                <h4 className="mt-3 sm:mt-4 text-sm sm:text-base font-bold text-[#0F172A]">
+                  Weekly AI Digest
+                </h4>
+                <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-[#475569] leading-relaxed">
+                  Get the best curated AI tools, breakdown guides, and tips
+                  delivered to your inbox every week.
                 </p>
-                <div className="mt-4 flex gap-2">
+                <div className="mt-3.5">
                   <input
                     type="email"
                     value={nlEmail}
                     onChange={(e) => setNlEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="flex-1 rounded-xl border border-[#E5E7EB] bg-[#F8FAFF] px-4 py-2.5 text-sm outline-none placeholder:text-[#94A3B8]"
+                    className="w-full rounded-xl border border-[#E5E7EB] bg-[#F8FAFF] px-3.5 py-2.5 text-xs sm:text-sm outline-none placeholder:text-[#94A3B8]"
                   />
                 </div>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
-                  onClick={async () => { if (!nlEmail) return; try { await api.subscribeNewsletter(nlEmail); toast.success("Subscribed!"); setNlEmail(""); } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Subscription failed"); } }}
-                  className="mt-3 w-full rounded-2xl py-3 text-sm font-semibold text-white shadow-md transition-shadow hover:shadow-[#4F46E5]/25 cursor-pointer"
-                  style={{ background: "linear-gradient(135deg, #4F46E5, #6D5DF6)" }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={async () => {
+                    if (!nlEmail) return;
+                    try {
+                      await api.subscribeNewsletter(nlEmail);
+                      toast.success("Subscribed successfully!");
+                      setNlEmail("");
+                    } catch (e: unknown) {
+                      toast.error(
+                        e instanceof Error ? e.message : "Subscription failed"
+                      );
+                    }
+                  }}
+                  className="mt-2.5 w-full rounded-xl sm:rounded-2xl py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-sm hover:shadow-md transition cursor-pointer"
+                  style={{
+                    background: "linear-gradient(135deg, #4F46E5, #6D5DF6)",
+                  }}
                 >
-                  Subscribe
+                  Subscribe Free
                 </motion.button>
-                <p className="mt-3 text-xs text-[#94A3B8] text-center">No spam. Unsubscribe anytime.</p>
+                <p className="mt-2 text-[11px] text-[#94A3B8] text-center">
+                  No spam. Unsubscribe anytime.
+                </p>
               </div>
             </motion.div>
           </div>
@@ -410,38 +473,53 @@ export default function BlogLanding() {
       {/* ================================================================ */}
       {/*  BROWSE BY CATEGORIES                                             */}
       {/* ================================================================ */}
-      <section className="bg-white px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+      <section className="bg-white px-3.5 py-10 sm:px-6 sm:py-16 lg:px-8">
         <div className="mx-auto max-w-7xl text-center">
           <SectionTag>Categories</SectionTag>
           <SectionTitle>Browse by Categories</SectionTitle>
 
-          <div className="mt-8 sm:mt-12 grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-5">
+          <div className="mt-6 sm:mt-10 grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 [&>*]:min-w-0">
             {displayCategories.map((cat, i) => {
               const meta = (displayCatIcons || catIcons)[cat.name] || { icon: Cpu, color: "#4F46E5", bg: "#EEF2FF" };
               const IconComp = meta.icon;
+              const isSelected = selectedCategory.toLowerCase() === cat.name.toLowerCase();
+
               return (
-                <motion.div
+                <motion.button
                   key={cat.name}
-                  initial={{ opacity: 0, y: 24 }}
+                  type="button"
+                  initial={{ opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-40px" }}
-                  transition={{ duration: 0.5, delay: i * 0.08 }}
-                  whileHover={{ y: -6, boxShadow: "0 25px 60px rgba(79,70,229,0.12)" }}
-                  className="group flex items-center gap-3 sm:gap-5 rounded-2xl sm:rounded-3xl border border-[#E5E7EB] bg-white p-3.5 sm:p-5 text-left transition-shadow"
-                  style={{ boxShadow: "0 15px 40px rgba(15,23,42,0.06)" }}
+                  viewport={{ once: true, margin: "-30px" }}
+                  transition={{ duration: 0.4, delay: i * 0.04 }}
+                  whileHover={{ y: -3 }}
+                  onClick={() => {
+                    setSelectedCategory(isSelected ? "All" : cat.name);
+                    document.getElementById("latest-articles")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className={`group flex items-center gap-2 sm:gap-4 rounded-xl sm:rounded-2xl border ${
+                    isSelected
+                      ? "border-[#4F46E5] bg-[#EEF2FF]/40 ring-2 ring-[#4F46E5]/20 shadow-xs"
+                      : "border-[#E5E7EB] bg-white hover:border-[#4F46E5]/40"
+                  } p-2.5 sm:p-4 text-left transition-all min-w-0 cursor-pointer`}
+                  style={{ boxShadow: "0 8px 24px rgba(15,23,42,0.03)" }}
                 >
                   <div
-                    className="flex h-11 w-11 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl"
+                    className="flex size-9 sm:size-12 shrink-0 items-center justify-center rounded-lg sm:rounded-xl group-hover:scale-105 transition-transform"
                     style={{ backgroundColor: meta.bg, color: meta.color }}
                   >
-                    <IconComp className="size-5 sm:size-6" />
+                    <IconComp className="size-4 sm:size-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm sm:text-base font-bold text-[#0F172A] truncate">{cat.name}</h3>
-                    <p className="mt-0.5 text-xs sm:text-sm text-[#94A3B8]">{cat.count} articles</p>
+                    <h3 className="text-xs sm:text-sm md:text-base font-bold text-[#0F172A] truncate group-hover:text-[#4F46E5] transition-colors">
+                      {cat.name}
+                    </h3>
+                    <p className="mt-0.5 text-[10px] sm:text-xs text-[#94A3B8] truncate">
+                      {cat.count} article{cat.count !== 1 ? "s" : ""}
+                    </p>
                   </div>
-                  <ChevronRight className="size-4 text-[#94A3B8] transition-all group-hover:translate-x-0.5 group-hover:text-[#4F46E5] shrink-0" />
-                </motion.div>
+                  <ChevronRight className="hidden sm:block size-4 text-[#94A3B8] transition-all group-hover:translate-x-0.5 group-hover:text-[#4F46E5] shrink-0" />
+                </motion.button>
               );
             })}
           </div>
@@ -451,114 +529,176 @@ export default function BlogLanding() {
       {/* ================================================================ */}
       {/*  LATEST ARTICLES + SIDEBAR                                        */}
       {/* ================================================================ */}
-      <section id="latest-articles" className="bg-[#F8FAFF] px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+      <section id="latest-articles" className="bg-[#F8FAFF] px-3.5 py-10 sm:px-6 sm:py-16 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="text-center">
-            <SectionTag>Articles</SectionTag>
+            <SectionTag>All Posts</SectionTag>
             <SectionTitle>Latest Articles</SectionTitle>
           </div>
 
-          <div className="mt-12 grid gap-10 lg:grid-cols-3">
-            {/* ---------- Articles grid ---------- */}
-            <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:col-span-2">
-              {displayArticles.map((a: ArticleData, i: number) => (
-                <Link key={a.title} href={`/blog/${a.slug}`} className="block">
-                  <motion.div
-                    initial={{ opacity: 0, y: 24 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-40px" }}
-                    transition={{ duration: 0.5, delay: i * 0.06 }}
-                    whileHover={{ y: -6, boxShadow: "0 25px 60px rgba(79,70,229,0.12)" }}
-                    className="group relative flex flex-col rounded-3xl border border-[#E5E7EB] bg-white overflow-hidden transition-shadow"
-                    style={{ boxShadow: "0 15px 40px rgba(15,23,42,0.06)" }}
-                  >
-                    <div className="relative h-44 w-full bg-[#EEF2FF] overflow-hidden">
-                      {a.coverImage ? (
-                        <img
-                          src={a.coverImage}
-                          alt={`${a.title} cover image`}
-                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                        />
-                      ) : null}
-                    </div>
-
-                    <div className="flex flex-1 flex-col p-4 sm:p-5">
-                      <div className="flex items-center justify-between">
-                        <span className="inline-flex rounded-lg bg-[#EEF2FF] px-2.5 py-1 text-[11px] font-semibold text-[#4F46E5]">
-                          {a.cat}
-                        </span>
-                        <button className="flex h-8 w-8 items-center justify-center rounded-full text-[#94A3B8] hover:bg-[#F8FAFF] hover:text-[#4F46E5] transition cursor-pointer">
-                          <Bookmark className="size-4" />
-                        </button>
-                      </div>
-                      <h3 className="mt-3 text-base font-bold text-[#0F172A] leading-snug line-clamp-2">
-                        {a.title}
-                      </h3>
-                      <p className="mt-2 text-sm text-[#475569] leading-relaxed line-clamp-2">
-                        {a.desc}
-                      </p>
-                      <div className="mt-auto pt-4 flex items-center gap-3 text-xs text-[#94A3B8]">
-                        <span className="flex items-center gap-1"><Calendar className="size-3.5" /> {a.date}</span>
-                        <span className="flex items-center gap-1"><Clock className="size-3.5" /> {a.time}</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                </Link>
+          {/* Quick Category Filter Pills */}
+          <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 sm:pb-0 no-scrollbar [&>*]:shrink-0">
+              <button
+                type="button"
+                onClick={() => setSelectedCategory("All")}
+                className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                  selectedCategory === "All"
+                    ? "bg-[#4F46E5] text-white shadow-xs"
+                    : "border border-[#E5E7EB] bg-white text-[#475569] hover:border-[#4F46E5]/40"
+                }`}
+              >
+                All Posts
+              </button>
+              {displayCategories.map((c) => (
+                <button
+                  key={c.name}
+                  type="button"
+                  onClick={() => setSelectedCategory(selectedCategory === c.name ? "All" : c.name)}
+                  className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                    selectedCategory === c.name
+                      ? "bg-[#4F46E5] text-white shadow-xs"
+                      : "border border-[#E5E7EB] bg-white text-[#475569] hover:border-[#4F46E5]/40"
+                  }`}
+                >
+                  {c.name}
+                </button>
               ))}
+            </div>
+
+            {/* Reset indicator */}
+            {(selectedCategory !== "All" || searchQuery) && (
+              <button
+                type="button"
+                onClick={() => { setSelectedCategory("All"); setSearchQuery(""); }}
+                className="inline-flex items-center gap-1 text-xs text-[#4F46E5] font-medium hover:underline self-end sm:self-center shrink-0 cursor-pointer"
+              >
+                <X className="size-3" /> Clear filters
+              </button>
+            )}
+          </div>
+
+          <div className="mt-6 grid gap-6 lg:grid-cols-3 lg:gap-10">
+            {/* ---------- Articles grid ---------- */}
+            <div className="lg:col-span-2">
+              {filteredArticles.length > 0 ? (
+                <div className="grid gap-3.5 sm:gap-5 sm:grid-cols-2 [&>*]:min-w-0">
+                  {filteredArticles.map((a: ArticleData, i: number) => (
+                    <Link key={a.slug || a.title} href={`/blog/${a.slug}`} className="block group min-w-0">
+                      <motion.div
+                        initial={{ opacity: 0, y: 16 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-30px" }}
+                        transition={{ duration: 0.4, delay: i * 0.04 }}
+                        className="group flex flex-col h-full rounded-2xl sm:rounded-3xl border border-[#E5E7EB] bg-white overflow-hidden transition-all hover:shadow-lg hover:border-[#4F46E5]/30 hover:-translate-y-0.5"
+                        style={{ boxShadow: "0 10px 30px rgba(15,23,42,0.04)" }}
+                      >
+                        <div className="relative h-40 sm:h-48 w-full bg-[#EEF2FF] overflow-hidden">
+                          {a.coverImage ? (
+                            <img
+                              src={a.coverImage}
+                              alt={`${a.title} cover image`}
+                              className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#EEF2FF] to-[#E0E7FF] text-[#4F46E5]">
+                              <Sparkles className="size-8 opacity-40" />
+                            </div>
+                          )}
+                          <span className="absolute left-3 top-3 inline-flex rounded-lg bg-white/95 px-2 py-0.5 text-[10px] font-semibold text-[#4F46E5] shadow-xs backdrop-blur-xs">
+                            {a.cat}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-1 flex-col p-3.5 sm:p-5">
+                          <h3 className="text-sm sm:text-base font-bold text-[#0F172A] leading-snug line-clamp-2 group-hover:text-[#4F46E5] transition-colors">
+                            {a.title}
+                          </h3>
+                          <p className="mt-1.5 text-xs sm:text-sm text-[#475569] leading-relaxed line-clamp-2">
+                            {a.desc}
+                          </p>
+                          <div className="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between text-[11px] text-[#94A3B8]">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="size-3 text-[#4F46E5]" /> {a.date}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="size-3 text-[#4F46E5]" /> {a.time}
+                            </span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-[#E5E7EB] bg-white p-8 sm:p-12 text-center">
+                  <p className="text-sm sm:text-base font-semibold text-[#0F172A]">No articles found</p>
+                  <p className="text-xs sm:text-sm text-[#94A3B8] mt-1">Try adjusting your search query or selecting a different category.</p>
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedCategory("All"); setSearchQuery(""); }}
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-[#4F46E5] px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-[#4338CA] transition-colors cursor-pointer"
+                  >
+                    Reset Filters
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* ---------- Sidebar ---------- */}
             <motion.div
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="space-y-8"
+              className="space-y-4 sm:space-y-6"
             >
               {/* Popular Comparisons */}
-              <div className="rounded-3xl border border-[#E5E7EB] bg-white p-6" style={{ boxShadow: "0 15px 40px rgba(15,23,42,0.06)" }}>
-                <h4 className="text-base font-bold text-[#0F172A]">Popular Comparisons</h4>
-                <div className="mt-4 space-y-1">
+              <div className="rounded-2xl sm:rounded-3xl border border-[#E5E7EB] bg-white p-4 sm:p-6" style={{ boxShadow: "0 10px 30px rgba(15,23,42,0.04)" }}>
+                <h4 className="text-sm sm:text-base font-bold text-[#0F172A]">Popular Comparisons</h4>
+                <div className="mt-3 space-y-1">
                   {popularComparisons.map((c) => (
-                    <button
+                    <Link
                       key={c}
-                      className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm text-[#475569] hover:bg-[#F8FAFF] hover:text-[#4F46E5] transition cursor-pointer"
+                      href="/compare"
+                      className="flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs sm:text-sm text-[#475569] hover:bg-[#F8FAFF] hover:text-[#4F46E5] transition-colors"
                     >
-                      {c}
-                      <ChevronRight className="size-3.5 text-[#94A3B8]" />
-                    </button>
+                      <span className="truncate">{c}</span>
+                      <ChevronRight className="size-3.5 text-[#94A3B8] shrink-0" />
+                    </Link>
                   ))}
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  className="mt-5 w-full rounded-2xl border border-[#E5E7EB] bg-white py-3 text-sm font-semibold text-[#4F46E5] shadow-sm hover:shadow-md transition cursor-pointer"
+                <Link
+                  href="/compare"
+                  className="mt-4 block w-full text-center rounded-xl sm:rounded-2xl border border-[#E5E7EB] bg-white py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-[#4F46E5] shadow-xs hover:bg-[#F8FAFF] transition-colors"
                 >
                   View All Comparisons
-                </motion.button>
+                </Link>
               </div>
 
               {/* Trending Tools */}
-              <div className="rounded-3xl border border-[#E5E7EB] bg-white p-6" style={{ boxShadow: "0 15px 40px rgba(15,23,42,0.06)" }}>
-                <h4 className="text-base font-bold text-[#0F172A]">Trending Tools</h4>
-                <div className="mt-4 space-y-1">
+              <div className="rounded-2xl sm:rounded-3xl border border-[#E5E7EB] bg-white p-4 sm:p-6" style={{ boxShadow: "0 10px 30px rgba(15,23,42,0.04)" }}>
+                <h4 className="text-sm sm:text-base font-bold text-[#0F172A]">Trending Tools</h4>
+                <div className="mt-3 space-y-1">
                   {trendingToolsItems.map((t) => (
-                    <button
+                    <Link
                       key={t}
-                      className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm text-[#475569] hover:bg-[#F8FAFF] hover:text-[#4F46E5] transition cursor-pointer"
+                      href={`/discover?search=${encodeURIComponent(t)}`}
+                      className="flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs sm:text-sm text-[#475569] hover:bg-[#F8FAFF] hover:text-[#4F46E5] transition-colors"
                     >
-                      {t}
-                      <ChevronRight className="size-3.5 text-[#94A3B8]" />
-                    </button>
+                      <span className="truncate">{t}</span>
+                      <ChevronRight className="size-3.5 text-[#94A3B8] shrink-0" />
+                    </Link>
                   ))}
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  className="mt-5 w-full rounded-2xl py-3 text-sm font-semibold text-white shadow-md transition-shadow hover:shadow-[#4F46E5]/25 cursor-pointer"
+                <Link
+                  href="/discover"
+                  className="mt-4 block w-full text-center rounded-xl sm:rounded-2xl py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-md transition-shadow hover:shadow-[#4F46E5]/25"
                   style={{ background: "linear-gradient(135deg, #4F46E5, #6D5DF6)" }}
                 >
                   Explore AI Tools
-                </motion.button>
+                </Link>
               </div>
             </motion.div>
           </div>
@@ -568,50 +708,50 @@ export default function BlogLanding() {
       {/* ================================================================ */}
       {/*  NEWSLETTER CTA                                                   */}
       {/* ================================================================ */}
-      <section id="nl-cta" className="px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+      <section id="nl-cta" className="px-3.5 py-10 sm:px-6 sm:py-16 lg:px-8">
         <div
-          className="relative mx-auto max-w-7xl overflow-hidden rounded-3xl px-4 py-10 sm:px-14 sm:py-20 lg:px-20"
+          className="relative mx-auto max-w-7xl overflow-hidden rounded-2xl sm:rounded-3xl px-4 py-8 sm:px-12 sm:py-16 lg:px-16"
           style={{ background: "linear-gradient(135deg, #5B4CF6, #7C3AED)" }}
         >
           {/* decorative glow */}
-          <div className="pointer-events-none absolute -top-40 -right-40 h-[400px] w-[400px] rounded-full bg-white/15 blur-[120px]" />
-          <div className="pointer-events-none absolute -bottom-40 -left-40 h-[300px] w-[300px] rounded-full bg-white/10 blur-[100px]" />
+          <div className="pointer-events-none absolute -top-40 -right-40 h-[300px] w-[300px] sm:h-[400px] sm:w-[400px] rounded-full bg-white/15 blur-[80px] sm:blur-[120px]" />
+          <div className="pointer-events-none absolute -bottom-40 -left-40 h-[250px] w-[250px] sm:h-[300px] sm:w-[300px] rounded-full bg-white/10 blur-[60px] sm:blur-[100px]" />
 
-          <div className="relative grid items-center gap-10 lg:grid-cols-2">
+          <div className="relative grid items-center gap-6 lg:grid-cols-2 lg:gap-10">
             {/* ---------- Left ---------- */}
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.5 }}
             >
-              <h2 className="text-2xl font-bold text-white sm:text-3xl lg:text-4xl leading-tight">
+              <h2 className="text-xl sm:text-3xl lg:text-4xl font-bold leading-tight text-white">
                 Want the best AI tools, news &amp; tips delivered to your inbox?
               </h2>
-              <p className="mt-4 text-sm leading-relaxed text-white/80 sm:text-base">
+              <p className="mt-2.5 sm:mt-4 text-xs sm:text-sm md:text-base leading-relaxed text-white/80">
                 Join 15,000+ subscribers who get our weekly newsletter with
                 curated AI tools, expert insights, and exclusive content.
               </p>
 
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-5 sm:mt-6 flex flex-col gap-2.5 sm:flex-row">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="flex-1 rounded-2xl border border-white/20 bg-white/15 px-5 py-3.5 text-sm text-white outline-none placeholder:text-white/50 backdrop-blur-sm"
+                  className="flex-1 min-w-0 rounded-xl sm:rounded-2xl border border-white/20 bg-white/15 px-4 py-3 text-xs sm:text-sm text-white outline-none placeholder:text-white/50 backdrop-blur-sm"
                 />
                 <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={async () => { if (!email) return; try { await api.subscribeNewsletter(email); toast.success("Subscribed!"); setEmail(""); } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Subscription failed"); } }}
-                  className="rounded-2xl bg-white px-7 py-3.5 text-sm font-semibold text-[#4F46E5] shadow-lg transition-shadow hover:shadow-white/25 cursor-pointer"
+                  className="rounded-xl sm:rounded-2xl bg-white px-6 py-3 text-xs sm:text-sm font-semibold text-[#4F46E5] shadow-lg transition-shadow hover:shadow-white/25 cursor-pointer shrink-0"
                 >
                   Subscribe
                 </motion.button>
               </div>
 
-              <p className="mt-3 flex items-center gap-2 text-xs text-white/60">
+              <p className="mt-3 flex items-center gap-2 text-[11px] sm:text-xs text-white/60">
                 <Check className="size-3.5 text-[#22C55E]" />
                 No spam. Unsubscribe anytime.
               </p>
@@ -656,28 +796,28 @@ export default function BlogLanding() {
       {/* ================================================================ */}
       {/*  TRUST FEATURES                                                   */}
       {/* ================================================================ */}
-      <section className="bg-white px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+      <section className="bg-white px-3.5 py-10 sm:px-6 sm:py-16 lg:px-8">
         <div className="mx-auto max-w-7xl text-center">
           <SectionTag>Why Trust Us</SectionTag>
           <SectionTitle>Trusted by Thousands</SectionTitle>
 
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 sm:mt-12 grid gap-3.5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {trustItems.map((f, i) => (
               <motion.div
                 key={f.title}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.5, delay: i * 0.08 }}
-                whileHover={{ y: -6, boxShadow: "0 25px 60px rgba(79,70,229,0.12)" }}
-                className="rounded-3xl border border-[#E5E7EB] bg-white p-6 text-left transition-shadow"
-                style={{ boxShadow: "0 15px 40px rgba(15,23,42,0.06)" }}
+                viewport={{ once: true, margin: "-30px" }}
+                transition={{ duration: 0.4, delay: i * 0.05 }}
+                whileHover={{ y: -3 }}
+                className="rounded-2xl sm:rounded-3xl border border-[#E5E7EB] bg-white p-4 sm:p-6 text-left transition-shadow"
+                style={{ boxShadow: "0 10px 30px rgba(15,23,42,0.04)" }}
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#EEF2FF] text-[#4F46E5]">
+                <div className="flex size-10 sm:size-12 items-center justify-center rounded-xl bg-[#EEF2FF] text-[#4F46E5]">
                   <f.icon className="size-5" />
                 </div>
-                <h3 className="mt-4 text-base font-bold text-[#0F172A]">{f.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[#475569]">{f.desc}</p>
+                <h3 className="mt-3.5 text-sm sm:text-base font-bold text-[#0F172A]">{f.title}</h3>
+                <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-[#475569]">{f.desc}</p>
               </motion.div>
             ))}
           </div>
