@@ -643,14 +643,14 @@ function DiscoverContent() {
         <div className="sticky top-16 z-30 bg-white/95 backdrop-blur-sm border-b border-border px-3 py-2.5 sm:px-6 sm:py-4 lg:px-8">
           <div className="mx-auto max-w-7xl flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
             {/* Search + Mobile Filter Button Row */}
-            <div className="flex items-center gap-2 w-full md:w-auto md:flex-1 md:max-w-md">
-              <form onSubmit={handleSearch} className="relative flex-1">
+            <div className="flex items-center gap-2 w-full md:w-auto md:flex-1 md:max-w-md min-w-0">
+              <form onSubmit={handleSearch} className="relative flex-1 min-w-0">
                 <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search tools..."
-                  className="w-full rounded-xl border border-border bg-card pl-9 pr-4 py-2 text-xs sm:text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all shadow-sm"
+                  className="w-full min-w-0 rounded-xl border border-border bg-card pl-9 pr-3 py-2 text-xs sm:text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all shadow-sm"
                 />
               </form>
 
@@ -658,7 +658,7 @@ function DiscoverContent() {
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
-                className="md:hidden inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold shrink-0 transition-all hover:border-primary/30 hover:text-primary shadow-xs"
+                className="md:hidden inline-flex items-center gap-1 rounded-xl border border-border bg-card px-2.5 py-2 text-xs font-semibold shrink-0 transition-all hover:border-primary/30 hover:text-primary shadow-xs"
               >
                 <FilterIcon className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>Filters</span>
@@ -671,13 +671,13 @@ function DiscoverContent() {
             </div>
 
             {/* Mobile Dual Dropdowns: Pricing & Sort */}
-            <div className="grid grid-cols-2 gap-2 w-full pt-1 md:hidden">
-              <div className="relative">
+            <div className="grid grid-cols-2 gap-2 w-full pt-1 md:hidden [&>*]:min-w-0">
+              <div className="relative min-w-0">
                 <label className="sr-only">Pricing</label>
                 <select
                   value={pricing}
                   onChange={(e) => handlePricingChange(e.target.value as PricingFilter)}
-                  className="w-full rounded-xl border border-border bg-card px-2.5 py-2 text-xs font-medium outline-none text-foreground shadow-xs appearance-none bg-no-repeat bg-right-2 bg-[url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2214%22 height=%2214%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b7280%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M6 9l6 6 6-6%22/></svg>')]"
+                  className="w-full min-w-0 truncate rounded-xl border border-border bg-card pl-2.5 pr-6 py-2 text-xs font-medium outline-none text-foreground shadow-xs appearance-none bg-no-repeat bg-right-2 bg-[url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b7280%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M6 9l6 6 6-6%22/></svg>')]"
                 >
                   {PRICING_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -685,12 +685,12 @@ function DiscoverContent() {
                 </select>
               </div>
 
-              <div className="relative">
+              <div className="relative min-w-0">
                 <label className="sr-only">Sort</label>
                 <select
                   value={sort}
                   onChange={(e) => handleSortChange(e.target.value as SortOption)}
-                  className="w-full rounded-xl border border-border bg-card px-2.5 py-2 text-xs font-medium outline-none text-foreground shadow-xs appearance-none bg-no-repeat bg-right-2 bg-[url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2214%22 height=%2214%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b7280%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M6 9l6 6 6-6%22/></svg>')]"
+                  className="w-full min-w-0 truncate rounded-xl border border-border bg-card pl-2.5 pr-6 py-2 text-xs font-medium outline-none text-foreground shadow-xs appearance-none bg-no-repeat bg-right-2 bg-[url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b7280%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M6 9l6 6 6-6%22/></svg>')]"
                 >
                   {SORT_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -728,15 +728,25 @@ function DiscoverContent() {
 
         {/* Results Header */}
         <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-4">
-            <div className="flex items-baseline justify-between sm:block">
-              <h1 className="text-lg font-bold tracking-tight sm:text-2xl md:text-3xl">Discover AI tools</h1>
-              <p className="text-xs sm:text-sm text-muted-foreground sm:mt-1">
-                {filteredTools.length} tool{filteredTools.length !== 1 ? "s" : ""} found
-                {hasActiveFilters && (
-                  <span className="ml-2 text-primary font-medium">(filtered)</span>
-                )}
-              </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+            <div className="flex items-center justify-between gap-2 sm:block">
+              <div className="flex items-center gap-2 min-w-0">
+                <h1 className="text-base sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground truncate">
+                  Discover AI tools
+                </h1>
+                <span className="inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs font-semibold shrink-0">
+                  {filteredTools.length}
+                </span>
+              </div>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="text-xs text-primary font-medium hover:underline shrink-0 sm:hidden"
+                >
+                  Clear all
+                </button>
+              )}
             </div>
 
             {/* Active Filter Pills */}
@@ -831,7 +841,7 @@ function DiscoverContent() {
         {/* Tools Grid */}
         <div className="mx-auto max-w-7xl px-3 pb-12 sm:px-6 lg:px-8">
           {filteredTools.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 [&>*]:min-w-0">
               {filteredTools.map((t) => {
                 const fallbackMatch = fallbackTrending.find((f) => f.slug === t.slug);
                 const pricing = t.pricing as "Free" | "Freemium" | "Paid";

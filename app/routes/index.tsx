@@ -161,12 +161,12 @@ export function ToolCard({ tool }: { tool: (typeof fallbackTrending)[number] & {
   return (
     <Link
       href={`/tool/${tool.slug}`}
-      className="group flex flex-col justify-between h-full rounded-2xl border border-gray-200/80 bg-white p-3 sm:p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-lg hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-200"
+      className="group flex flex-col justify-between h-full min-w-0 rounded-2xl border border-gray-200/80 bg-white p-2.5 sm:p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-lg hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-200"
     >
       <div>
         <div className="flex items-start justify-between gap-1.5 mb-2 sm:mb-3">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden border border-gray-150 bg-gray-50/80 shadow-xs grid place-items-center shrink-0 group-hover:scale-105 transition-transform">
-            <ToolLogo name={tool.name} logo={logoSrc(tool.logo)} website={(tool as any).website} size={26} />
+          <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl overflow-hidden border border-gray-150 bg-gray-50/80 shadow-xs grid place-items-center shrink-0 group-hover:scale-105 transition-transform">
+            <ToolLogo name={tool.name} logo={logoSrc(tool.logo)} website={(tool as any).website} size={24} />
           </div>
           <div className="flex flex-col items-end gap-1">
             {tag && (
@@ -188,7 +188,7 @@ export function ToolCard({ tool }: { tool: (typeof fallbackTrending)[number] & {
           <h3 className="font-semibold text-gray-900 text-xs sm:text-sm md:text-[15px] leading-snug truncate group-hover:text-primary transition-colors" title={tool.name}>
             {tool.name}
           </h3>
-          <p className="text-[10.5px] sm:text-xs text-gray-500 truncate mt-0.5 font-normal" title={tool.category}>
+          <p className="text-[10px] sm:text-xs text-gray-500 truncate mt-0.5 font-normal" title={tool.category}>
             {tool.category}
           </p>
         </div>
@@ -198,14 +198,14 @@ export function ToolCard({ tool }: { tool: (typeof fallbackTrending)[number] & {
         <div className="flex items-center gap-1 min-w-0">
           <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-amber-400 text-amber-400 shrink-0" />
           <span className="text-[11px] sm:text-xs font-bold text-gray-800">{tool.rating}</span>
-          <span className="text-[9.5px] sm:text-[10.5px] text-gray-400 truncate">({tool.reviews})</span>
+          <span className="hidden min-[380px]:inline text-[9.5px] sm:text-[10.5px] text-gray-400 truncate">({tool.reviews})</span>
         </div>
         <div className="flex items-center gap-1 text-[9.5px] sm:text-[10.5px] text-gray-500 shrink-0">
           <span className="inline-flex items-center gap-0.5 rounded-md bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-700">
             <ArrowUp className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
             {upvotes >= 1000 ? `${(upvotes / 1000).toFixed(1).replace(/\.0$/, "")}k` : upvotes}
           </span>
-          <span className="inline-flex items-center gap-0.5 rounded-md bg-slate-50 px-1.5 py-0.5 font-medium text-slate-600">
+          <span className="hidden min-[380px]:inline-flex items-center gap-0.5 rounded-md bg-slate-50 px-1.5 py-0.5 font-medium text-slate-600">
             <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
             {clicks >= 1000 ? `${(clicks / 1000).toFixed(1).replace(/\.0$/, "")}k` : clicks}
           </span>
