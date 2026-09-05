@@ -97,6 +97,20 @@ function DiscoverContent() {
   }, [urlQuery]);
 
   useEffect(() => {
+    if (!sidebarOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSidebarOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [sidebarOpen]);
+
+  useEffect(() => {
     api.getTools({ limit: 200, sort: "trending" }).then((data) => {
       const mapped = data.tools.map((t: any) => ({
         slug: t.slug,
@@ -343,7 +357,7 @@ function DiscoverContent() {
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/30 md:hidden"
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs md:hidden"
           onClick={() => setSidebarOpen(false)}
           aria-hidden="true"
         />
@@ -352,20 +366,40 @@ function DiscoverContent() {
       <div className="md:flex md:items-start">
       {/* Sidebar - Filters */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-[min(18rem,100vw)] bg-white border-r border-border shadow-xl transform transition-transform duration-300 ease-in-out md:sticky md:top-16 md:z-20 md:h-[calc(100dvh-4rem)] md:w-72 md:shrink-0 md:translate-x-0 md:shadow-none md:self-start ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+        className={`fixed inset-y-0 left-0 z-50 w-[min(20rem,88vw)] bg-white border-r border-border shadow-2xl transform transition-transform duration-300 ease-in-out md:sticky md:top-16 md:z-20 md:h-[calc(100dvh-4rem)] md:w-72 md:shrink-0 md:translate-x-0 md:shadow-none md:self-start ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
         aria-label="Filters"
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
-          <div className="flex items-center justify-between p-4 border-b border-border md:hidden">
-            <h2 className="text-lg font-semibold">Filters</h2>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="p-2 rounded-lg hover:bg-muted"
-              aria-label="Close filters"
-            >
-              <X className="h-5 w-5" />
-            </button>
+          <div className="flex items-center justify-between p-3.5 sm:p-4 border-b border-border">
+            <div className="flex items-center gap-2">
+              <FilterIcon className="size-4 text-primary" />
+              <h2 className="text-base font-bold text-foreground">Filters</h2>
+              {filterCount > 0 && (
+                <span className="rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[11px] font-semibold">
+                  {filterCount}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Reset all
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-muted md:hidden"
+                aria-label="Close filters"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           {/* Sidebar Content - Scrollable */}
@@ -588,64 +622,108 @@ function DiscoverContent() {
               </button>
             )}
           </div>
+
+          {/* Mobile Sticky Apply Bar */}
+          <div className="p-3.5 border-t border-border bg-white md:hidden">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(false)}
+              className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-all text-center"
+            >
+              Show {filteredTools.length} Tool{filteredTools.length !== 1 ? "s" : ""}
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* Main Content */}
       <main className="min-w-0 flex-1">
         {/* Top Bar: Search + Sort (Desktop) / Filter Toggle (Mobile) */}
-        <div className="sticky top-16 z-30 bg-white/95 backdrop-blur-sm border-b border-border px-4 py-4 md:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            {/* Search - Desktop */}
-            <form onSubmit={handleSearch} className="relative flex-1 max-w-xl md:max-w-md">
-              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search tools..."
-                className="w-full rounded-xl border border-border bg-card pl-10 pr-4 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all shadow-sm"
-              />
-            </form>
+        <div className="sticky top-16 z-30 bg-white/95 backdrop-blur-sm border-b border-border px-3 py-2.5 sm:px-6 sm:py-4 lg:px-8">
+          <div className="mx-auto max-w-7xl flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
+            {/* Search + Mobile Filter Button Row */}
+            <div className="flex items-center gap-2 w-full md:w-auto md:flex-1 md:max-w-md">
+              <form onSubmit={handleSearch} className="relative flex-1">
+                <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search tools..."
+                  className="w-full rounded-xl border border-border bg-card pl-9 pr-4 py-2 text-xs sm:text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all shadow-sm"
+                />
+              </form>
 
-            {/* Sort + Filter Toggle */}
-            <div className="flex items-center gap-2">
-              {/* Sort Dropdown - Desktop */}
-              <div className="hidden md:block">
+              {/* Filter Sidebar Toggle - Mobile */}
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                className="md:hidden inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold shrink-0 transition-all hover:border-primary/30 hover:text-primary shadow-xs"
+              >
+                <FilterIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                <span>Filters</span>
+                {filterCount > 0 && (
+                  <span className="rounded-full bg-primary px-1.5 py-0.2 text-[9.5px] font-bold text-primary-foreground">
+                    {filterCount}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* Mobile Quick Pricing Chips & Mobile Sort Row */}
+            <div className="flex md:hidden items-center justify-between gap-2 pt-0.5">
+              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+                {(["All", "Free", "Freemium", "Paid"] as PricingFilter[]).map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => handlePricingChange(f)}
+                    className={`rounded-lg px-2.5 py-1 text-[11px] font-medium shrink-0 transition-colors ${
+                      pricing === f
+                        ? "bg-primary text-primary-foreground shadow-xs"
+                        : "bg-card border border-border/80 text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+
+              <div className="shrink-0">
                 <label className="sr-only">Sort</label>
                 <select
                   value={sort}
                   onChange={(e) => handleSortChange(e.target.value as SortOption)}
-                  className="rounded-xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all shadow-sm appearance-none bg-no-repeat bg-right-3 bg-[url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b7280%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M6 9l6 6 6-6%22/></svg>')]"
+                  className="rounded-lg border border-border bg-card px-2 py-1 text-[11px] font-medium outline-none text-foreground shadow-xs"
                 >
                   {SORT_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
               </div>
+            </div>
 
-              {/* Filter Sidebar Toggle - Mobile */}
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="md:hidden inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition-all hover:border-primary/30 hover:text-primary"
+            {/* Sort Dropdown - Desktop */}
+            <div className="hidden md:block">
+              <label className="sr-only">Sort</label>
+              <select
+                value={sort}
+                onChange={(e) => handleSortChange(e.target.value as SortOption)}
+                className="rounded-xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all shadow-sm appearance-none bg-no-repeat bg-right-3 bg-[url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b7280%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M6 9l6 6 6-6%22/></svg>')]"
               >
-                <FilterIcon className="h-4 w-4" />
-                Filters
-                {filterCount > 0 && (
-                  <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
-                    {filterCount}
-                  </span>
-                )}
-              </button>
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
 
         {/* Results Header */}
-        <div className="mx-auto max-w-7xl px-4 py-6 md:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Discover AI tools</h1>
-              <p className="mt-1 text-muted-foreground">
+        <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-4">
+            <div className="flex items-baseline justify-between sm:block">
+              <h1 className="text-lg font-bold tracking-tight sm:text-2xl md:text-3xl">Discover AI tools</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground sm:mt-1">
                 {filteredTools.length} tool{filteredTools.length !== 1 ? "s" : ""} found
                 {hasActiveFilters && (
                   <span className="ml-2 text-primary font-medium">(filtered)</span>
@@ -657,7 +735,7 @@ function DiscoverContent() {
             {filterCount > 0 && (
               <div className="flex flex-wrap gap-2">
                 {query && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs text-primary font-medium">
                     <Search className="h-3 w-3" />
                     "{query}"
                     <button onClick={() => { setQuery(""); updateUrl(); }} className="ml-1 hover:text-primary/70">
@@ -666,7 +744,7 @@ function DiscoverContent() {
                   </span>
                 )}
                 {pricing !== "All" && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs text-primary font-medium">
                     {pricing}
                     <button onClick={() => { handlePricingChange("All"); }} className="ml-1 hover:text-primary/70">
                       <X className="h-3 w-3" />
@@ -674,7 +752,7 @@ function DiscoverContent() {
                   </span>
                 )}
                 {selectedCategories.map((cat) => (
-                  <span key={cat} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">
+                  <span key={cat} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs text-primary font-medium">
                     {cat}
                     <button onClick={() => toggleCategory(cat)} className="ml-1 hover:text-primary/70">
                       <X className="h-3 w-3" />
@@ -682,7 +760,7 @@ function DiscoverContent() {
                   </span>
                 ))}
                 {freePlan && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs text-primary font-medium">
                     Free Plan
                     <button onClick={() => { setFreePlan(false); updateUrl(); }} className="ml-1 hover:text-primary/70">
                       <X className="h-3 w-3" />
@@ -690,7 +768,7 @@ function DiscoverContent() {
                   </span>
                 )}
                 {freeTrial && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs text-primary font-medium">
                     Free Trial
                     <button onClick={() => { setFreeTrial(false); updateUrl(); }} className="ml-1 hover:text-primary/70">
                       <X className="h-3 w-3" />
@@ -698,7 +776,7 @@ function DiscoverContent() {
                   </span>
                 )}
                 {apiAvailable && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs text-primary font-medium">
                     API Available
                     <button onClick={() => { setApiAvailable(false); updateUrl(); }} className="ml-1 hover:text-primary/70">
                       <X className="h-3 w-3" />
@@ -706,7 +784,7 @@ function DiscoverContent() {
                   </span>
                 )}
                 {aiPowered && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs text-primary font-medium">
                     AI Powered
                     <button onClick={() => { setAiPowered(false); updateUrl(); }} className="ml-1 hover:text-primary/70">
                       <X className="h-3 w-3" />
@@ -714,7 +792,7 @@ function DiscoverContent() {
                   </span>
                 )}
                 {minRating > 0 && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs text-primary font-medium">
                     Rating {minRating}+
                     <button onClick={() => { setMinRating(0); updateUrl(); }} className="ml-1 hover:text-primary/70">
                       <X className="h-3 w-3" />
@@ -722,7 +800,7 @@ function DiscoverContent() {
                   </span>
                 )}
                 {selectedPlatforms.map((p) => (
-                  <span key={p} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">
+                  <span key={p} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs text-primary font-medium">
                     {p}
                     <button onClick={() => { togglePlatform(p); updateUrl(); }} className="ml-1 hover:text-primary/70">
                       <X className="h-3 w-3" />
@@ -730,7 +808,7 @@ function DiscoverContent() {
                   </span>
                 ))}
                 {selectedIntegrations.map((i) => (
-                  <span key={i} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">
+                  <span key={i} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs text-primary font-medium">
                     {i}
                     <button onClick={() => { toggleIntegration(i); updateUrl(); }} className="ml-1 hover:text-primary/70">
                       <X className="h-3 w-3" />
