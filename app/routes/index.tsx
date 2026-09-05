@@ -135,7 +135,7 @@ function PricingBadge({ pricing }: { pricing: Pricing }) {
   const styles =
     pricing === "Free" ? "bg-primary-muted text-primary" : "bg-slate-100 text-slate-600";
   return (
-    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${styles}`}>
+    <span className={`inline-flex items-center rounded-md px-1.5 sm:px-2 py-0.5 text-[10.5px] sm:text-xs font-medium shrink-0 ${styles}`}>
       {pricing}
     </span>
   );
@@ -157,43 +157,51 @@ export function ToolCard({ tool }: { tool: (typeof fallbackTrending)[number] & {
   return (
     <Link
       href={`/tool/${tool.slug}`}
-      className="group flex flex-col rounded-2xl border border-gray-100 bg-white p-5 hover:shadow-md transition-all"
+      className="group flex flex-col justify-between h-full rounded-2xl border border-gray-100 bg-white p-3.5 sm:p-5 hover:border-primary/30 hover:shadow-md transition-all"
     >
-      <div className="flex items-center justify-between">
-        <div className="w-14 h-14 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 grid place-items-center mb-4">
-          <ToolLogo name={tool.name} logo={logoSrc(tool.logo)} website={(tool as any).website} size={40} />
+      <div>
+        <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4">
+          <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 grid place-items-center shrink-0">
+            <ToolLogo name={tool.name} logo={logoSrc(tool.logo)} website={(tool as any).website} size={34} />
+          </div>
+          {tag && (
+            <span
+              className={`inline-flex items-center gap-1 rounded-full px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide shrink-0 ${
+                tag === "Sponsored"
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-violet-100 text-violet-700"
+              }`}
+            >
+              {tag === "Sponsored" && <Megaphone className="h-2.5 w-2.5 sm:h-3 sm:w-3" />}
+              {tag}
+            </span>
+          )}
         </div>
-        {tag && (
-          <span
-            className={`mb-4 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
-              tag === "Sponsored"
-                ? "bg-amber-100 text-amber-700"
-                : "bg-violet-100 text-violet-700"
-            }`}
-          >
-            {tag === "Sponsored" && <Megaphone className="h-3 w-3" />}
-            {tag}
-          </span>
-        )}
+        <h3 className="font-semibold text-gray-900 text-sm sm:text-base leading-tight truncate group-hover:text-primary transition-colors" title={tool.name}>
+          {tool.name}
+        </h3>
+        <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 truncate" title={tool.category}>
+          {tool.category}
+        </p>
       </div>
-      <h3 className="font-semibold text-gray-900 text-base leading-tight">{tool.name}</h3>
-      <p className="text-xs text-gray-400 mt-0.5">{tool.category}</p>
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-1">
-          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-          <span className="text-sm font-bold text-gray-800">{tool.rating}</span>
-          <span className="text-xs text-gray-400">({tool.reviews})</span>
+
+      <div className="mt-2.5 sm:mt-3 flex items-center justify-between gap-1.5 flex-wrap">
+        <div className="flex items-center gap-1 min-w-0">
+          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 shrink-0" />
+          <span className="text-xs sm:text-sm font-bold text-gray-800">{tool.rating}</span>
+          <span className="text-[10.5px] sm:text-xs text-gray-400 truncate">({tool.reviews})</span>
         </div>
-        <div className="sm:self-auto self-start">
+        <div className="shrink-0">
           <PricingBadge pricing={tool.pricing} />
         </div>
       </div>
-      <div className="mt-3 flex items-center gap-2 text-[11px] text-gray-500">
-        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-700">
+
+      <div className="mt-auto pt-2.5 sm:pt-3 flex items-center gap-1.5 sm:gap-2 text-[10.5px] sm:text-[11px] text-gray-500">
+        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-700 shrink-0">
           <ArrowUp className="h-3 w-3" />
           {upvotes >= 1000 ? `${(upvotes / 1000).toFixed(1).replace(/\.0$/, "")}k` : upvotes}
         </span>
-        <span className="inline-flex items-center gap-1 rounded-md bg-slate-50 px-1.5 py-0.5 font-medium text-slate-600">
+        <span className="inline-flex items-center gap-1 rounded-md bg-slate-50 px-1.5 py-0.5 font-medium text-slate-600 shrink-0">
           <Eye className="h-3 w-3" />
           {clicks >= 1000 ? `${(clicks / 1000).toFixed(1).replace(/\.0$/, "")}k` : clicks}
         </span>
@@ -515,7 +523,7 @@ export function HomePage() {
               Paid placements — independent of organic trending &amp; popularity
             </span>
           </div>
-          <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-4">
             {promoted.map((t) => (
               <ToolCard
                 key={t.slug}
@@ -548,7 +556,7 @@ export function HomePage() {
             View all <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-        <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 sm:gap-4">
           {tools.slice(0, 6).map((t) => (
             <ToolCard key={t.slug} tool={t} />
           ))}
@@ -560,19 +568,19 @@ export function HomePage() {
           <Grid2x2 className="h-6 w-6 shrink-0 text-indigo-600 sm:h-7 sm:w-7" />
           <h2 className="text-2xl font-bold text-foreground sm:text-3xl">All Categories</h2>
         </div>
-        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-2.5 min-[360px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 sm:gap-3">
           {categories.map((c) => (
             <Link
               key={c.slug}
               href={`/category/${c.slug}`}
-              className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-md"
+              className="group flex items-center gap-3 rounded-xl border border-border bg-card p-3 sm:p-4 transition-all hover:border-primary/30 hover:shadow-md"
             >
-              <div className="size-10 rounded-lg bg-primary-muted text-primary grid place-items-center group-hover:scale-105 transition-transform">
-                <c.icon className="size-5" />
+              <div className="size-9 sm:size-10 rounded-lg bg-primary-muted text-primary grid place-items-center group-hover:scale-105 transition-transform shrink-0">
+                <c.icon className="size-4 sm:size-5" />
               </div>
               <div className="min-w-0">
-                <div className="font-semibold text-foreground text-sm truncate">{c.name}</div>
-                <div className="text-xs text-muted-foreground">{c.count} tools</div>
+                <div className="font-semibold text-foreground text-xs sm:text-sm truncate">{c.name}</div>
+                <div className="text-[11px] sm:text-xs text-muted-foreground">{c.count} tools</div>
               </div>
             </Link>
           ))}

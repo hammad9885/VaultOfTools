@@ -43,16 +43,16 @@ export default function CategoriesPage() {
   return (
     <div className="min-h-screen bg-[#faf8f5] font-sans text-[#1a1a1a] antialiased">
       <SiteNav />
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8">
-        <header className="mb-12 text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-5xl">
+      <div className="mx-auto max-w-7xl px-3 py-8 sm:px-6 sm:py-16 lg:px-8">
+        <header className="mb-8 sm:mb-12 text-center">
+          <h1 className="text-2xl font-bold tracking-tight text-balance sm:text-5xl">
             Browse all categories
           </h1>
-          <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-2 sm:mt-3 text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
             Specialized AI tools for every workflow. Pick a category to explore.
           </p>
         </header>
-        <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 lg:grid-cols-3 sm:gap-4">
           {categories.map((c) => {
             const Icon = typeof c.icon === "string"
               ? (iconMap[c.icon.toLowerCase()] ?? Layers)
@@ -63,14 +63,14 @@ export default function CategoriesPage() {
               <Link
                 key={slug}
                 href={`/category/${slug}`}
-                className="group flex flex-col items-center text-center rounded-2xl border border-border bg-card p-3 sm:flex-row sm:text-left sm:items-center sm:gap-4 sm:p-6"
+                className="group flex items-center gap-3.5 rounded-2xl border border-border bg-card p-3.5 transition-all hover:border-primary/30 hover:shadow-md sm:gap-4 sm:p-5"
               >
-                <div className="size-10 sm:size-14 rounded-xl bg-primary-muted text-primary grid place-items-center mb-2 sm:mb-0">
+                <div className="size-11 sm:size-14 rounded-xl bg-primary-muted text-primary grid place-items-center shrink-0 group-hover:scale-105 transition-transform">
                   <Icon className="size-5 sm:size-6" />
                 </div>
 
-                <div>
-                  <h2 className="font-semibold text-sm sm:text-base">{c.name}</h2>
+                <div className="min-w-0 flex-1">
+                  <h2 className="font-semibold text-sm sm:text-base text-foreground truncate">{c.name}</h2>
                   <p className="text-xs sm:text-sm text-muted-foreground">
                     {count} curated tools
                   </p>

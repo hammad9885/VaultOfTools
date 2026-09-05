@@ -155,64 +155,64 @@ function DirectoryToolCard({ tool }: { tool: Tool }) {
   return (
     <Link
       href={toolHref(tool)}
-      className="group flex flex-col gap-3 rounded-xl border border-[#E5E7EB] bg-white px-3.5 py-3 transition-all duration-200 hover:-translate-y-[1px] hover:border-[#6366F1]/45 hover:bg-[#6366F1]/[0.04] hover:shadow-[0_8px_24px_rgba(99,102,241,0.08)] sm:flex-row sm:items-center sm:px-4"
+      className="group flex flex-col gap-2.5 rounded-xl border border-[#E5E7EB] bg-white p-3 transition-all duration-200 hover:-translate-y-[1px] hover:border-[#6366F1]/45 hover:bg-[#6366F1]/[0.04] hover:shadow-[0_8px_24px_rgba(99,102,241,0.08)] sm:flex-row sm:items-center sm:gap-3 sm:px-4 sm:py-3"
     >
-      <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center">
-      <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] transition-colors group-hover:border-[#6366F1]/35 sm:mt-0 sm:h-12 sm:w-12">
-        <ToolLogo name={tool.name} logo={tool.logo} website={tool.website} size={26} />
+      <div className="flex min-w-0 flex-1 items-start gap-2.5 sm:items-center sm:gap-3">
+        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] transition-colors group-hover:border-[#6366F1]/35 sm:mt-0 sm:h-12 sm:w-12">
+          <ToolLogo name={tool.name} logo={tool.logo} website={tool.website} size={24} />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <span className="text-[13.5px] sm:text-[14px] font-semibold text-[#111827] transition-colors group-hover:text-[#4F46E5] truncate">
+              {tool.name}
+            </span>
+            {tool.isNew && (
+              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-1.5 sm:px-2 py-0.5 text-[9.5px] sm:text-[10px] font-medium text-emerald-600">
+                New
+              </span>
+            )}
+            {tool.sponsored && (
+              <span className="rounded-full bg-amber-100 px-1.5 sm:px-2 py-0.5 text-[9.5px] sm:text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                Sponsored
+              </span>
+            )}
+            {!tool.sponsored && tool.featured && (
+              <span className="rounded-full bg-violet-100 px-1.5 sm:px-2 py-0.5 text-[9.5px] sm:text-[10px] font-semibold uppercase tracking-wide text-violet-700">
+                Featured
+              </span>
+            )}
+          </div>
+          <p className="mt-0.5 line-clamp-2 text-[12px] sm:text-[12.5px] leading-relaxed text-[#6B7280] sm:truncate sm:line-clamp-1">
+            {tool.desc}
+          </p>
+          <div className="mt-1.5 flex flex-wrap gap-1 sm:gap-1.5">
+            {(tool.tags || []).slice(0, 3).map((tag, i) => (
+              <span
+                key={i}
+                className="rounded-full bg-[#EEF2FF] px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[10.5px] font-medium text-[#6366F1]"
+              >
+                #{tag.toLowerCase().replace(/\s+/g, "")}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[14px] font-semibold text-[#111827] transition-colors group-hover:text-[#4F46E5]">
-            {tool.name}
-          </span>
-          {tool.isNew && (
-            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-600">
-              New
-            </span>
-          )}
-          {tool.sponsored && (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
-              Sponsored
-            </span>
-          )}
-          {!tool.sponsored && tool.featured && (
-            <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700">
-              Featured
-            </span>
-          )}
-        </div>
-        <p className="mt-0.5 line-clamp-2 text-[12.5px] leading-relaxed text-[#6B7280] sm:truncate sm:line-clamp-1">
-          {tool.desc}
-        </p>
-        <div className="mt-1.5 flex flex-wrap gap-1.5">
-          {(tool.tags || []).slice(0, 3).map((tag, i) => (
-            <span
-              key={i}
-              className="rounded-full bg-[#EEF2FF] px-2 py-0.5 text-[10.5px] font-medium text-[#6366F1]"
-            >
-              #{tag.toLowerCase().replace(/\s+/g, "")}
-            </span>
-          ))}
-        </div>
-      </div>
-      </div>
-
-      <div className="flex shrink-0 items-center justify-end gap-2 pl-14 sm:pl-0">
+      <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2 self-end sm:self-auto">
         <button
           type="button"
           onClick={onSaveClick}
           disabled={pending}
           aria-pressed={saved}
           aria-label={saved ? `Remove ${tool.name} from saved tools` : `Save ${tool.name}`}
-          className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[11px] transition-colors disabled:opacity-60 ${
+          className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[10.5px] sm:text-[11px] transition-colors disabled:opacity-60 ${
             saved
               ? "border-[#6366F1]/40 bg-[#EEF2FF] text-[#4F46E5]"
               : "border-[#E5E7EB] bg-white text-[#6B7280] hover:border-[#6366F1]/40 hover:bg-[#EEF2FF] hover:text-[#4F46E5]"
           }`}
         >
-          <FiBookmark size={12} className={`shrink-0 ${saved ? "fill-current" : ""}`} />
+          <FiBookmark size={11} className={`shrink-0 ${saved ? "fill-current" : ""}`} />
           {fmtNum(tool.saves + (saved ? 1 : 0))}
         </button>
         <button
@@ -221,13 +221,13 @@ function DirectoryToolCard({ tool }: { tool: Tool }) {
           disabled={voteBusy}
           aria-pressed={voted}
           aria-label={voted ? `Remove upvote from ${tool.name}` : `Upvote ${tool.name}`}
-          className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[11px] font-medium transition-colors disabled:opacity-60 ${
+          className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[10.5px] sm:text-[11px] font-medium transition-colors disabled:opacity-60 ${
             voted
               ? "border-emerald-300 bg-emerald-50 text-emerald-700"
               : "border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-50"
           }`}
         >
-          <FiArrowUp size={12} className="shrink-0" />
+          <FiArrowUp size={11} className="shrink-0" />
           {fmtNum(upvotes)}
         </button>
       </div>

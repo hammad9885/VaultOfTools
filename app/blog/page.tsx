@@ -415,7 +415,7 @@ export default function BlogLanding() {
           <SectionTag>Categories</SectionTag>
           <SectionTitle>Browse by Categories</SectionTitle>
 
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 sm:mt-12 grid gap-3 min-[360px]:grid-cols-2 lg:grid-cols-3 sm:gap-5">
             {displayCategories.map((cat, i) => {
               const meta = (displayCatIcons || catIcons)[cat.name] || { icon: Cpu, color: "#4F46E5", bg: "#EEF2FF" };
               const IconComp = meta.icon;
@@ -427,20 +427,20 @@ export default function BlogLanding() {
                   viewport={{ once: true, margin: "-40px" }}
                   transition={{ duration: 0.5, delay: i * 0.08 }}
                   whileHover={{ y: -6, boxShadow: "0 25px 60px rgba(79,70,229,0.12)" }}
-                  className="group flex items-center gap-5 rounded-3xl border border-[#E5E7EB] bg-white p-5 text-left transition-shadow"
+                  className="group flex items-center gap-3 sm:gap-5 rounded-2xl sm:rounded-3xl border border-[#E5E7EB] bg-white p-3.5 sm:p-5 text-left transition-shadow"
                   style={{ boxShadow: "0 15px 40px rgba(15,23,42,0.06)" }}
                 >
                   <div
-                    className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl"
+                    className="flex h-11 w-11 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl"
                     style={{ backgroundColor: meta.bg, color: meta.color }}
                   >
-                    <IconComp className="size-6" />
+                    <IconComp className="size-5 sm:size-6" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-base font-bold text-[#0F172A]">{cat.name}</h3>
-                    <p className="mt-0.5 text-sm text-[#94A3B8]">{cat.count} articles</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm sm:text-base font-bold text-[#0F172A] truncate">{cat.name}</h3>
+                    <p className="mt-0.5 text-xs sm:text-sm text-[#94A3B8]">{cat.count} articles</p>
                   </div>
-                  <ChevronRight className="size-4 text-[#94A3B8] transition-all group-hover:translate-x-0.5 group-hover:text-[#4F46E5]" />
+                  <ChevronRight className="size-4 text-[#94A3B8] transition-all group-hover:translate-x-0.5 group-hover:text-[#4F46E5] shrink-0" />
                 </motion.div>
               );
             })}
@@ -460,7 +460,7 @@ export default function BlogLanding() {
 
           <div className="mt-12 grid gap-10 lg:grid-cols-3">
             {/* ---------- Articles grid ---------- */}
-            <div className="grid gap-6 sm:grid-cols-2 lg:col-span-2">
+            <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:col-span-2">
               {displayArticles.map((a: ArticleData, i: number) => (
                 <Link key={a.title} href={`/blog/${a.slug}`} className="block">
                   <motion.div
@@ -483,7 +483,7 @@ export default function BlogLanding() {
                       ) : null}
                     </div>
 
-                    <div className="flex flex-1 flex-col p-5">
+                    <div className="flex flex-1 flex-col p-4 sm:p-5">
                       <div className="flex items-center justify-between">
                         <span className="inline-flex rounded-lg bg-[#EEF2FF] px-2.5 py-1 text-[11px] font-semibold text-[#4F46E5]">
                           {a.cat}

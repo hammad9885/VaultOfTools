@@ -116,56 +116,58 @@ function ReviewCard({ review, colorIndex }: { review: ReviewItem; colorIndex: nu
   const name = review.user?.displayName ?? "Anonymous";
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 hover:shadow-md transition-all">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          {review.user?.photoURL ? (
-            <Image
-              src={review.user.photoURL}
-              alt={name}
-              width={40}
-              height={40}
-              className="w-10 h-10 rounded-full object-cover"
-            />
-          ) : (
-            <div
-              className={`w-10 h-10 rounded-full grid place-items-center text-xs font-bold shrink-0 ${avatarStyles[colorIndex % avatarStyles.length]}`}
-            >
-              {initials(name)}
-            </div>
-          )}
-          <div>
-            <div className="text-sm font-semibold text-gray-900">{name}</div>
-            <div className="flex items-center gap-1 text-xs text-gray-400">
-              Verified User
-              <BadgeCheck className="w-3.5 h-3.5 text-emerald-500" />
+    <div className="rounded-2xl border border-gray-100 bg-white p-3.5 sm:p-5 hover:shadow-md transition-all flex flex-col justify-between h-full">
+      <div>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+            {review.user?.photoURL ? (
+              <Image
+                src={review.user.photoURL}
+                alt={name}
+                width={36}
+                height={36}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover shrink-0"
+              />
+            ) : (
+              <div
+                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full grid place-items-center text-xs font-bold shrink-0 ${avatarStyles[colorIndex % avatarStyles.length]}`}
+              >
+                {initials(name)}
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="text-xs sm:text-sm font-semibold text-gray-900 truncate">{name}</div>
+              <div className="flex items-center gap-1 text-[10.5px] sm:text-xs text-gray-400">
+                Verified User
+                <BadgeCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              </div>
             </div>
           </div>
+
+          <Link href={`/tool/${review.toolSlug}`} className="text-xs text-indigo-500 hover:underline shrink-0 max-w-[120px] sm:max-w-[180px] truncate text-right">
+            {review.toolName}
+          </Link>
         </div>
 
-        <Link href={`/tool/${review.toolSlug}`} className="text-xs text-indigo-500 hover:underline shrink-0">
-          {review.toolName}
-        </Link>
-      </div>
-
-      <div className="mt-3 flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <Stars rating={review.rating} />
-          <span className="text-xs font-semibold text-gray-700">{review.rating}/5</span>
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Stars rating={review.rating} />
+            <span className="text-xs font-semibold text-gray-700">{review.rating}/5</span>
+          </div>
+          <span className="text-[11px] sm:text-xs text-gray-400 shrink-0">
+            {new Date(review.createdAt).toLocaleDateString()}
+          </span>
         </div>
-        <span className="text-xs text-gray-400">
-          {new Date(review.createdAt).toLocaleDateString()}
-        </span>
+
+        <p className="mt-2 text-xs sm:text-sm leading-relaxed text-gray-600 line-clamp-4">{review.text}</p>
       </div>
 
-      <p className="mt-2 text-sm leading-relaxed text-gray-600">{review.text}</p>
-
-      <div className="mt-4 flex items-center gap-1.5 border-t border-gray-50 pt-3 text-xs text-gray-400">
+      <div className="mt-3 sm:mt-4 flex items-center gap-1.5 border-t border-gray-50 pt-2.5 sm:pt-3 text-[11px] sm:text-xs text-gray-400">
         <span>Helpful?</span>
-        <button className="grid place-items-center w-5 h-5 rounded-full border border-gray-200 hover:border-primary hover:text-primary transition-colors">
+        <button className="grid place-items-center w-5 h-5 rounded-full border border-gray-200 hover:border-primary hover:text-primary transition-colors shrink-0">
           <ThumbsUp className="w-3 h-3" />
         </button>
-        <span>{review.helpful} people found this helpful</span>
+        <span className="truncate">{review.helpful} people found this helpful</span>
       </div>
     </div>
   );
@@ -323,8 +325,8 @@ export default function ToolsReview() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <section className="mx-auto max-w-5xl px-3 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
           {filtered.map((r, i) => (
             <ReviewCard key={r._id} review={r} colorIndex={i} />
           ))}

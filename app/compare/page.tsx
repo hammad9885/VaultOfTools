@@ -259,7 +259,7 @@ export default function CompareLandingPage() {
         </div>
       </section>
 
-      <section id="popular-comparisons" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 scroll-mt-24">
+      <section id="popular-comparisons" className="mx-auto max-w-7xl px-3 py-10 sm:px-6 sm:py-14 lg:px-8 scroll-mt-24">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
             <Zap className="w-5 h-5 text-primary" />
@@ -274,8 +274,8 @@ export default function CompareLandingPage() {
               onClick={() => setActiveFilter(tab)}
               className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition-all border ${
                 activeFilter === tab
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-card text-muted-foreground border-border hover:border-primary/30 hover:text-foreground"
               }`}
             >
               {tab}
@@ -284,12 +284,12 @@ export default function CompareLandingPage() {
         </div>
 
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 min-[380px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
             {filtered.map((c) => (
               <Link
                 key={c.slug}
                 href={`/compare/${c.slug}`}
-                className="group rounded-2xl border border-border bg-card p-5 hover:border-primary/30 hover:shadow-md transition-all"
+                className="group rounded-2xl border border-border bg-card p-3.5 sm:p-5 hover:border-primary/30 hover:shadow-md transition-all"
               >
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-primary">
                   {c.category}
@@ -326,7 +326,7 @@ export default function CompareLandingPage() {
         <div className="border-t border-border" />
       </div>
 
-      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-7xl px-3 py-10 sm:px-6 sm:py-14 lg:px-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
@@ -339,12 +339,12 @@ export default function CompareLandingPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 min-[480px]:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4">
           {alternatives.map((alt) => (
             <Link
               key={alt.slug}
               href={`/alternatives/${alt.slug}`}
-              className="group rounded-2xl border border-border bg-card p-5 text-center hover:border-primary/30 hover:shadow-md transition-all"
+              className="group rounded-2xl border border-border bg-card p-3.5 sm:p-5 text-center hover:border-primary/30 hover:shadow-md transition-all"
             >
               <div className="w-10 h-10 rounded-xl bg-primary-muted grid place-items-center mx-auto mb-3 group-hover:scale-105 transition-transform overflow-hidden">
                 <ToolLogo name={alt.name} logo={alt.logo} size={24} />

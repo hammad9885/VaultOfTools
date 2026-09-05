@@ -111,20 +111,20 @@ export default function SavedToolsPage() {
         {visible.map((row) => (
           <div
             key={row.slug}
-            className="flex items-start gap-3 rounded-xl border border-border bg-card p-4"
+            className="flex items-start gap-2.5 sm:gap-3 rounded-xl border border-border bg-card p-3 sm:p-4"
           >
-            <div className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-border bg-muted">
-              <ToolLogo name={row.name} logo={row.logo || ""} website={(row as any).website} size={24} />
+            <div className="grid size-10 sm:size-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-border bg-muted">
+              <ToolLogo name={row.name} logo={row.logo || ""} website={(row as any).website} size={22} />
             </div>
             <div className="min-w-0 flex-1">
               <Link
                 href={`/tool/${row.slug}`}
-                className="font-semibold hover:text-primary"
+                className="font-semibold text-xs sm:text-sm hover:text-primary truncate block"
               >
                 {row.name}
               </Link>
               {row.desc && (
-                <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+                <p className="mt-0.5 line-clamp-2 text-[11px] sm:text-xs text-muted-foreground">
                   {row.desc}
                 </p>
               )}
@@ -133,9 +133,9 @@ export default function SavedToolsPage() {
               type="button"
               onClick={() => void toggleSave({ slug: row.slug, name: row.name })}
               aria-label={`Remove ${row.name} from saved tools`}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+              className="inline-flex shrink-0 items-center gap-1 sm:gap-1.5 rounded-lg border border-border px-2 py-1 text-[11px] sm:px-2.5 sm:py-1.5 sm:text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
             >
-              <FiBookmark size={13} className="fill-current" />
+              <FiBookmark size={12} className="fill-current shrink-0" />
               Remove
             </button>
           </div>

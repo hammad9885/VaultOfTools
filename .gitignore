@@ -30,6 +30,7 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
 
 # local dev mongodb (created by `npm run db`)
 /.mongo-data/

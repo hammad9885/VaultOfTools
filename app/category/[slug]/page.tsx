@@ -72,7 +72,7 @@ export default function CategoryPage() {
   return (
     <div className="min-h-screen bg-[#faf8f5] font-sans text-[#1a1a1a] antialiased">
       <SiteNav />
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-3 py-8 sm:px-6 sm:py-12 lg:px-8">
         <nav className="text-xs text-muted-foreground mb-4">
           <Link href="/" className="hover:text-primary">Home</Link> /{" "}
           <Link href="/categories" className="hover:text-primary">Categories</Link> /{" "}
@@ -96,7 +96,7 @@ export default function CategoryPage() {
         {loading ? (
           <p className="text-sm text-muted-foreground">Loading tools…</p>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
             {list.map((t: any) => (
               <ToolCard key={t.slug || t.name} tool={t} />
             ))}

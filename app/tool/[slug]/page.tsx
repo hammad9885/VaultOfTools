@@ -162,7 +162,7 @@ export default function ToolPage() {
   return (
     <div className="min-h-screen bg-[#faf8f5] font-sans text-[#1a1a1a] antialiased">
       <SiteNav />
-      <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl px-3 py-8 sm:px-6 sm:py-12 lg:px-8">
         <nav className="mb-6 flex flex-wrap gap-x-1 text-xs text-muted-foreground">
           <Link href="/" className="hover:text-primary">Home</Link> /{" "}
           <Link href="/discover" className="hover:text-primary">Tools</Link> /{" "}
@@ -231,9 +231,9 @@ export default function ToolPage() {
 
         <section className="mt-12">
           <h2 className="text-xl font-bold">Key features</h2>
-          <ul className="mt-4 grid sm:grid-cols-2 gap-3">
+          <ul className="mt-4 grid sm:grid-cols-2 gap-2.5 sm:gap-3">
             {features.map((f: string) => (
-              <li key={f} className="flex items-start gap-2 rounded-xl border border-border bg-card p-4">
+              <li key={f} className="flex items-start gap-2 rounded-xl border border-border bg-card p-3 sm:p-4">
                 <Check className="size-4 text-primary mt-0.5 shrink-0" />
                 <span className="text-sm text-foreground">{f}</span>
               </li>
@@ -241,8 +241,8 @@ export default function ToolPage() {
           </ul>
         </section>
 
-        <section className="mt-12 grid sm:grid-cols-2 gap-6">
-          <div className="rounded-2xl border border-border bg-card p-6">
+        <section className="mt-10 sm:mt-12 grid sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
             <h3 className="font-bold text-foreground flex items-center gap-2">
               <Check className="size-4 text-emerald-600" /> Pros
             </h3>
@@ -252,7 +252,7 @@ export default function ToolPage() {
               ))}
             </ul>
           </div>
-          <div className="rounded-2xl border border-border bg-card p-6">
+          <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
             <h3 className="font-bold text-foreground flex items-center gap-2">
               <X className="size-4 text-rose-600" /> Cons
             </h3>
@@ -264,9 +264,9 @@ export default function ToolPage() {
           </div>
         </section>
 
-        <section className="mt-12">
+        <section className="mt-10 sm:mt-12">
           <h2 className="text-xl font-bold">Alternatives to {tool.name}</h2>
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="mt-4 grid grid-cols-1 min-[380px]:grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
             {alternatives.map((t) => (
               <ToolCard key={t.slug} tool={t} />
             ))}
