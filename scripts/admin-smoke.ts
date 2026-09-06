@@ -5,6 +5,7 @@
  */
 import { MongoMemoryServer } from "mongodb-memory-server";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { connectDB, isDBConnected } from "../app/lib/config/db.js";
 import User from "../app/lib/models/User.js";
 import Tool from "../app/lib/models/Tool.js";
@@ -27,9 +28,10 @@ async function main() {
     process.exit(1);
   }
 
-  const secret = "default-secret";
+  const secret = crypto.randomBytes(32).toString("hex");
+  process.env.JWT_SECRET = secret;
   function tokenFor(user: any) {
-    return jwt.sign({ id: user._id, role: user.role }, secret, { expiresIn: "7d" });
+    return jwt.sign({ id: user._id, role: user.role, scope: user.role === "super_admin" ? "admin" : undefined }, secret, { expiresIn: "7d" });
   }
 
   async function call(method: string, path: string, token?: string, body?: any, id?: string) {

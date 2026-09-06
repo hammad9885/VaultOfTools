@@ -1,0 +1,28 @@
+# Vault of Tools — Full AI Knowledge Index
+Canonical Site: https://vaultoftools.com
+Documentation Version: 2026.1
+
+## Overview
+Vault of Tools is an open catalog and evaluation platform designed to help developers, designers, product managers, and enterprise teams discover the best Artificial Intelligence software for their workflow.
+
+## Directory Structure & High-Value Landing Pages
+1. **Homepage** (https://vaultoftools.com): Featured AI tools, trending applications, top comparisons, and curated tool discovery.
+2. **Discover / All Tools** (https://vaultoftools.com/discover): Comprehensive search and filtering by price (Free, Freemium, Paid), popularity, and categorization.
+3. **Categories Index** (https://vaultoftools.com/categories): Top-level categories including:
+   - AI Writing: Content generation, copywriting, summarization, proofreading.
+   - AI Coding: IDE assistants, autocomplete, code generation, refactoring, code review.
+   - AI Design & Video: Generative image models, video editing, UI design generation.
+   - Automation & RPA: Workflow connectors, intelligent agentic automation, scraping.
+   - Customer Service & Support: Intelligent bots, omnichannel ticket triaging, automated response.
+   - Sales & Marketing: Lead scoring, prospecting, outreach sequence generation, revenue forecasting.
+4. **Comparisons Index** (https://vaultoftools.com/compare):
+   - Claude 3.5 Sonnet vs ChatGPT-4o: Analysis of reasoning, context window, coding precision, and multimodal speed.
+   - Cursor vs GitHub Copilot: Analysis of IDE integration, agentic editing, and terminal integration.
+   - Perplexity AI vs ChatGPT: Analysis of search grounding, citation accuracy, and retrieval engines.
+5. **Blog & Resources** (https://vaultoftools.com/blog): In-depth editorial reviews and benchmark reports.
+
+## Crawler & Agent Policy
+- Canonical Origin: https://vaultoftools.com
+- Public routes are indexable.
+- Private account, authentication, and administrative endpoints are disallowed in robots.txt.
+- XML Sitemap: https://vaultoftools.com/sitemap.xml

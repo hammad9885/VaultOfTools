@@ -118,7 +118,11 @@ function splitCSVLine(line: string): string[] {
 
 export function toCSV(headers: string[], rows: (string | number | boolean | null | undefined)[][]): string {
   const esc = (v: string | number | boolean | null | undefined) => {
-    const s = v === null || v === undefined ? "" : String(v);
+    let s = v === null || v === undefined ? "" : String(v);
+    // Neutralize spreadsheet formula injection (VOT-SEC-021)
+    if (/^[=+\-@\t\r]/.test(s)) {
+      s = `'${s}`;
+    }
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   return [headers.map(esc).join(","), ...rows.map((r) => r.map(esc).join(","))].join("\n");

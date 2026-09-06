@@ -1,29 +1,96 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   buildAuthResponse,
+  findUserByEmail,
   upsertFirebaseUser,
 } from "@/app/lib/auth-server";
+import { tryGetAdminAuth } from "@/app/lib/config/firebaseAdmin";
+import { getClientIp, checkRateLimit } from "@/app/lib/data/activity-guard";
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, displayName, photoURL, firebaseUid } = await request.json();
+    const ip = getClientIp(request);
+    const rateCheck = checkRateLimit(ip, "auth_firebase", "auth", { max: 20, windowMs: 60_000 });
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ error: "Too many authentication requests." }, { status: 429 });
+    }
 
-    if (!email || !firebaseUid) {
+    const body = await request.json().catch(() => ({}));
+    const { idToken } = body;
+
+    // Reject unverified client-supplied identity without valid token (VOT-SEC-003)
+    if (!idToken || typeof idToken !== "string") {
       return NextResponse.json(
-        { error: "Email and firebaseUid are required" },
-        { status: 400 }
+        { error: "A valid Firebase ID token is required for authentication." },
+        { status: 401 }
+      );
+    }
+
+    let verifiedEmail: string;
+    let verifiedUid: string;
+    let verifiedDisplayName: string | undefined;
+    let verifiedPhotoUrl: string | undefined;
+
+    const adminAuth = await tryGetAdminAuth();
+    if (adminAuth) {
+      try {
+        const decoded = await adminAuth.verifyIdToken(idToken);
+        if (!decoded.email) {
+          return NextResponse.json(
+            { error: "Firebase token does not contain a verified email address." },
+            { status: 400 }
+          );
+        }
+        verifiedEmail = decoded.email;
+        verifiedUid = decoded.uid;
+        verifiedDisplayName = decoded.name;
+        verifiedPhotoUrl = decoded.picture;
+      } catch (err: any) {
+        return NextResponse.json(
+          { error: "Invalid or expired Firebase ID token." },
+          { status: 401 }
+        );
+      }
+    } else if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
+      // In local dev without Firebase service account, support test tokens strictly when configured
+      if (idToken.startsWith("test-token-")) {
+        verifiedUid = idToken.replace("test-token-", "");
+        verifiedEmail = `${verifiedUid}@test.local`;
+        verifiedDisplayName = verifiedUid;
+      } else {
+        return NextResponse.json(
+          { error: "Firebase Admin is not configured and token could not be verified." },
+          { status: 401 }
+        );
+      }
+    } else {
+      return NextResponse.json(
+        { error: "Server authentication service unavailable." },
+        { status: 503 }
+      );
+    }
+
+    // Check suspension prior to session creation
+    const existing = await findUserByEmail(verifiedEmail);
+    if (existing && (existing.status === "suspended" || existing.status === "disabled")) {
+      return NextResponse.json(
+        { error: "Account is suspended. Please contact support." },
+        { status: 403 }
       );
     }
 
     const user = await upsertFirebaseUser({
-      email,
-      displayName,
-      photoURL,
-      firebaseUid,
+      email: verifiedEmail,
+      displayName: verifiedDisplayName,
+      photoURL: verifiedPhotoUrl,
+      firebaseUid: verifiedUid,
     });
 
     return NextResponse.json(buildAuthResponse(user));
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || "Server error" },
+      { status: err.status || 500 }
+    );
   }
 }

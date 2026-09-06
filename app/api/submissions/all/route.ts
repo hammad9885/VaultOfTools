@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB, isDBConnected } from "@/app/lib/config/db";
 import Submission from "@/app/lib/models/Submission";
-import { authenticate } from "@/app/lib/middleware/auth";
+import { requireAdminOrSuperAdmin } from "@/app/lib/admin/auth";
 import memoryStore from "@/app/lib/data/memoryStore";
 
 export async function GET(request: NextRequest) {
   await connectDB();
   try {
-    const { user } = await authenticate(request);
-    if (user.role !== "admin") {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
-    }
+    const { user } = await requireAdminOrSuperAdmin(request);
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");

@@ -247,8 +247,25 @@ export async function getSettings(): Promise<SettingsPayload> {
   }
 }
 
-export async function updateSettings(patch: Partial<AdminSettings>): Promise<SettingsPayload> {
+export function sanitizeSettingsForClient(settings: SettingsPayload): SettingsPayload {
+  const safe: any = JSON.parse(JSON.stringify(settings));
+  if (safe.smtp) {
+    safe.smtp.smtpConfigured = Boolean(settings.smtp?.password);
+    safe.smtp.password = ""; // Never expose SMTP password to client (VOT-SEC-008)
+  }
+  return safe;
+}
+
+export async function updateSettings(patch: Partial<AdminSettings> & { smtp?: any }): Promise<SettingsPayload> {
   await connectDB();
+
+  // If smtp password is not supplied or empty, preserve existing password
+  const currentSettings = await getSettings();
+  if (patch.smtp && typeof patch.smtp === "object") {
+    if (!patch.smtp.password && currentSettings.smtp?.password) {
+      patch.smtp.password = currentSettings.smtp.password;
+    }
+  }
 
   const applyMemoryPatch = () => {
     const mem = memorySettings();

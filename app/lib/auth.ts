@@ -30,7 +30,9 @@ async function syncAppSession(fbUser: User) {
     (provider) => provider.providerId === "google.com"
   );
 
+  const idToken = await fbUser.getIdToken();
   const data = await api.firebaseAuth({
+    idToken,
     email: fbUser.email,
     displayName: fbUser.displayName || undefined,
     photoURL: fbUser.photoURL || googleProfile?.photoURL || undefined,

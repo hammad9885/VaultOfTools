@@ -7,6 +7,8 @@ import {
   isConfiguredAdminEmail,
 } from "@/app/lib/admin/session";
 
+import { getJwtSecret } from "@/app/lib/config/secrets";
+
 export async function GET(request: NextRequest) {
   try {
     const header = request.headers.get("authorization");
@@ -15,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
 
     const token = header.replace("Bearer ", "");
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "default-secret") as {
+    const decoded = jwt.verify(token, getJwtSecret()) as {
       id: string;
       role?: string;
       scope?: string;

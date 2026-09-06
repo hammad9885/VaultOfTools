@@ -1,3 +1,10 @@
-/** Hard-coded single MongoDB super-admin account for /admin */
-export const ADMIN_EMAIL = "mrhammadghg@gmail.com";
-export const ADMIN_PASSWORD = "Malik@2121";
+import { getAdminCredentials } from "../config/secrets";
+
+/**
+ * Admin credentials loaded safely from environment variables (VOT-SEC-004).
+ */
+export const ADMIN_EMAIL = getAdminCredentials().email;
+
+export function getAdminPassword(): string {
+  return getAdminCredentials().password;
+}

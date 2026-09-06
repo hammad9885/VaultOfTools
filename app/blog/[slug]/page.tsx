@@ -44,10 +44,32 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const post = dataPosts.find((p: any) => p.slug === slug);
-  if (!post) return {};
+  if (!post) return { title: "Article Not Found | Vault of Tools" };
+
+  const siteOrigin = process.env.BASE_URL || "https://vaultoftools.com";
+  const canonicalUrl = `${siteOrigin}/blog/${slug}`;
+
   return {
-    title: `${post.title} | Vault of Tools Blog`,
+    title: `${post.title} | Vault of Tools`,
     description: post.excerpt,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      url: canonicalUrl,
+      type: "article",
+      publishedTime: post.date,
+      authors: [post.author?.name || "Vault of Tools"],
+      images: post.coverImage ? [post.coverImage] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: post.coverImage ? [post.coverImage] : undefined,
+    },
   };
 }
 
@@ -146,8 +168,59 @@ export default async function BlogPostPage({ params }: Props) {
     .filter((p: any) => p.slug !== slug && p.category === post.category)
     .slice(0, 3);
 
+  const siteOrigin = process.env.BASE_URL || "https://vaultoftools.com";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        headline: post.title,
+        description: post.excerpt,
+        image: post.coverImage,
+        datePublished: post.date,
+        author: {
+          "@type": "Person",
+          name: post.author?.name || "Vault of Tools Editorial",
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "Vault of Tools",
+          url: siteOrigin,
+        },
+        mainEntityOfPage: `${siteOrigin}/blog/${slug}`,
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: siteOrigin,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Blog",
+            item: `${siteOrigin}/blog`,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: post.title,
+            item: `${siteOrigin}/blog/${slug}`,
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-[#faf8f5] font-sans text-[#1a1a1a] antialiased">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <SiteNav />
 
       <article>

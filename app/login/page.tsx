@@ -270,7 +270,7 @@ function LoginInner() {
         finishLogin(profile, "New password created");
         return;
       } catch {
-        if (!result.firebaseUpdated) {
+        if (!(result as any)?.firebaseUpdated) {
           await sendPasswordReset(email);
           setResetEmailSent(true);
           toast.success("New password saved. We also sent a confirmation link to your email.");

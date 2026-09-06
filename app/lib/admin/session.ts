@@ -4,12 +4,13 @@ import { connectDB, isDBConnected } from "../config/db";
 import User from "../models/User";
 import memoryStore from "../data/memoryStore";
 import { SUPER_ADMIN } from "./types";
-import { ADMIN_EMAIL, ADMIN_PASSWORD } from "./credentials";
+import { ADMIN_EMAIL, getAdminPassword } from "./credentials";
+import { getJwtSecret } from "../config/secrets";
 
 export function signAdminToken(user: any) {
   return jwt.sign(
     { id: String(user._id), role: SUPER_ADMIN, scope: "admin" },
-    process.env.JWT_SECRET || "default-secret",
+    getJwtSecret(),
     { expiresIn: "7d" }
   );
 }
@@ -23,13 +24,16 @@ export async function ensureAdminUser() {
   await connectDB();
   const email = ADMIN_EMAIL.toLowerCase();
 
+  const adminPassword = getAdminPassword();
+  const effectivePassword = adminPassword || crypto.randomBytes(24).toString("hex");
+
   if (isDBConnected()) {
     try {
       let user = await User.findOne({ email });
       if (!user) {
         return await User.create({
           email,
-          password: ADMIN_PASSWORD,
+          password: effectivePassword,
           displayName: "Super Admin",
           role: SUPER_ADMIN,
           status: "active",
@@ -41,10 +45,12 @@ export async function ensureAdminUser() {
         user.role = SUPER_ADMIN;
         dirty = true;
       }
-      const valid = await user.comparePassword(ADMIN_PASSWORD);
-      if (!valid) {
-        user.password = ADMIN_PASSWORD;
-        dirty = true;
+      if (adminPassword) {
+        const valid = await user.comparePassword(adminPassword);
+        if (!valid) {
+          user.password = adminPassword;
+          dirty = true;
+        }
       }
       if (dirty) await user.save();
       return user;
@@ -57,16 +63,18 @@ export async function ensureAdminUser() {
   if (!user) {
     user = await memoryStore.createUser({
       email,
-      password: ADMIN_PASSWORD,
+      password: effectivePassword,
       displayName: "Super Admin",
       role: SUPER_ADMIN,
     });
   } else {
     user.role = SUPER_ADMIN;
     user.displayName = user.displayName || "Super Admin";
-    const ok = await memoryStore.comparePassword(user, ADMIN_PASSWORD);
-    if (!ok) {
-      user.password = await (await import("bcryptjs")).default.hash(ADMIN_PASSWORD, 12);
+    if (adminPassword) {
+      const ok = await memoryStore.comparePassword(user, adminPassword);
+      if (!ok) {
+        user.password = await (await import("bcryptjs")).default.hash(adminPassword, 12);
+      }
     }
   }
   return user;

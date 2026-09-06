@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   ADMIN_EMAIL,
-  ADMIN_PASSWORD,
+  getAdminPassword,
 } from "@/app/lib/admin/credentials";
 import {
   adminProfile,
@@ -9,19 +9,28 @@ import {
   signAdminToken,
 } from "@/app/lib/admin/session";
 import memoryStore from "@/app/lib/data/memoryStore";
+import { getClientIp, checkRateLimit } from "@/app/lib/data/activity-guard";
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    const rateCheck = checkRateLimit(ip, "admin_login", "auth", { max: 5, windowMs: 60_000 });
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: "Too many login attempts. Please wait." },
+        { status: 429 }
+      );
+    }
+
     const { email, password } = await request.json();
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
 
     const normalized = String(email).toLowerCase().trim();
-    if (normalized !== ADMIN_EMAIL.toLowerCase()) {
-      return NextResponse.json({ error: "Invalid admin credentials" }, { status: 401 });
-    }
-    if (String(password) !== ADMIN_PASSWORD) {
+    const adminPassword = getAdminPassword();
+
+    if (!adminPassword || normalized !== ADMIN_EMAIL.toLowerCase() || String(password) !== adminPassword) {
       return NextResponse.json({ error: "Invalid admin credentials" }, { status: 401 });
     }
 

@@ -1,5 +1,5 @@
 import { requireSuperAdmin, errorResponse } from "@/app/lib/admin/auth";
-import { getSettings, updateSettings } from "@/app/lib/admin/settings";
+import { getSettings, updateSettings, sanitizeSettingsForClient } from "@/app/lib/admin/settings";
 import { logActivity } from "@/app/lib/admin/activity";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   try {
     await requireSuperAdmin(request);
     const settings = await getSettings();
-    return Response.json(settings);
+    return Response.json(sanitizeSettingsForClient(settings));
   } catch (err: any) {
     return errorResponse(err);
   }
@@ -28,7 +28,7 @@ export async function PUT(request: Request) {
     }
     const settings = await updateSettings(patch);
     await logActivity(user.email, "updated", "settings", { groups: Object.keys(patch) });
-    return Response.json(settings);
+    return Response.json(sanitizeSettingsForClient(settings));
   } catch (err: any) {
     return errorResponse(err);
   }

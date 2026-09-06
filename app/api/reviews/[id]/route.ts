@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB, isDBConnected } from "@/app/lib/config/db";
 import Review from "@/app/lib/models/Review";
 import { authenticate } from "@/app/lib/middleware/auth";
+import { hasAdminPrivilege } from "@/app/lib/admin/auth";
 import memoryStore from "@/app/lib/data/memoryStore";
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -14,7 +15,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       const review = await Review.findById(id);
       if (!review) return NextResponse.json({ error: "Review not found" }, { status: 404 });
 
-      if (review.userId.toString() !== user._id.toString() && user.role !== "admin") {
+      if (review.userId.toString() !== user._id.toString() && !hasAdminPrivilege(user)) {
         return NextResponse.json({ error: "Not authorized" }, { status: 403 });
       }
 
@@ -22,7 +23,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ message: "Review deleted" });
     }
 
-    const result = await memoryStore.deleteReview(id, user._id, user.role);
+    const result = await memoryStore.deleteReview(id, user._id, hasAdminPrivilege(user) ? "admin" : user.role);
     if (!result) return NextResponse.json({ error: "Review not found" }, { status: 404 });
     if ((result as any).unauthorized) return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     return NextResponse.json({ message: "Review deleted" });

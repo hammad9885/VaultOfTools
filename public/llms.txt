@@ -1,0 +1,21 @@
+# Vault of Tools
+> A comprehensive, curated directory and comparison platform for discovering, evaluating, and reviewing leading Artificial Intelligence tools.
+
+- Canonical Website: https://vaultoftools.com
+- Directory: https://vaultoftools.com/discover
+- Categories: https://vaultoftools.com/categories
+- Comparisons: https://vaultoftools.com/compare
+- Editorial & Insights: https://vaultoftools.com/blog
+
+## Core Purpose
+Vault of Tools aggregates and structures information about AI software products, Developer Tools, Machine Learning platforms, and Workflow Automation tools. It provides verified metadata, objective head-to-head feature matrices, pricing tiers, and community ratings.
+
+## Primary Sections
+- **AI Tool Directory (/discover)**: Filter tools by pricing (Free, Freemium, Paid), category, and features.
+- **Tool Categories (/categories)**: Curated tool groupings including AI Writing, AI Coding, AI Design, Automation, Customer Support, and Business Intelligence.
+- **Head-to-Head Comparisons (/compare)**: Side-by-side technical benchmarks (e.g., Claude 3.5 Sonnet vs ChatGPT-4o, Cursor vs GitHub Copilot).
+- **In-Depth Guides (/blog)**: Benchmark analyses, migration guides, and workflow productivity recommendations.
+
+## Machine-Readable Resources
+- Sitemap: https://vaultoftools.com/sitemap.xml
+- Full LLM Documentation: https://vaultoftools.com/llms-full.txt

@@ -45,9 +45,23 @@ export async function POST(request: Request) {
     const csv = String(body.csv || "");
     if (!csv.trim()) return Response.json({ error: "CSV content is required" }, { status: 400 });
 
+    // Enforce payload and row caps to protect against DoS (VOT-SEC-020)
+    if (csv.length > 2 * 1024 * 1024) {
+      return Response.json(
+        { error: "CSV content exceeds maximum allowed size of 2MB" },
+        { status: 400 }
+      );
+    }
+
     const rows = parseCSV(csv);
     if (rows.length === 0) {
       return Response.json({ error: "No data rows found in CSV" }, { status: 400 });
+    }
+    if (rows.length > 500) {
+      return Response.json(
+        { error: "CSV contains too many rows. Maximum allowed is 500 rows per batch." },
+        { status: 400 }
+      );
     }
 
     let imported = 0;

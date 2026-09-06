@@ -19,8 +19,13 @@ if (fs.existsSync(envLocal)) {
 
 async function createAdmin() {
   await connectDB();
-  const email = "mrhammadghg@gmail.com";
-  const password = "Hammad@2121";
+  const email = (process.env.ADMIN_EMAIL || "mrhammadghg@gmail.com").toLowerCase().trim();
+  const password = process.env.ADMIN_PASSWORD || process.argv[2];
+
+  if (!password || password.length < 8) {
+    console.error("Error: ADMIN_PASSWORD environment variable (or argument) must be provided and >= 8 chars.");
+    process.exit(1);
+  }
 
   const existing = await User.findOne({ email });
   if (existing) {

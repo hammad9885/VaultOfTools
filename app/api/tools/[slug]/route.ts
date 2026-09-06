@@ -93,6 +93,26 @@ export async function POST(
       return NextResponse.json({ ok: true });
     }
 
+    // Determine voter identity for votes (VOT-SEC-012)
+    let voterId = "";
+    const authHeader = request.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      try {
+        const { getJwtSecret } = await import("@/app/lib/config/secrets");
+        const jwt = (await import("jsonwebtoken")).default;
+        const decoded = jwt.verify(authHeader.replace("Bearer ", ""), getJwtSecret()) as { id: string };
+        if (decoded?.id) voterId = `user:${decoded.id}`;
+      } catch {}
+    }
+    if (!voterId) {
+      const cookieVoter = request.cookies.get("vot_voter_id")?.value;
+      if (cookieVoter && /^[a-zA-Z0-9_-]{16,64}$/.test(cookieVoter)) {
+        voterId = `cookie:${cookieVoter}`;
+      } else {
+        voterId = `ip:${ip}`;
+      }
+    }
+
     if (action === "upvote") {
       const limited = checkRateLimit(ip, "vote", slug, GUARDS.votes);
       if (!limited.allowed) {
@@ -102,18 +122,18 @@ export async function POST(
         );
       }
       // Server-side duplicate vote prevention: one vote per voter per tool.
-      if (await hasVoted(slug, ip)) {
+      if (await hasVoted(slug, voterId)) {
         const engagement = await getEngagement(slug);
         return NextResponse.json({ ok: true, ...engagement, voted: true, duplicate: true });
       }
-      await recordVoted(slug, ip);
+      await recordVoted(slug, voterId);
       const engagement = await toggleToolUpvote(slug, "up");
       return NextResponse.json({ ok: true, ...engagement, voted: true });
     }
 
     if (action === "remove-upvote" || action === "downvote") {
-      const wasVoted = await hasVoted(slug, ip);
-      await removeVoted(slug, ip);
+      const wasVoted = await hasVoted(slug, voterId);
+      await removeVoted(slug, voterId);
       const engagement = wasVoted
         ? await toggleToolUpvote(slug, "down")
         : await getEngagement(slug);

@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import { findUserById } from "../auth-server";
 
+import { getJwtSecret } from "../config/secrets";
+
 export async function authenticate(request: Request): Promise<{ user: any }> {
   const header = request.headers.get("authorization");
   if (!header || !header.startsWith("Bearer ")) {
@@ -8,12 +10,15 @@ export async function authenticate(request: Request): Promise<{ user: any }> {
   }
   const token = header.replace("Bearer ", "");
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "default-secret") as {
+    const decoded = jwt.verify(token, getJwtSecret()) as {
       id: string;
     };
     const user = await findUserById(decoded.id);
     if (!user) {
       throw Object.assign(new Error("User not found"), { status: 401 });
+    }
+    if (user.status === "suspended" || user.status === "disabled") {
+      throw Object.assign(new Error("Account is suspended"), { status: 403 });
     }
     return { user };
   } catch (err: any) {
