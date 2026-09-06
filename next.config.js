@@ -1,6 +1,6 @@
 /** @type {import("next").NextConfig} */
 const nextConfig = {
-  distDir: process.env.VERCEL ? undefined : ".next-dev",
+  distDir: process.env.NODE_ENV === "production" || process.env.VERCEL ? undefined : ".next-dev",
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

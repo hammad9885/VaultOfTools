@@ -1,11 +1,40 @@
-/** Resolve real brand logos via official domains (favicons), not broken Simple Icons. */
+/** Resolve real brand logos via curated local SVGs and official domains. */
+
+export const STATIC_BRAND_LOGOS: Record<string, string> = {
+  chatgpt: "/logos/chatgpt.svg",
+  "chatgpt-4o": "/logos/chatgpt.svg",
+  "chatgpt 4o": "/logos/chatgpt.svg",
+  "chatgpt-4": "/logos/chatgpt.svg",
+  "chatgpt 4": "/logos/chatgpt.svg",
+  claude: "/logos/claude.svg",
+  "claude 3.5 sonnet": "/logos/claude.svg",
+  "claude 3.5": "/logos/claude.svg",
+  "claude-3.5-sonnet": "/logos/claude.svg",
+  "claude 3": "/logos/claude.svg",
+  "claude 3 sonnet": "/logos/claude.svg",
+  "claude 3 opus": "/logos/claude.svg",
+  "claude 3 haiku": "/logos/claude.svg",
+  gemini: "/logos/gemini.svg",
+  "google gemini": "/logos/gemini.svg",
+  perplexity: "/logos/perplexity.svg",
+  cursor: "/logos/cursor.svg",
+  "github copilot": "/logos/copilot.svg",
+  copilot: "/logos/copilot.svg",
+  notion: "/logos/notion.svg",
+  "notion ai": "/logos/notion.svg",
+};
 
 const DOMAIN_BY_NAME: Record<string, string> = {
   chatgpt: "chatgpt.com",
+  "chatgpt-4o": "chatgpt.com",
+  "chatgpt 4o": "chatgpt.com",
   "dall·e 3": "openai.com",
   "dall-e 3": "openai.com",
   openai: "openai.com",
-  claude: "anthropic.com",
+  claude: "claude.ai",
+  "claude 3.5 sonnet": "claude.ai",
+  "claude-3.5-sonnet": "claude.ai",
+  "claude 3.5": "claude.ai",
   anthropic: "anthropic.com",
   midjourney: "midjourney.com",
   perplexity: "perplexity.ai",
@@ -154,12 +183,10 @@ const DOMAIN_BY_NAME: Record<string, string> = {
 
 /** Curated Simple Icons — only known-good brand SVGs. */
 const SIMPLEICON_BY_NAME: Record<string, string> = {
-  chatgpt: "openai",
-  openai: "openai",
-  "dall·e 3": "openai",
-  "dall-e 3": "openai",
-  sora: "openai",
-  claude: "anthropic",
+  claude: "claude",
+  "claude 3.5 sonnet": "claude",
+  "claude-3.5-sonnet": "claude",
+  "claude 3.5": "claude",
   anthropic: "anthropic",
   "github copilot": "github",
   github: "github",
@@ -281,7 +308,6 @@ function faviconCandidates(domain: string): string[] {
     `https://www.google.com/s2/favicons?domain=${d}&sz=128`,
     `https://icons.duckduckgo.com/ip3/${domain}.ico`,
     `https://icon.horse/icon/${domain}`,
-    `https://logo.clearbit.com/${domain}`,
   ];
 }
 
@@ -291,11 +317,18 @@ export function getToolLogoCandidates(
   website?: string | null
 ): string[] {
   const out: string[] = [];
+
+  // 1. Highest priority: Curated local high-res SVGs (zero network lag, 100% reliable)
+  const staticSvg = lookupMap(name, STATIC_BRAND_LOGOS);
+  if (staticSvg) {
+    out.push(staticSvg);
+  }
+
   const mappedDomain = lookupMap(name, DOMAIN_BY_NAME);
   const websiteDomain = extractHostname(website);
   const iconSlug = lookupMap(name, SIMPLEICON_BY_NAME);
 
-  // Real brand favicons first (curated domain, then website).
+  // 2. Real brand favicons (curated domain, then website)
   if (mappedDomain) {
     out.push(...faviconCandidates(mappedDomain));
   }
@@ -303,12 +336,12 @@ export function getToolLogoCandidates(
     out.push(...faviconCandidates(websiteDomain));
   }
 
-  // Then any existing usable asset (uploaded / local / Clearbit), skip broken Simple Icons.
+  // 3. Any existing usable asset (uploaded / local), skip broken Simple Icons
   if (isUsableLogoUrl(existing) && !/simpleicons\.org/i.test(existing || "")) {
     out.push(existing!);
   }
 
-  // Optional SVG brand mark when we know the Simple Icons slug exists.
+  // 4. Optional SVG brand mark when we know the Simple Icons slug exists
   if (iconSlug) {
     out.push(`https://cdn.simpleicons.org/${iconSlug}`);
   }
