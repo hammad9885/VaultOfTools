@@ -1,8 +1,39 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { FaXTwitter, FaLinkedinIn, FaGithub, FaDiscord } from "react-icons/fa6";
 import { HiMiniBolt } from "react-icons/hi2";
+import { api } from "../../lib/api";
 
 function Footer() {
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubscribe = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      toast.error("Please enter your email address.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await api.subscribeNewsletter(trimmedEmail);
+      toast.success(response.message || "Subscribed successfully!");
+      setEmail("");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Unable to subscribe right now.";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const explore = [
     { label: "Discover", href: "/discover" },
     { label: "Categories", href: "/categories" },
@@ -24,7 +55,6 @@ function Footer() {
     { label: "Submit Tool", href: "/submit" },
     { label: "Advertise", href: "/advertise" },
     { label: "Contact", href: "/contact" },
-    { label: "Careers", href: "/careers" },
   ];
 
   const legal = [
@@ -82,17 +112,24 @@ function Footer() {
               automate workflows, and stay ahead in the AI ecosystem.
             </p>
             <div className="mt-5 sm:mt-6">
-              <div className="flex flex-col sm:flex-row gap-2.5 max-w-md">
+              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2.5 max-w-md">
                 <input
                   type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
                   placeholder="Enter your email"
+                  aria-label="Email address"
                   className="w-full sm:flex-1 h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-sm text-gray-900 dark:text-slate-200 outline-none focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] transition-all"
                 />
 
-                <button className="h-10 sm:h-11 px-5 rounded-xl bg-[#6366F1] hover:bg-[#4F46E5] text-white text-sm font-semibold transition-all w-full sm:w-auto">
-                  Subscribe
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="h-10 sm:h-11 px-5 rounded-xl bg-[#6366F1] hover:bg-[#4F46E5] text-white text-sm font-semibold transition-all w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {isSubmitting ? "Subscribing..." : "Subscribe"}
                 </button>
-              </div>
+              </form>
 
               <p className="mt-2 text-xs text-gray-400 dark:text-slate-500">
                 Weekly AI tools, trends & product launches.

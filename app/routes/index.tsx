@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
+import { toast } from "sonner";
 import {
   ArrowRight,
   Star,
@@ -35,7 +36,7 @@ import { HeroSection } from "../components/HeroSection";
 
 const AIToolsDirectory = dynamic(() => import("../components/AIToolsDirectory"), {
   loading: () => (
-    <div className="mx-auto max-w-7xl min-h-[320px] px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-7xl min-h-80 px-4 sm:px-6 lg:px-8 py-8">
       <div className="h-64 animate-pulse rounded-2xl bg-muted/60" />
     </div>
   ),
@@ -305,7 +306,7 @@ export function SiteNav() {
       {mounted &&
         isOpen &&
         createPortal(
-          <div className="fixed inset-x-0 bottom-0 top-16 z-[60] md:hidden">
+          <div className="fixed inset-x-0 bottom-0 top-16 z-60 md:hidden">
             <button
               type="button"
               aria-label="Close navigation menu"
@@ -684,7 +685,28 @@ export function HomePage() {
               </div>
             </div>
             <div className="w-full max-w-xl">
-              <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-2.5 sm:flex-row">
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const form = e.currentTarget;
+                  const input = form.querySelector("input[type='email']") as HTMLInputElement | null;
+                  const email = input?.value?.trim() ?? "";
+
+                  if (!email) {
+                    toast.error("Please enter your email address.");
+                    return;
+                  }
+
+                  try {
+                    const response = await api.subscribeNewsletter(email);
+                    toast.success(response.message || "Subscribed successfully!");
+                    if (input) input.value = "";
+                  } catch (error: any) {
+                    toast.error(error.message || "Unable to subscribe right now.");
+                  }
+                }}
+                className="flex flex-col gap-2.5 sm:flex-row"
+              >
                 <input
                   type="email"
                   placeholder="Enter your email"
