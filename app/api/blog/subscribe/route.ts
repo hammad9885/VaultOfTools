@@ -31,9 +31,6 @@ export async function POST(request: NextRequest) {
       if (existing) return NextResponse.json({ success: true, message: "Already subscribed" });
       await NewsletterSubscriber.create({ email: normalizedEmail });
     } else {
-      if (process.env.NODE_ENV === "production") {
-        return NextResponse.json({ error: "Database temporarily unavailable" }, { status: 503 });
-      }
       const existing = await memoryStore.findSubscriber(normalizedEmail);
       if (existing) return NextResponse.json({ success: true, message: "Already subscribed" });
       await memoryStore.addSubscriber(normalizedEmail);
