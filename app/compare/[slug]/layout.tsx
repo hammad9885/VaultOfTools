@@ -1,12 +1,22 @@
 import type { Metadata } from "next";
-import { comparisonDetails, allComparisons } from "@/app/lib/data/comparisons";
+import {
+  getComparisonBySlug,
+  allComparisons,
+} from "@/app/lib/data/comparisons";
 
-const siteOrigin = process.env.BASE_URL || "https://vaultoftools.com";
+const siteOrigin =
+  process.env.BASE_URL || "https://vaultoftools.com";
 
 type Props = {
   params: Promise<{ slug: string }>;
   children: React.ReactNode;
 };
+
+export async function generateStaticParams() {
+  return allComparisons.map((comparison) => ({
+    slug: comparison.slug,
+  }));
+}
 
 export async function generateMetadata({
   params,
@@ -14,30 +24,33 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const comp =
-    comparisonDetails[slug] ||
-    allComparisons.find((c) => c.slug === slug);
+  const comparison = getComparisonBySlug(slug);
 
-  const title = comp
-    ? `${comp.a} vs ${comp.b} — Side-by-Side Comparison (2026)`
-    : `${slug.replace(/-/g, " ")} — AI Tool Comparison`;
+  if (!comparison) {
+    return {
+      title: "Comparison Not Found | Vault of Tools",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
 
-  const description = comp
-    ? `Comprehensive head-to-head comparison of ${comp.a} and ${comp.b}. Compare pricing, benchmarks, capabilities, context length, and features.`
-    : `Compare features, pricing, and pros/cons side-by-side on Vault of Tools.`;
+  const title = `${comparison.a.name} vs ${comparison.b.name} — Comparison`;
+  const description = `Compare ${comparison.a.name} and ${comparison.b.name} side by side across pricing, features, capabilities, ratings, and use cases.`;
 
-  const canonicalUrl = `${siteOrigin}/compare/${slug}`;
+  const canonical = `${siteOrigin}/compare/${comparison.slug}`;
 
   return {
     title,
     description,
     alternates: {
-      canonical: canonicalUrl,
+      canonical,
     },
     openGraph: {
       title: `${title} | Vault of Tools`,
       description,
-      url: canonicalUrl,
+      url: canonical,
       type: "website",
     },
     twitter: {
@@ -48,6 +61,8 @@ export async function generateMetadata({
   };
 }
 
-export default function CompareSlugLayout({ children }: Props) {
+export default function CompareSlugLayout({
+  children,
+}: Props) {
   return <>{children}</>;
 }

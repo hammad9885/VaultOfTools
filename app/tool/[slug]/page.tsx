@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, notFound } from "next/navigation";
 import { Star, ExternalLink, Check, X, ArrowUp, Eye } from "lucide-react";
 import Link from "next/link";
@@ -9,119 +9,152 @@ import { ToolLogo } from "../../components/ToolLogo";
 import { api } from "../../lib/api";
 import { homepageFeaturedTools } from "../../lib/data/homepage-tools";
 
-function fallbackToolFromSlug(slug: string) {
+type ToolRecord = {
+  slug: string;
+  name: string;
+  category: string;
+  pricing: string;
+  rating: number;
+  reviews: number;
+  desc?: string;
+  website?: string;
+  url?: string;
+  logo?: string | unknown;
+  features?: string[];
+  pros?: string[];
+  cons?: string[];
+  alternatives?: string[];
+  upvotes?: number;
+  clicks?: number;
+};
+
+type StaticData = {
+  fallbackFeatures: string[];
+  fallbackPros: string[];
+  fallbackCons: string[];
+  trending: ToolRecord[];
+};
+
+function fallbackToolFromSlug(slug: string): ToolRecord | null {
   const seed = homepageFeaturedTools.find((t) => t.slug === slug);
   if (!seed) return null;
+
   return {
-    ...seed,
+    slug: seed.slug,
+    name: seed.name,
+    category: seed.category,
+    pricing: seed.pricing,
+    rating: seed.rating,
+    reviews: seed.reviews,
+    desc: seed.desc,
+    website: seed.website,
+    logo: seed.logo,
     clicks: 0,
-    saves: Math.round(seed.reviews / 3),
-    featured: true,
-    status: "published",
+    upvotes: 0,
+    features: seed.features,
+    pros: seed.pros,
+    cons: seed.cons,
   };
 }
 
 export default function ToolPage() {
   const params = useParams<{ slug: string }>();
-  const [tool, setTool] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const slug = params.slug ?? "";
+  const [tool, setTool] = useState<ToolRecord | null>(null);
   const [error, setError] = useState(false);
-  const [voted, setVoted] = useState(false);
+  const [voted, setVoted] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+
+    try {
+      const raw = localStorage.getItem("vot_upvoted_tools");
+      const list: string[] = raw ? JSON.parse(raw) : [];
+      return list.includes(slug);
+    } catch {
+      return false;
+    }
+  });
   const [voteBusy, setVoteBusy] = useState(false);
-  const [staticData, setStaticData] = useState<{
-    fallbackFeatures: string[];
-    fallbackPros: string[];
-    fallbackCons: string[];
-    trending: any[];
-  } | null>(null);
+  const [staticData, setStaticData] = useState<StaticData | null>(null);
+  const clickedSlugs = useRef<Record<string, boolean>>({});
 
   useEffect(() => {
     fetch("/api/static/tools/static")
       .then((res) => res.json())
-      .then(setStaticData)
+      .then((data: StaticData) => setStaticData(data))
       .catch(() => {});
   }, []);
 
   useEffect(() => {
-    if (!params.slug) return;
+    if (!slug) return;
+
     let cancelled = false;
-    setLoading(true);
+
     api
-      .getTool(params.slug)
+      .getTool(slug)
       .then((data) => {
-        if (!cancelled) setTool(data);
+        if (!cancelled) setTool(data as ToolRecord);
       })
       .catch(() => {
         if (cancelled) return;
-        const fallback = fallbackToolFromSlug(params.slug);
+        const fallback = fallbackToolFromSlug(slug);
         if (fallback) setTool(fallback);
         else setError(true);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
       });
+
     return () => {
       cancelled = true;
     };
-  }, [params.slug]);
+  }, [slug]);
 
-  // Count a page open as a click (once per browser session per tool).
   useEffect(() => {
-    if (!params.slug || !tool) return;
-    const key = `vot_clicked_${params.slug}`;
-    try {
-      if (sessionStorage.getItem(key)) return;
-      sessionStorage.setItem(key, "1");
-    } catch {
-      // continue without session guard
-    }
+    if (!slug || !tool || clickedSlugs.current[slug]) return;
+
+    clickedSlugs.current[slug] = true;
+
     api
-      .recordToolClick(params.slug)
-      .then((res) => {
-        setTool((prev: any) =>
+      .recordToolClick(slug)
+      .then((res: { clicks: number; upvotes: number }) => {
+        setTool((prev) =>
           prev ? { ...prev, clicks: res.clicks, upvotes: res.upvotes } : prev
         );
       })
       .catch(() => {});
-  }, [params.slug, tool?.slug]);
-
-  useEffect(() => {
-    if (!params.slug) return;
-    try {
-      const raw = localStorage.getItem("vot_upvoted_tools");
-      const list: string[] = raw ? JSON.parse(raw) : [];
-      setVoted(list.includes(params.slug));
-    } catch {
-      setVoted(false);
-    }
-  }, [params.slug]);
+  }, [slug, tool]);
 
   async function handleUpvote() {
     if (!tool?.slug || voteBusy) return;
+
     setVoteBusy(true);
     const nextVoted = !voted;
     setVoted(nextVoted);
-    setTool((prev: any) =>
+    setTool((prev) =>
       prev
-        ? { ...prev, upvotes: Math.max(0, Number(prev.upvotes || 0) + (nextVoted ? 1 : -1)) }
+        ? {
+            ...prev,
+            upvotes: Math.max(0, Number(prev.upvotes || 0) + (nextVoted ? 1 : -1)),
+          }
         : prev
     );
+
     try {
       const res = nextVoted
         ? await api.upvoteTool(tool.slug)
         : await api.removeToolUpvote(tool.slug);
-      setTool((prev: any) =>
-        prev ? { ...prev, upvotes: res.upvotes, clicks: res.clicks } : prev
+
+      const payload = res as { upvotes?: number; clicks?: number };
+      setTool((prev) =>
+        prev ? { ...prev, upvotes: payload.upvotes ?? prev.upvotes, clicks: payload.clicks ?? prev.clicks } : prev
       );
+
       const raw = localStorage.getItem("vot_upvoted_tools");
       const list: string[] = raw ? JSON.parse(raw) : [];
       const next = nextVoted
         ? Array.from(new Set([...list, tool.slug]))
-        : list.filter((s) => s !== tool.slug);
+        : list.filter((item) => item !== tool.slug);
       localStorage.setItem("vot_upvoted_tools", JSON.stringify(next));
     } catch {
       setVoted(!nextVoted);
-      setTool((prev: any) =>
+      setTool((prev) =>
         prev
           ? {
               ...prev,
@@ -133,6 +166,8 @@ export default function ToolPage() {
       setVoteBusy(false);
     }
   }
+
+  const loading = !error && !tool && Boolean(slug);
 
   if (loading) {
     return (
@@ -148,16 +183,42 @@ export default function ToolPage() {
 
   if (error || !tool) return notFound();
 
-  const alternativeTrends = staticData?.trending || trending;
-  const altSlugs = Array.isArray(tool.alternatives) ? tool.alternatives.filter(Boolean) : [];
-  const alternatives = altSlugs.length > 0
-    ? alternativeTrends.filter((t: any) => altSlugs.includes(t.slug)).concat(
-        alternativeTrends.filter((t: any) => !altSlugs.includes(t.slug) && t.slug !== tool.slug)
-      ).slice(0, 3)
-    : alternativeTrends.filter((t: any) => t.slug !== tool.slug).slice(0, 3);
-  const features = tool.features?.length > 0 ? tool.features : (staticData?.fallbackFeatures || ["API access with simple key auth", "Team workspaces and shared libraries", "Export to PNG, SVG, and JSON", "Integrations with Slack, Notion, Zapier"]);
-  const pros = tool.pros?.length > 0 ? tool.pros : (staticData?.fallbackPros || ["Fast and responsive", "Generous free tier"]);
-  const cons = tool.cons?.length > 0 ? tool.cons : (staticData?.fallbackCons || ["Limited offline mode"]);
+  const alternativeTrends: ToolRecord[] = staticData?.trending ?? (trending as ToolRecord[]);
+  const altSlugs = Array.isArray(tool.alternatives)
+    ? tool.alternatives.filter((item): item is string => Boolean(item))
+    : [];
+
+  const alternatives =
+    altSlugs.length > 0
+      ? alternativeTrends
+          .filter((item) => altSlugs.includes(item.slug))
+          .concat(
+            alternativeTrends.filter(
+              (item) => !altSlugs.includes(item.slug) && item.slug !== tool.slug
+            )
+          )
+          .slice(0, 3)
+      : alternativeTrends.filter((item) => item.slug !== tool.slug).slice(0, 3);
+
+  const features =
+    tool.features?.length > 0
+      ? tool.features
+      : staticData?.fallbackFeatures ?? [
+          "API access with simple key auth",
+          "Team workspaces and shared libraries",
+          "Export to PNG, SVG, and JSON",
+          "Integrations with Slack, Notion, Zapier",
+        ];
+
+  const pros =
+    tool.pros?.length > 0
+      ? tool.pros
+      : staticData?.fallbackPros ?? ["Fast and responsive", "Generous free tier"];
+
+  const cons =
+    tool.cons?.length > 0
+      ? tool.cons
+      : staticData?.fallbackCons ?? ["Limited offline mode"];
 
   return (
     <div className="min-h-screen bg-[#faf8f5] font-sans text-[#1a1a1a] antialiased">
@@ -166,15 +227,17 @@ export default function ToolPage() {
         <nav className="mb-6 flex flex-wrap gap-x-1 text-xs text-muted-foreground">
           <Link href="/" className="hover:text-primary">Home</Link> /{" "}
           <Link href="/discover" className="hover:text-primary">Tools</Link> /{" "}
-          <span className="inline-block max-w-[200px] truncate align-bottom text-foreground sm:max-w-none">{tool.name}</span>
+          <span className="inline-block max-w-50 truncate align-bottom text-foreground sm:max-w-none">{tool.name}</span>
         </nav>
         <header className="flex min-w-0 flex-col gap-6 sm:flex-row sm:items-center">
-          <div className="size-16 overflow-hidden rounded-2xl bg-surface-soft ring-1 ring-black/5 grid place-items-center shrink-0 sm:size-20">
+          <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-surface-soft ring-1 ring-black/5 sm:size-20">
             <ToolLogo name={tool.name} logo={tool.logo} website={tool.website || tool.url} size={56} />
           </div>
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">{tool.name}</h1>
-            <p className="mt-1 text-muted-foreground">{tool.category} · {tool.pricing}</p>
+            <p className="mt-1 text-muted-foreground">
+              {tool.category} · {tool.pricing}
+            </p>
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2">
                 <Star className="size-4 fill-amber-400 text-amber-400" />
@@ -206,19 +269,18 @@ export default function ToolPage() {
             target="_blank"
             rel="noreferrer"
             onClick={() => {
-              // Count a website visit once per browser session per tool.
               const visitKey = `vot_visited_${tool.slug}`;
               let visited = false;
+
               try {
                 visited = Boolean(sessionStorage.getItem(visitKey));
                 if (!visited) sessionStorage.setItem(visitKey, "1");
               } catch {
                 // continue without session guard
               }
+
               if (!visited && tool.slug) {
-                api
-                  .recordToolVisit(tool.slug)
-                  .catch(() => {});
+                api.recordToolVisit(tool.slug).catch(() => {});
               }
             }}
             className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 sm:w-auto"
@@ -227,38 +289,45 @@ export default function ToolPage() {
           </a>
         </header>
 
-        <p className="mt-8 text-lg text-foreground/90 leading-relaxed">{tool.desc}</p>
+        <p className="mt-8 text-lg leading-relaxed text-foreground/90">{tool.desc}</p>
 
         <section className="mt-12">
           <h2 className="text-xl font-bold">Key features</h2>
-          <ul className="mt-4 grid sm:grid-cols-2 gap-2.5 sm:gap-3">
-            {features.map((f: string) => (
-              <li key={f} className="flex items-start gap-2 rounded-xl border border-border bg-card p-3 sm:p-4">
-                <Check className="size-4 text-primary mt-0.5 shrink-0" />
-                <span className="text-sm text-foreground">{f}</span>
+          <ul className="mt-4 grid gap-2.5 sm:grid-cols-2 sm:gap-3">
+            {features.map((feature) => (
+              <li
+                key={feature}
+                className="flex items-start gap-2 rounded-xl border border-border bg-card p-3 sm:p-4"
+              >
+                <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                <span className="text-sm text-foreground">{feature}</span>
               </li>
             ))}
           </ul>
         </section>
 
-        <section className="mt-10 sm:mt-12 grid sm:grid-cols-2 gap-4 sm:gap-6">
+        <section className="mt-10 grid gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-6">
           <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
-            <h3 className="font-bold text-foreground flex items-center gap-2">
+            <h3 className="flex items-center gap-2 font-bold text-foreground">
               <Check className="size-4 text-emerald-600" /> Pros
             </h3>
             <ul className="mt-3 space-y-2">
-              {pros.map((p: string) => (
-                <li key={p} className="text-sm text-muted-foreground">+ {p}</li>
+              {pros.map((item) => (
+                <li key={item} className="text-sm text-muted-foreground">
+                  + {item}
+                </li>
               ))}
             </ul>
           </div>
           <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
-            <h3 className="font-bold text-foreground flex items-center gap-2">
+            <h3 className="flex items-center gap-2 font-bold text-foreground">
               <X className="size-4 text-rose-600" /> Cons
             </h3>
             <ul className="mt-3 space-y-2">
-              {cons.map((p: string) => (
-                <li key={p} className="text-sm text-muted-foreground">- {p}</li>
+              {cons.map((item) => (
+                <li key={item} className="text-sm text-muted-foreground">
+                  - {item}
+                </li>
               ))}
             </ul>
           </div>
@@ -266,9 +335,9 @@ export default function ToolPage() {
 
         <section className="mt-10 sm:mt-12">
           <h2 className="text-xl font-bold">Alternatives to {tool.name}</h2>
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4">
-            {alternatives.map((t) => (
-              <ToolCard key={t.slug} tool={t} />
+          <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4">
+            {alternatives.map((item) => (
+              <ToolCard key={item.slug} tool={item} />
             ))}
           </div>
         </section>
