@@ -8,6 +8,7 @@ import { SiteNav, SiteFooter, ToolCard, trending } from "../../routes/index";
 import { ToolLogo } from "../../components/ToolLogo";
 import { api } from "../../lib/api";
 import { homepageFeaturedTools } from "../../lib/data/homepage-tools";
+import fluxLogo from "../../assets/images/tool-flux.webp";
 
 type ToolRecord = {
   slug: string;
@@ -98,7 +99,7 @@ function toToolCardTool(tool: ToolRecord) {
     slug: tool.slug,
     name: tool.name,
     category: tool.category,
-    logo: tool.logo as (typeof trending)[number]["logo"],
+    logo: logoSrc(tool.logo) ?? fluxLogo,
     pricing: tool.pricing as (typeof trending)[number]["pricing"],
     rating: tool.rating,
     reviews: tool.reviews,
@@ -106,9 +107,11 @@ function toToolCardTool(tool: ToolRecord) {
     website: tool.website ?? tool.url ?? "#",
     upvotes: tool.upvotes ?? 0,
     clicks: tool.clicks ?? 0,
+  } as (typeof trending)[number] & {
+    upvotes?: number;
+    clicks?: number;
   };
 }
-
 
 export default function ToolPage() {
   const params = useParams<{ slug: string }>();
@@ -461,9 +464,7 @@ export default function ToolPage() {
             {alternatives.map((item) => (
               <ToolCard
                 key={item.slug}
-                tool={{
-                  ...toToolCardTool(item),
-                }}
+                tool={toToolCardTool(item)}
               />
             ))}
           </div>
