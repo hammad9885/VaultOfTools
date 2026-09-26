@@ -19,7 +19,7 @@ type ToolRecord = {
   desc?: string;
   website?: string;
   url?: string;
-  logo?: string | null | { src: string };
+  logo?: string | unknown;
   features?: string[];
   pros?: string[];
   cons?: string[];
@@ -28,45 +28,86 @@ type ToolRecord = {
   clicks?: number;
 };
 
-type StaticData = {
-  fallbackFeatures: string[];
-  fallbackPros: string[];
-  fallbackCons: string[];
-  trending: ToolRecord[];
-};
-
-type TrendingTool = (typeof trending)[number] & {
+type StaticTrendingTool = {
+  slug: string;
+  name: string;
+  category: string;
+  pricing: string;
+  rating: number;
+  reviews: number;
+  desc: string;
+  website: string;
+  logo?: string | unknown;
   upvotes?: number;
   clicks?: number;
 };
 
-function logoSrc(logo: ToolRecord["logo"]): string | undefined {
-  if (typeof logo === "string") return logo;
-  if (logo && typeof logo === "object" && "src" in logo) {
-    return logo.src;
-  }
-  return undefined;
-}
+type StaticData = {
+  fallbackFeatures: string[];
+  fallbackPros: string[];
+  fallbackCons: string[];
+  trending: StaticTrendingTool[];
+};
 
 function fallbackToolFromSlug(slug: string): ToolRecord | null {
   const seed = homepageFeaturedTools.find((t) => t.slug === slug);
   if (!seed) return null;
 
+  const seedRecord = seed as typeof seed & {
+    logo?: string | unknown;
+    features?: string[];
+    pros?: string[];
+    cons?: string[];
+  };
+
   return {
-    slug: seed.slug,
-    name: seed.name,
-    category: seed.category,
-    pricing: seed.pricing,
-    rating: seed.rating,
-    reviews: seed.reviews,
-    desc: seed.desc,
-    website: seed.website,
-    logo: seed.logo,
+    slug: seedRecord.slug,
+    name: seedRecord.name,
+    category: seedRecord.category,
+    pricing: seedRecord.pricing,
+    rating: seedRecord.rating,
+    reviews: seedRecord.reviews,
+    desc: seedRecord.desc,
+    website: seedRecord.website,
+    logo: seedRecord.logo,
     clicks: 0,
     upvotes: 0,
-    features: seed.features,
-    pros: seed.pros,
-    cons: seed.cons,
+    features: seedRecord.features,
+    pros: seedRecord.pros,
+    cons: seedRecord.cons,
+  };
+}
+
+function logoSrc(logo: unknown): string | undefined {
+  if (typeof logo === "string") return logo;
+
+  if (
+    logo &&
+    typeof logo === "object" &&
+    "src" in (logo as { src?: unknown })
+  ) {
+    const src = (logo as { src?: unknown }).src;
+    return typeof src === "string" ? src : undefined;
+  }
+
+  return undefined;
+}
+
+function toToolCardTool(tool: ToolRecord) {
+  const logo = logoSrc(tool.logo);
+
+  return {
+    slug: tool.slug,
+    name: tool.name,
+    category: tool.category,
+    logo,
+    pricing: tool.pricing,
+    rating: tool.rating,
+    reviews: tool.reviews,
+    desc: tool.desc ?? "",
+    website: tool.website ?? tool.url ?? "#",
+    upvotes: tool.upvotes ?? 0,
+    clicks: tool.clicks ?? 0,
   };
 }
 
@@ -158,6 +199,7 @@ export default function ToolPage() {
         : await api.removeToolUpvote(tool.slug);
 
       const payload = res as { upvotes?: number; clicks?: number };
+
       setTool((prev) =>
         prev
           ? {
@@ -173,6 +215,7 @@ export default function ToolPage() {
       const next = nextVoted
         ? Array.from(new Set([...list, tool.slug]))
         : list.filter((item) => item !== tool.slug);
+
       localStorage.setItem("vot_upvoted_tools", JSON.stringify(next));
     } catch {
       setVoted(!nextVoted);
@@ -208,24 +251,14 @@ export default function ToolPage() {
 
   if (error || !tool) return notFound();
 
-  const alternativeTrends: ToolRecord[] =
+  const alternativeTrends: StaticTrendingTool[] =
     staticData?.trending ??
-    trending.map((item) => ({
-      slug: item.slug,
-      name: item.name,
-      category: item.category,
-      pricing: item.pricing,
-      rating: item.rating,
-      reviews: item.reviews,
-      desc: item.desc,
-      website: item.website,
-      logo: logoSrc(item.logo),
-      upvotes: item.upvotes,
-      clicks: item.clicks,
-    }));
+    (trending as unknown as StaticTrendingTool[]);
 
   const altSlugs = Array.isArray(tool.alternatives)
-    ? tool.alternatives.filter((item): item is string => Boolean(item))
+    ? tool.alternatives.filter(
+        (item): item is string => Boolean(item)
+      )
     : [];
 
   const alternatives =
@@ -234,7 +267,9 @@ export default function ToolPage() {
           .filter((item) => altSlugs.includes(item.slug))
           .concat(
             alternativeTrends.filter(
-              (item) => !altSlugs.includes(item.slug) && item.slug !== tool.slug
+              (item) =>
+                !altSlugs.includes(item.slug) &&
+                item.slug !== tool.slug
             )
           )
           .slice(0, 3)
@@ -242,8 +277,8 @@ export default function ToolPage() {
           .filter((item) => item.slug !== tool.slug)
           .slice(0, 3);
 
-  const features =
-    tool.features?.length > 0
+  const features: string[] =
+    tool.features && tool.features.length > 0
       ? tool.features
       : staticData?.fallbackFeatures ?? [
           "API access with simple key auth",
@@ -252,33 +287,23 @@ export default function ToolPage() {
           "Integrations with Slack, Notion, Zapier",
         ];
 
-  const pros =
-    tool.pros?.length > 0
+  const pros: string[] =
+    tool.pros && tool.pros.length > 0
       ? tool.pros
-      : staticData?.fallbackPros ?? ["Fast and responsive", "Generous free tier"];
+      : staticData?.fallbackPros ?? [
+          "Fast and responsive",
+          "Generous free tier",
+        ];
 
-  const cons =
-    tool.cons?.length > 0
+  const cons: string[] =
+    tool.cons && tool.cons.length > 0
       ? tool.cons
       : staticData?.fallbackCons ?? ["Limited offline mode"];
-
-  const alternativeCards: TrendingTool[] = alternatives.map((item) => ({
-    slug: item.slug,
-    name: item.name,
-    category: item.category,
-    pricing: item.pricing as (typeof trending)[number]["pricing"],
-    rating: item.rating,
-    reviews: item.reviews,
-    desc: item.desc || "",
-    website: item.website || "",
-    logo: logoSrc(item.logo) as (typeof trending)[number]["logo"],
-    upvotes: item.upvotes || 0,
-    clicks: item.clicks || 0,
-  }));
 
   return (
     <div className="min-h-screen bg-[#faf8f5] font-sans text-[#1a1a1a] antialiased">
       <SiteNav />
+
       <div className="mx-auto max-w-5xl px-3 py-8 sm:px-6 sm:py-12 lg:px-8">
         <nav className="mb-6 flex flex-wrap gap-x-1 text-xs text-muted-foreground">
           <Link href="/" className="hover:text-primary">
@@ -308,6 +333,7 @@ export default function ToolPage() {
             <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">
               {tool.name}
             </h1>
+
             <p className="mt-1 text-muted-foreground">
               {tool.category} · {tool.pricing}
             </p>
@@ -353,7 +379,10 @@ export default function ToolPage() {
 
               try {
                 visited = Boolean(sessionStorage.getItem(visitKey));
-                if (!visited) sessionStorage.setItem(visitKey, "1");
+
+                if (!visited) {
+                  sessionStorage.setItem(visitKey, "1");
+                }
               } catch {}
 
               if (!visited && tool.slug) {
@@ -372,6 +401,7 @@ export default function ToolPage() {
 
         <section className="mt-12">
           <h2 className="text-xl font-bold">Key features</h2>
+
           <ul className="mt-4 grid gap-2.5 sm:grid-cols-2 sm:gap-3">
             {features.map((feature) => (
               <li
@@ -379,7 +409,9 @@ export default function ToolPage() {
                 className="flex items-start gap-2 rounded-xl border border-border bg-card p-3 sm:p-4"
               >
                 <Check className="mt-0.5 size-4 shrink-0 text-primary" />
-                <span className="text-sm text-foreground">{feature}</span>
+                <span className="text-sm text-foreground">
+                  {feature}
+                </span>
               </li>
             ))}
           </ul>
@@ -390,9 +422,13 @@ export default function ToolPage() {
             <h3 className="flex items-center gap-2 font-bold text-foreground">
               <Check className="size-4 text-emerald-600" /> Pros
             </h3>
+
             <ul className="mt-3 space-y-2">
               {pros.map((item) => (
-                <li key={item} className="text-sm text-muted-foreground">
+                <li
+                  key={item}
+                  className="text-sm text-muted-foreground"
+                >
                   + {item}
                 </li>
               ))}
@@ -403,9 +439,13 @@ export default function ToolPage() {
             <h3 className="flex items-center gap-2 font-bold text-foreground">
               <X className="size-4 text-rose-600" /> Cons
             </h3>
+
             <ul className="mt-3 space-y-2">
               {cons.map((item) => (
-                <li key={item} className="text-sm text-muted-foreground">
+                <li
+                  key={item}
+                  className="text-sm text-muted-foreground"
+                >
                   - {item}
                 </li>
               ))}
@@ -414,14 +454,23 @@ export default function ToolPage() {
         </section>
 
         <section className="mt-10 sm:mt-12">
-          <h2 className="text-xl font-bold">Alternatives to {tool.name}</h2>
+          <h2 className="text-xl font-bold">
+            Alternatives to {tool.name}
+          </h2>
+
           <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4">
-            {alternativeCards.map((item) => (
-              <ToolCard key={item.slug} tool={item} />
+            {alternatives.map((item) => (
+              <ToolCard
+                key={item.slug}
+                tool={{
+                  ...toToolCardTool(item),
+                }}
+              />
             ))}
           </div>
         </section>
       </div>
+
       <SiteFooter />
     </div>
   );
