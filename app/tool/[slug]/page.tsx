@@ -94,14 +94,12 @@ function logoSrc(logo: unknown): string | undefined {
 }
 
 function toToolCardTool(tool: ToolRecord) {
-  const logo = logoSrc(tool.logo);
-
   return {
     slug: tool.slug,
     name: tool.name,
     category: tool.category,
-    logo,
-    pricing: tool.pricing,
+    logo: tool.logo as (typeof trending)[number]["logo"],
+    pricing: tool.pricing as (typeof trending)[number]["pricing"],
     rating: tool.rating,
     reviews: tool.reviews,
     desc: tool.desc ?? "",
@@ -110,6 +108,7 @@ function toToolCardTool(tool: ToolRecord) {
     clicks: tool.clicks ?? 0,
   };
 }
+
 
 export default function ToolPage() {
   const params = useParams<{ slug: string }>();
