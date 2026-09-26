@@ -19,7 +19,7 @@ type ToolRecord = {
   desc?: string;
   website?: string;
   url?: string;
-  logo?: string | unknown;
+  logo?: string | null;
   features?: string[];
   pros?: string[];
   cons?: string[];
@@ -48,7 +48,6 @@ function fallbackToolFromSlug(slug: string): ToolRecord | null {
     reviews: seed.reviews,
     desc: seed.desc,
     website: seed.website,
-    logo: seed.logo,
     clicks: 0,
     upvotes: 0,
     features: seed.features,
@@ -131,7 +130,10 @@ export default function ToolPage() {
       prev
         ? {
             ...prev,
-            upvotes: Math.max(0, Number(prev.upvotes || 0) + (nextVoted ? 1 : -1)),
+            upvotes: Math.max(
+              0,
+              Number(prev.upvotes || 0) + (nextVoted ? 1 : -1)
+            ),
           }
         : prev
     );
@@ -143,7 +145,13 @@ export default function ToolPage() {
 
       const payload = res as { upvotes?: number; clicks?: number };
       setTool((prev) =>
-        prev ? { ...prev, upvotes: payload.upvotes ?? prev.upvotes, clicks: payload.clicks ?? prev.clicks } : prev
+        prev
+          ? {
+              ...prev,
+              upvotes: payload.upvotes ?? prev.upvotes,
+              clicks: payload.clicks ?? prev.clicks,
+            }
+          : prev
       );
 
       const raw = localStorage.getItem("vot_upvoted_tools");
@@ -158,7 +166,10 @@ export default function ToolPage() {
         prev
           ? {
               ...prev,
-              upvotes: Math.max(0, Number(prev.upvotes || 0) + (nextVoted ? -1 : 1)),
+              upvotes: Math.max(
+                0,
+                Number(prev.upvotes || 0) + (nextVoted ? -1 : 1)
+              ),
             }
           : prev
       );
@@ -183,7 +194,9 @@ export default function ToolPage() {
 
   if (error || !tool) return notFound();
 
-  const alternativeTrends: ToolRecord[] = staticData?.trending ?? (trending as ToolRecord[]);
+  const alternativeTrends: ToolRecord[] =
+    staticData?.trending ?? (trending as ToolRecord[]);
+
   const altSlugs = Array.isArray(tool.alternatives)
     ? tool.alternatives.filter((item): item is string => Boolean(item))
     : [];
@@ -194,14 +207,17 @@ export default function ToolPage() {
           .filter((item) => altSlugs.includes(item.slug))
           .concat(
             alternativeTrends.filter(
-              (item) => !altSlugs.includes(item.slug) && item.slug !== tool.slug
+              (item) =>
+                !altSlugs.includes(item.slug) && item.slug !== tool.slug
             )
           )
           .slice(0, 3)
-      : alternativeTrends.filter((item) => item.slug !== tool.slug).slice(0, 3);
+      : alternativeTrends
+          .filter((item) => item.slug !== tool.slug)
+          .slice(0, 3);
 
-  const features =
-    tool.features?.length > 0
+  const features: string[] =
+    tool.features && tool.features.length > 0
       ? tool.features
       : staticData?.fallbackFeatures ?? [
           "API access with simple key auth",
@@ -210,13 +226,16 @@ export default function ToolPage() {
           "Integrations with Slack, Notion, Zapier",
         ];
 
-  const pros =
-    tool.pros?.length > 0
+  const pros: string[] =
+    tool.pros && tool.pros.length > 0
       ? tool.pros
-      : staticData?.fallbackPros ?? ["Fast and responsive", "Generous free tier"];
+      : staticData?.fallbackPros ?? [
+          "Fast and responsive",
+          "Generous free tier",
+        ];
 
-  const cons =
-    tool.cons?.length > 0
+  const cons: string[] =
+    tool.cons && tool.cons.length > 0
       ? tool.cons
       : staticData?.fallbackCons ?? ["Limited offline mode"];
 
@@ -225,25 +244,47 @@ export default function ToolPage() {
       <SiteNav />
       <div className="mx-auto max-w-5xl px-3 py-8 sm:px-6 sm:py-12 lg:px-8">
         <nav className="mb-6 flex flex-wrap gap-x-1 text-xs text-muted-foreground">
-          <Link href="/" className="hover:text-primary">Home</Link> /{" "}
-          <Link href="/discover" className="hover:text-primary">Tools</Link> /{" "}
-          <span className="inline-block max-w-50 truncate align-bottom text-foreground sm:max-w-none">{tool.name}</span>
+          <Link href="/" className="hover:text-primary">
+            Home
+          </Link>{" "}
+          /{" "}
+          <Link href="/discover" className="hover:text-primary">
+            Tools
+          </Link>{" "}
+          /{" "}
+          <span className="inline-block max-w-50 truncate align-bottom text-foreground sm:max-w-none">
+            {tool.name}
+          </span>
         </nav>
+
         <header className="flex min-w-0 flex-col gap-6 sm:flex-row sm:items-center">
           <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-surface-soft ring-1 ring-black/5 sm:size-20">
-            <ToolLogo name={tool.name} logo={tool.logo} website={tool.website || tool.url} size={56} />
+            <ToolLogo
+              name={tool.name}
+              logo={tool.logo}
+              website={tool.website || tool.url}
+              size={56}
+            />
           </div>
+
           <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">{tool.name}</h1>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">
+              {tool.name}
+            </h1>
+
             <p className="mt-1 text-muted-foreground">
               {tool.category} · {tool.pricing}
             </p>
+
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2">
                 <Star className="size-4 fill-amber-400 text-amber-400" />
                 <span className="font-bold">{tool.rating}</span>
-                <span className="text-sm text-muted-foreground">({tool.reviews} reviews)</span>
+                <span className="text-sm text-muted-foreground">
+                  ({tool.reviews} reviews)
+                </span>
               </div>
+
               <button
                 type="button"
                 onClick={handleUpvote}
@@ -258,12 +299,14 @@ export default function ToolPage() {
                 <ArrowUp className="size-3.5" />
                 {tool.upvotes || 0} upvotes
               </button>
+
               <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
                 <Eye className="size-3.5" />
                 {tool.clicks || 0} views
               </span>
             </div>
           </div>
+
           <a
             href={tool.website}
             target="_blank"
@@ -275,9 +318,7 @@ export default function ToolPage() {
               try {
                 visited = Boolean(sessionStorage.getItem(visitKey));
                 if (!visited) sessionStorage.setItem(visitKey, "1");
-              } catch {
-                // continue without session guard
-              }
+              } catch {}
 
               if (!visited && tool.slug) {
                 api.recordToolVisit(tool.slug).catch(() => {});
@@ -289,10 +330,13 @@ export default function ToolPage() {
           </a>
         </header>
 
-        <p className="mt-8 text-lg leading-relaxed text-foreground/90">{tool.desc}</p>
+        <p className="mt-8 text-lg leading-relaxed text-foreground/90">
+          {tool.desc}
+        </p>
 
         <section className="mt-12">
           <h2 className="text-xl font-bold">Key features</h2>
+
           <ul className="mt-4 grid gap-2.5 sm:grid-cols-2 sm:gap-3">
             {features.map((feature) => (
               <li
@@ -311,6 +355,7 @@ export default function ToolPage() {
             <h3 className="flex items-center gap-2 font-bold text-foreground">
               <Check className="size-4 text-emerald-600" /> Pros
             </h3>
+
             <ul className="mt-3 space-y-2">
               {pros.map((item) => (
                 <li key={item} className="text-sm text-muted-foreground">
@@ -319,10 +364,12 @@ export default function ToolPage() {
               ))}
             </ul>
           </div>
+
           <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
             <h3 className="flex items-center gap-2 font-bold text-foreground">
               <X className="size-4 text-rose-600" /> Cons
             </h3>
+
             <ul className="mt-3 space-y-2">
               {cons.map((item) => (
                 <li key={item} className="text-sm text-muted-foreground">
@@ -335,6 +382,7 @@ export default function ToolPage() {
 
         <section className="mt-10 sm:mt-12">
           <h2 className="text-xl font-bold">Alternatives to {tool.name}</h2>
+
           <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4">
             {alternatives.map((item) => (
               <ToolCard key={item.slug} tool={item} />
@@ -342,6 +390,7 @@ export default function ToolPage() {
           </div>
         </section>
       </div>
+
       <SiteFooter />
     </div>
   );
