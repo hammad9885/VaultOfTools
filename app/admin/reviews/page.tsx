@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast, confirmAction } from "../../lib/admin/notify";
 import { Trash2 } from "lucide-react";
 import { adminApi } from "../../lib/admin/api";
 import { ReviewRow } from "../../lib/admin/types";
@@ -57,7 +57,8 @@ export default function AdminReviewsPage() {
   };
 
   const remove = async (r: ReviewRow) => {
-    if (!confirm("Delete this review?")) return;
+    const confirmed = await confirmAction("Delete this review?");
+    if (!confirmed) return;
     setDeleting(r._id);
     try {
       await adminApi.deleteReview(r._id);

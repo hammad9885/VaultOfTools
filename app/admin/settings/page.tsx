@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "../../lib/admin/notify";
 import { adminApi } from "../../lib/admin/api";
 import { AdminSettings } from "../../lib/admin/types";
 import { PageHeader } from "../../components/admin/cards";

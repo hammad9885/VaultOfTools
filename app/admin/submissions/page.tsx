@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast, confirmAction } from "../../lib/admin/notify";
 import { Check, Trash2, X } from "lucide-react";
 import { adminApi } from "../../lib/admin/api";
 import { SubmissionRow } from "../../lib/admin/types";
@@ -55,7 +55,8 @@ export default function AdminSubmissionsPage() {
   };
 
   const remove = async (s: SubmissionRow) => {
-    if (!confirm(`Delete submission "${s.name}"?`)) return;
+    const confirmed = await confirmAction(`Delete submission "${s.name}"?`);
+    if (!confirmed) return;
     setDeleting(s._id);
     try {
       await adminApi.deleteSubmission(s._id);

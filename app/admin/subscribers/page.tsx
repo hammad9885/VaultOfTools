@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast, confirmAction } from "../../lib/admin/notify";
 import { Plus, Trash2 } from "lucide-react";
 import { adminApi } from "../../lib/admin/api";
 import { SubscriberRow } from "../../lib/admin/types";
@@ -75,7 +75,8 @@ export default function AdminSubscribersPage() {
   };
 
   const remove = async (s: SubscriberRow) => {
-    if (!confirm(`Remove ${s.email} from the list?`)) return;
+    const confirmed = await confirmAction(`Remove ${s.email} from the list?`);
+    if (!confirmed) return;
     setDeleting(s._id);
     try {
       await adminApi.deleteSubscriber(s._id);

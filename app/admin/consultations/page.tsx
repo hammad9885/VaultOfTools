@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast, confirmAction } from "../../lib/admin/notify";
 import { Trash2 } from "lucide-react";
 import { adminApi } from "../../lib/admin/api";
 import { ConsultationRow } from "../../lib/admin/types";
@@ -55,7 +55,8 @@ export default function AdminConsultationsPage() {
   };
 
   const remove = async (c: ConsultationRow) => {
-    if (!confirm("Delete this consultation request?")) return;
+    const confirmed = await confirmAction("Delete this consultation request?");
+    if (!confirmed) return;
     setDeleting(c._id);
     try {
       await adminApi.deleteConsultation(c._id);

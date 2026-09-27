@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast, confirmAction } from "../../lib/admin/notify";
 import { Pencil, Plus, Star, Trash2, X } from "lucide-react";
 import { adminApi } from "../../lib/admin/api";
 import { ToolRow } from "../../lib/admin/types";
@@ -531,7 +531,8 @@ export default function AdminToolsPage() {
   };
 
   const remove = async (tool: ToolRow) => {
-    if (!confirm(`Delete "${tool.name}"? This cannot be undone.`)) return;
+    const confirmed = await confirmAction(`Delete "${tool.name}"? This cannot be undone.`);
+    if (!confirmed) return;
     setDeleting(tool._id);
     try {
       await adminApi.deleteTool(tool._id);

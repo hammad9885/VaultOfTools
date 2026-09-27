@@ -3,7 +3,6 @@
 import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
-import { Toaster } from "sonner";
 
 // Lazy-load the admin shell so the public site never pays for admin JS.
 const Shell = dynamic(() => import("../components/admin/AdminShell").then((m) => m.AdminShell), {
@@ -48,17 +47,11 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
   }, [meta.title]);
 
   if (isAuthRoute) {
-    return (
-      <>
-        <Toaster position="top-right" richColors />
-        {children}
-      </>
-    );
+    return <>{children}</>;
   }
 
   return (
     <>
-      <Toaster position="top-right" richColors />
       {mounted ? (
         <Shell>{children}</Shell>
       ) : (

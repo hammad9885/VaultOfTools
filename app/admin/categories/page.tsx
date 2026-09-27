@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast, confirmAction } from "../../lib/admin/notify";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { adminApi } from "../../lib/admin/api";
 import { CategoryRow } from "../../lib/admin/types";
@@ -82,7 +82,8 @@ export default function AdminCategoriesPage() {
   };
 
   const remove = async (c: CategoryRow) => {
-    if (!confirm(`Delete category "${c.name}"?`)) return;
+    const confirmed = await confirmAction(`Delete category "${c.name}"?`);
+    if (!confirmed) return;
     setDeleting(c._id);
     try {
       await adminApi.deleteCategory(c._id);

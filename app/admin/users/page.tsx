@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast, confirmAction } from "../../lib/admin/notify";
 import { Plus, Trash2 } from "lucide-react";
 import { adminApi } from "../../lib/admin/api";
 import { UserRow } from "../../lib/admin/types";
@@ -83,7 +83,8 @@ export default function AdminUsersPage() {
   };
 
   const remove = async (u: UserRow) => {
-    if (!confirm(`Delete user "${u.email}" and their reviews/submissions?`)) return;
+    const confirmed = await confirmAction(`Delete user "${u.email}" and their reviews/submissions?`);
+    if (!confirmed) return;
     setDeleting(u._id);
     try {
       await adminApi.deleteUser(u._id);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast, confirmAction } from "../../lib/admin/notify";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { adminApi } from "../../lib/admin/api";
 import { TagRow } from "../../lib/admin/types";
@@ -82,7 +82,8 @@ export default function AdminTagsPage() {
   };
 
   const remove = async (t: TagRow) => {
-    if (!confirm(`Delete tag "${t.name}"?`)) return;
+    const confirmed = await confirmAction(`Delete tag "${t.name}"?`);
+    if (!confirmed) return;
     setDeleting(t._id);
     try {
       await adminApi.deleteTag(t._id);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "../../lib/admin/notify";
 import { Download, Upload, FileJson } from "lucide-react";
 import { adminApi } from "../../lib/admin/api";
 import { PageHeader, Card } from "../../components/admin/cards";

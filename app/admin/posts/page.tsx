@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast, confirmAction } from "../../lib/admin/notify";
 import { Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { adminApi } from "../../lib/admin/api";
@@ -93,7 +93,8 @@ export default function AdminPostsPage() {
   };
 
   const remove = async (p: PostRow) => {
-    if (!confirm(`Delete post "${p.title}"?`)) return;
+    const confirmed = await confirmAction(`Delete post "${p.title}"?`);
+    if (!confirmed) return;
     setDeleting(p._id);
     try {
       await adminApi.deletePost(p._id);
