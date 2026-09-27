@@ -7,115 +7,217 @@ import { SUPER_ADMIN } from "./types";
 import { ADMIN_EMAIL, getAdminPassword } from "./credentials";
 import { getJwtSecret } from "../config/secrets";
 
-export function signAdminToken(user: any) {
+type AdminUser = {
+  _id?: unknown;
+  id?: unknown;
+  email?: string;
+  password?: string;
+  displayName?: string;
+  role?: string;
+  status?: string;
+  comparePassword?: (password: string) => Promise<boolean>;
+  save?: () => Promise<unknown>;
+  toProfile?: () => Record<string, unknown>;
+};
+
+export function signAdminToken(user: AdminUser) {
   return jwt.sign(
-    { id: String(user._id), role: SUPER_ADMIN, scope: "admin" },
+    {
+      id: String(user._id ?? user.id ?? ""),
+      email: ADMIN_EMAIL.toLowerCase(),
+      role: SUPER_ADMIN,
+      scope: "admin",
+    },
     getJwtSecret(),
-    { expiresIn: "7d" }
+    {
+      expiresIn: "7d",
+    }
   );
 }
 
-export function isConfiguredAdminEmail(email?: string | null) {
-  return String(email || "").toLowerCase().trim() === ADMIN_EMAIL.toLowerCase();
+export function isConfiguredAdminEmail(
+  email?: string | null
+): email is string {
+  return (
+    String(email || "")
+      .trim()
+      .toLowerCase() === ADMIN_EMAIL.toLowerCase()
+  );
 }
 
-/** Create/update the hard-coded admin in Mongo, or memory when Mongo is down. */
-export async function ensureAdminUser() {
+export async function ensureAdminUser(): Promise<AdminUser> {
   await connectDB();
-  const email = ADMIN_EMAIL.toLowerCase();
 
+  const email = ADMIN_EMAIL.toLowerCase();
   const adminPassword = getAdminPassword();
-  const effectivePassword = adminPassword || crypto.randomBytes(24).toString("hex");
+
+  const effectivePassword =
+    adminPassword || crypto.randomBytes(24).toString("hex");
 
   if (isDBConnected()) {
     try {
-      let user = await User.findOne({ email });
+      let user = (await User.findOne({
+        email,
+      })) as AdminUser | null;
+
       if (!user) {
-        return await User.create({
+        user = (await User.create({
           email,
           password: effectivePassword,
           displayName: "Super Admin",
           role: SUPER_ADMIN,
           status: "active",
-        });
+        })) as AdminUser;
+
+        return user;
       }
 
       let dirty = false;
+
+      if (!isConfiguredAdminEmail(user.email)) {
+        user.email = email;
+        dirty = true;
+      }
+
       if (user.role !== SUPER_ADMIN) {
         user.role = SUPER_ADMIN;
         dirty = true;
       }
-      if (adminPassword) {
+
+      if (user.status !== "active") {
+        user.status = "active";
+        dirty = true;
+      }
+
+      if (!user.displayName) {
+        user.displayName = "Super Admin";
+        dirty = true;
+      }
+
+      if (adminPassword && user.comparePassword) {
         const valid = await user.comparePassword(adminPassword);
+
         if (!valid) {
           user.password = adminPassword;
           dirty = true;
         }
       }
-      if (dirty) await user.save();
+
+      if (dirty && user.save) {
+        await user.save();
+      }
+
       return user;
-    } catch (err: any) {
-      console.warn("ensureAdminUser Mongo failed, using memory:", err?.message);
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Unknown database error";
+
+      console.warn(
+        "ensureAdminUser Mongo failed, using memory:",
+        message
+      );
     }
   }
 
-  let user = await memoryStore.findUserByEmail(email);
+  let user = (await memoryStore.findUserByEmail(
+    email
+  )) as AdminUser | null;
+
   if (!user) {
-    user = await memoryStore.createUser({
+    user = (await memoryStore.createUser({
       email,
       password: effectivePassword,
       displayName: "Super Admin",
       role: SUPER_ADMIN,
-    });
-  } else {
-    user.role = SUPER_ADMIN;
-    user.displayName = user.displayName || "Super Admin";
-    if (adminPassword) {
-      const ok = await memoryStore.comparePassword(user, adminPassword);
-      if (!ok) {
-        user.password = await (await import("bcryptjs")).default.hash(adminPassword, 12);
-      }
-    }
-  }
-  return user;
-}
+    })) as AdminUser;
 
-/** Promote configured admin email to super_admin (Google / Firebase sync). */
-export async function elevateConfiguredAdmin(user: any) {
-  if (!user || !isConfiguredAdminEmail(user.email)) return user;
-
-  if (typeof user.save === "function") {
-    if (user.role !== SUPER_ADMIN) {
-      user.role = SUPER_ADMIN;
-      await user.save();
-    }
     return user;
   }
 
+  user.email = email;
   user.role = SUPER_ADMIN;
+  user.displayName = user.displayName || "Super Admin";
+  user.status = "active";
+
+  if (adminPassword) {
+    const valid = await memoryStore.comparePassword(
+      user,
+      adminPassword
+    );
+
+    if (!valid) {
+      const bcrypt = (await import("bcryptjs")).default;
+      user.password = await bcrypt.hash(adminPassword, 12);
+    }
+  }
+
   return user;
 }
 
-export async function findAdminById(id: string) {
+export async function elevateConfiguredAdmin(
+  user: AdminUser | null | undefined
+) {
+  if (!user || !isConfiguredAdminEmail(user.email)) {
+    return user;
+  }
+
+  user.email = ADMIN_EMAIL.toLowerCase();
+  user.role = SUPER_ADMIN;
+
+  if (user.save) {
+    await user.save();
+  }
+
+  return user;
+}
+
+export async function findAdminById(
+  id: string
+): Promise<AdminUser | null> {
   await connectDB();
+
   if (isDBConnected()) {
     try {
-      const user = await User.findById(id);
-      if (user) return user;
-    } catch (err: any) {
-      console.warn("findAdminById Mongo failed, using memory:", err?.message);
+      const user = (await User.findById(id)) as AdminUser | null;
+
+      if (user && isConfiguredAdminEmail(user.email)) {
+        return user;
+      }
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Unknown database error";
+
+      console.warn(
+        "findAdminById Mongo failed, using memory:",
+        message
+      );
     }
   }
-  return memoryStore.findUserById(String(id));
+
+  const user = (await memoryStore.findUserById(
+    String(id)
+  )) as AdminUser | null;
+
+  if (!user || !isConfiguredAdminEmail(user.email)) {
+    return null;
+  }
+
+  return user;
 }
 
-export function adminProfile(user: any) {
-  const base =
-    typeof user?.toProfile === "function" ? user.toProfile() : memoryStore.toProfile(user);
-  return { ...base, role: SUPER_ADMIN };
+export function adminProfile(user: AdminUser) {
+  const base = user.toProfile
+    ? user.toProfile()
+    : memoryStore.toProfile(user);
+
+  return {
+    ...base,
+    email: ADMIN_EMAIL.toLowerCase(),
+    role: SUPER_ADMIN,
+    displayName: user.displayName || "Super Admin",
+  };
 }
 
-/** Stable random password when creating Google-linked admin shell user. */
 export function randomPassword() {
   return crypto.randomBytes(32).toString("hex");
 }

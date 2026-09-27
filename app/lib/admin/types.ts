@@ -170,7 +170,7 @@ export interface ActivityRow {
   actor: string;
   action: string;
   target: string;
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
   createdAt: string;
 }
 

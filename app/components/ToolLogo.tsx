@@ -5,6 +5,7 @@ import { getToolLogoCandidates, toolInitials, toolAccent } from "../lib/tool-log
 
 type Props = {
   name: string;
+  slug?: string | null;
   logo?: string | null;
   website?: string | null;
   size?: number;
@@ -36,11 +37,16 @@ function InitialsBadge({
   );
 }
 
-export function ToolLogo({ name, logo, website, size = 22, className = "" }: Props) {
-  const candidates = useMemo(
-    () => getToolLogoCandidates(name, logo, website),
-    [name, logo, website]
-  );
+export function ToolLogo({ name, slug, logo, website, size = 22, className = "" }: Props) {
+  const candidates = useMemo(() => {
+    const fromName = getToolLogoCandidates(name, logo, website);
+
+    if (fromName.length > 0 || !slug) {
+      return fromName;
+    }
+
+    return getToolLogoCandidates(slug, logo, website);
+  }, [name, slug, logo, website]);
   // Defer remote <img> until after mount so SSR HTML matches the first client paint.
   const [mounted, setMounted] = useState(false);
   const [index, setIndex] = useState(0);

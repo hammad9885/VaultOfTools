@@ -4,18 +4,24 @@ const siteOrigin =
   process.env.BASE_URL || "https://vaultoftools.com";
 
 export const metadata: Metadata = {
-  title: "Compare AI Tools Head-to-Head",
+  title: "Compare AI Tools Head-to-Head | Vault of Tools",
   description:
-    "Compare leading AI tools side by side across features, pricing, capabilities, ratings, and use cases.",
+    "Compare AI tools side by side by features, pricing, ratings, strengths, and capabilities.",
   alternates: {
     canonical: `${siteOrigin}/compare`,
   },
   openGraph: {
-    title: "Compare AI Tools Head-to-Head | Vault of Tools",
+    title: "Compare AI Tools Head-to-Head",
     description:
-      "Detailed side-by-side AI tool comparisons covering pricing, features, capabilities, and use cases.",
+      "Compare AI tools side by side by features, pricing, ratings, strengths, and capabilities.",
     url: `${siteOrigin}/compare`,
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Compare AI Tools Head-to-Head",
+    description:
+      "Compare AI tools side by side by features, pricing, ratings, strengths, and capabilities.",
   },
 };
 

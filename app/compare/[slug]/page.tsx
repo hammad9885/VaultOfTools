@@ -1,705 +1,1217 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
   Check,
-  CheckCheck,
+  CheckCircle2,
   ChevronDown,
-  Copy,
-  HelpCircle,
-  Layers,
-  ShieldCheck,
+  CircleHelp,
+  Clipboard,
+  ExternalLink,
+  Minus,
+  Share2,
   Sparkles,
-  Star,
-  ThumbsUp,
-  X,
+  Trophy,
+  Zap,
 } from "lucide-react";
-
-import { SiteNav, SiteFooter } from "@/app/routes";
+import { SiteFooter, SiteNav } from "@/app/routes";
 import { ToolLogo } from "@/app/components/ToolLogo";
-import type { ComparisonRow } from "@/app/lib/data/comparisons";
 import {
-  allComparisons,
-  getComparisonBySlug,
+  getComparisonResult,
+  getComparisonRowWinner,
+  type Comparison,
+  type ComparisonResult,
+  type ComparisonRow,
 } from "@/app/lib/data/comparisons";
 
-type Winner = "a" | "b" | "tie";
-type Tab = "all" | "core" | "multimodal" | "pricing";
+type ApiResponse = {
+  success?: boolean;
+  comparison?: Comparison;
+  error?: string;
+};
 
-function getToolWebsite(slug: string) {
-  const websites: Record<string, string> = {
-    chatgpt: "https://chatgpt.com",
-    claude: "https://claude.ai",
-    midjourney: "https://midjourney.com",
-    "dall-e": "https://openai.com/index/dall-e-3/",
-    "github-copilot": "https://github.com/features/copilot",
-    cursor: "https://cursor.com",
-    "notion-ai": "https://www.notion.so/product/ai",
-    mem: "https://mem.ai",
-    jasper: "https://www.jasper.ai",
-    "copy-ai": "https://www.copy.ai",
-    runway: "https://runwayml.com",
-    pika: "https://pika.art",
-    gemini: "https://gemini.google.com",
-    perplexity: "https://www.perplexity.ai",
-    you: "https://you.com",
+type RelatedComparison = {
+  slug: string;
+  title: string;
+  a: {
+    name: string;
+    slug: string;
+    logo?: string;
+    rating?: number | null;
   };
-
-  return websites[slug] ?? "#";
-}
-
-function getToolCreator(slug: string) {
-  const creators: Record<string, string> = {
-    chatgpt: "OpenAI",
-    claude: "Anthropic",
-    midjourney: "Midjourney",
-    "dall-e": "OpenAI",
-    "github-copilot": "GitHub / Microsoft",
-    cursor: "Anysphere",
-    "notion-ai": "Notion",
-    mem: "Mem",
-    jasper: "Jasper",
-    "copy-ai": "Copy.ai",
-    runway: "Runway",
-    pika: "Pika",
-    gemini: "Google",
-    perplexity: "Perplexity",
-    you: "You.com",
+  b: {
+    name: string;
+    slug: string;
+    logo?: string;
+    rating?: number | null;
   };
+};
 
-  return creators[slug] ?? "AI Company";
+type RelatedResponse = {
+  success?: boolean;
+  comparisons?: Comparison[];
+};
+
+function safeText(value: unknown, fallback = "—") {
+  const text = String(value ?? "").trim();
+  return text || fallback;
 }
 
-function parseNumber(value: string) {
-  const match = value.match(/[\d,.]+/);
-
-  if (!match) {
-    return null;
-  }
-
-  const number = Number(match[0].replace(/,/g, ""));
-
-  return Number.isFinite(number) ? number : null;
+function formatRating(value: unknown) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toFixed(1) : "—";
 }
 
-function getWinner(row: ComparisonRow): Winner {
-  if (row.a === "—" || row.b === "—") {
-    return "tie";
+function formatValue(value: unknown) {
+  if (typeof value === "boolean") {
+    return value ? "Yes" : "No";
   }
 
-  if (row.a.trim().toLowerCase() === row.b.trim().toLowerCase()) {
-    return "tie";
-  }
-
-  if (row.type === "higher" || row.type === "lower") {
-    const a = parseNumber(row.a);
-    const b = parseNumber(row.b);
-
-    if (a === null || b === null || a === b) {
-      return "tie";
-    }
-
-    if (row.type === "higher") {
-      return a > b ? "a" : "b";
-    }
-
-    return a < b ? "a" : "b";
-  }
-
-  if (row.type === "number") {
-    const a = parseNumber(row.a);
-    const b = parseNumber(row.b);
-
-    if (a === null || b === null || a === b) {
-      return "tie";
-    }
-
-    return a > b ? "a" : "b";
-  }
-
-  if (row.type === "boolean") {
-    const aYes = row.a.toLowerCase().startsWith("yes");
-    const bYes = row.b.toLowerCase().startsWith("yes");
-
-    if (aYes && !bYes) {
-      return "a";
-    }
-
-    if (bYes && !aYes) {
-      return "b";
-    }
-  }
-
-  return "tie";
+  return safeText(value);
 }
 
-function getCategory(label: string) {
-  const value = label.toLowerCase();
+function getCategory(row: ComparisonRow) {
+  const label = row.label.toLowerCase();
 
   if (
-    value.includes("price") ||
-    value.includes("free") ||
-    value.includes("cost") ||
-    value.includes("plan")
+    label.includes("price") ||
+    label.includes("pricing") ||
+    label.includes("cost") ||
+    label.includes("free")
   ) {
-    return "pricing";
+    return "Pricing";
   }
 
   if (
-    value.includes("image") ||
-    value.includes("voice") ||
-    value.includes("multimodal") ||
-    value.includes("video") ||
-    value.includes("audio")
+    label.includes("image") ||
+    label.includes("video") ||
+    label.includes("audio") ||
+    label.includes("multimodal")
   ) {
-    return "multimodal";
+    return "Capabilities";
   }
 
-  return "core";
+  if (
+    label.includes("integration") ||
+    label.includes("platform") ||
+    label.includes("api")
+  ) {
+    return "Ecosystem";
+  }
+
+  return "Core comparison";
 }
 
-function renderValue(value: string, winner: boolean) {
-  const normalized = value.toLowerCase().trim();
+function ScoreBar({
+  value,
+  winner,
+}: {
+  value: number | null | undefined;
+  winner: boolean;
+}) {
+  const numeric = Number(value);
 
-  if (normalized.startsWith("yes")) {
-    return (
-      <div className="flex flex-col items-center gap-1">
-        <span
-          className={[
-            "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold",
-            winner
-              ? "border-emerald-300 bg-emerald-100 text-emerald-800"
-              : "border-emerald-200 bg-emerald-50 text-emerald-700",
-          ].join(" ")}
-        >
-          <Check className="size-3.5" />
-          {value}
-        </span>
-
-        {winner && (
-          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">
-            Advantage
-          </span>
-        )}
-      </div>
-    );
+  if (!Number.isFinite(numeric)) {
+    return <div className="h-2 w-full rounded-full bg-slate-100" />;
   }
 
-  if (normalized === "no") {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
-        <X className="size-3.5 text-slate-400" />
-        {value}
-      </span>
-    );
-  }
-
-  const numeric = parseNumber(value);
-
-  if (numeric !== null && numeric > 0 && numeric <= 10) {
-    return (
-      <div className="flex flex-col items-center gap-1">
-        <span
-          className={[
-            "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold",
-            winner
-              ? "border-amber-300 bg-amber-100 text-amber-800"
-              : "border-amber-200 bg-amber-50 text-amber-700",
-          ].join(" ")}
-        >
-          <Star className="size-3 fill-amber-400 text-amber-400" />
-          {value}
-        </span>
-
-        {winner && (
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">
-            Advantage
-          </span>
-        )}
-      </div>
-    );
-  }
+  const percentage = Math.max(0, Math.min(100, numeric * 10));
 
   return (
-    <div className="flex flex-col items-center gap-1">
-      <span
-        className={[
-          "text-xs sm:text-sm",
-          winner ? "font-bold text-emerald-700" : "font-semibold text-foreground",
-        ].join(" ")}
-      >
-        {value}
-      </span>
+    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+      <div
+        className={`h-full rounded-full transition-all ${
+          winner
+            ? "bg-linear-to-r from-violet-500 via-indigo-500 to-cyan-400"
+            : "bg-slate-300"
+        }`}
+        style={{ width: `${percentage}%` }}
+      />
+    </div>
+  );
+}
 
-      {winner && (
-        <span className="rounded-md border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
-          Advantage
+function ToolHeroCard({
+  tool,
+  featured,
+}: {
+  tool: Comparison["a"];
+  featured: boolean;
+}) {
+  const website =
+    typeof tool.website === "string" ? tool.website.trim() : "";
+
+  return (
+    <div
+      className={`relative overflow-hidden rounded-3xl border bg-white p-6 shadow-sm transition duration-300 sm:p-7 ${
+        featured
+          ? "border-violet-200 shadow-[0_20px_70px_rgba(99,102,241,0.14)]"
+          : "border-slate-200"
+      }`}
+    >
+      {featured && (
+        <div className="absolute right-5 top-5 inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-bold text-violet-700">
+          <Trophy className="h-3.5 w-3.5" />
+          Leading score
+        </div>
+      )}
+
+      <div className="flex min-w-0 items-center gap-4">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm">
+          <ToolLogo
+            name={tool.name}
+            logo={tool.logo}
+            size={46}
+          />
+        </div>
+
+        <div className="min-w-0">
+          <h2 className="truncate text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">
+            {tool.name}
+          </h2>
+
+          <p className="mt-1 text-sm text-slate-500">
+            {safeText(tool.category, "AI Tool")}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-7 grid grid-cols-2 gap-3">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+          <p className="text-xs font-medium text-slate-500">
+            Rating
+          </p>
+
+          <p className="mt-1 text-2xl font-black tracking-tight text-slate-950">
+            {formatRating(tool.rating)}
+            <span className="ml-1 text-sm font-semibold text-slate-400">
+              / 5
+            </span>
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+          <p className="text-xs font-medium text-slate-500">
+            Pricing
+          </p>
+
+          <p className="mt-1 truncate text-sm font-bold text-slate-950">
+            {safeText(tool.pricing, "Not specified")}
+          </p>
+        </div>
+      </div>
+
+      {tool.features && tool.features.length > 0 && (
+        <div className="mt-5 flex flex-wrap gap-2">
+          {tool.features.slice(0, 4).map((feature) => (
+            <span
+              key={feature}
+              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600"
+            >
+              {feature}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-6 flex flex-wrap gap-3">
+        {website ? (
+          <a
+            href={website}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-800"
+          >
+            Visit {tool.name}
+            <ExternalLink className="h-4 w-4" />
+          </a>
+        ) : (
+          <span className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-400">
+            Website unavailable
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ComparisonRowView({
+  row,
+}: {
+  row: ComparisonRow;
+}) {
+  const winner = getComparisonRowWinner(row);
+
+  const aValue = formatValue(row.a);
+  const bValue = formatValue(row.b);
+
+  const numericA =
+    typeof row.a === "number" && Number.isFinite(row.a)
+      ? row.a
+      : null;
+
+  const numericB =
+    typeof row.b === "number" && Number.isFinite(row.b)
+      ? row.b
+      : null;
+
+  return (
+    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-slate-100 px-5 py-5 last:border-b-0 sm:grid-cols-[1fr_180px_1fr] sm:gap-6 sm:px-7">
+      <div className="min-w-0 text-right">
+        <div
+          className={`text-sm font-bold ${
+            winner === "a"
+              ? "text-emerald-700"
+              : "text-slate-700"
+          }`}
+        >
+          {aValue}
+        </div>
+
+        {numericA !== null && (
+          <div className="mt-2 ml-auto max-w-40">
+            <ScoreBar
+              value={numericA}
+              winner={winner === "a"}
+            />
+          </div>
+        )}
+
+        {winner === "a" && (
+          <div className="mt-2 flex justify-end">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Better
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="text-center">
+        <span className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+          {row.label}
         </span>
+      </div>
+
+      <div className="min-w-0">
+        <div
+          className={`text-sm font-bold ${
+            winner === "b"
+              ? "text-emerald-700"
+              : "text-slate-700"
+          }`}
+        >
+          {bValue}
+        </div>
+
+        {numericB !== null && (
+          <div className="mt-2 max-w-40">
+            <ScoreBar
+              value={numericB}
+              winner={winner === "b"}
+            />
+          </div>
+        )}
+
+        {winner === "b" && (
+          <div className="mt-2">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Better
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ResultCard({
+  comparison,
+  result,
+}: {
+  comparison: Comparison;
+  result: ComparisonResult;
+}) {
+  const isTie = result.winner === "tie";
+
+  return (
+    <section className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_25px_90px_rgba(15,23,42,0.08)]">
+      <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-violet-500 via-indigo-500 to-cyan-400" />
+
+      <div className="p-6 sm:p-8 lg:p-10">
+        <div className="text-center">
+          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-4 py-2 text-xs font-bold text-violet-700">
+            <Sparkles className="h-4 w-4" />
+            Comparison summary
+          </div>
+
+          <h2 className="mt-5 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+            {isTie
+              ? `${comparison.a.name} and ${comparison.b.name} are closely matched`
+              : `${safeText(result.winnerName)} leads this comparison`}
+          </h2>
+
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
+            The result is calculated from the comparison attributes
+            currently stored for these tools. Text-only attributes are
+            shown separately and are not scored automatically.
+          </p>
+        </div>
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-center">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              {comparison.a.name}
+            </p>
+
+            <p className="mt-2 text-3xl font-black text-slate-950">
+              {result.aWins}
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              decisive wins
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-center">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Ties
+            </p>
+
+            <p className="mt-2 text-3xl font-black text-slate-950">
+              {result.ties}
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              matched metrics
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-center">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              {comparison.b.name}
+            </p>
+
+            <p className="mt-2 text-3xl font-black text-slate-950">
+              {result.bWins}
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              decisive wins
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StrengthCard({
+  title,
+  items,
+  tone,
+}: {
+  title: string;
+  items: string[];
+  tone: "green" | "violet";
+}) {
+  const classes =
+    tone === "green"
+      ? "border-emerald-200 bg-emerald-50/60"
+      : "border-violet-200 bg-violet-50/60";
+
+  const iconClasses =
+    tone === "green"
+      ? "bg-emerald-100 text-emerald-700"
+      : "bg-violet-100 text-violet-700";
+
+  return (
+    <div className={`rounded-3xl border p-6 ${classes}`}>
+      <div className="flex items-center gap-3">
+        <div className={`rounded-xl p-2.5 ${iconClasses}`}>
+          <Zap className="h-5 w-5" />
+        </div>
+
+        <h3 className="font-bold text-slate-950">
+          {title}
+        </h3>
+      </div>
+
+      <div className="mt-5 space-y-3">
+        {items.length ? (
+          items.slice(0, 5).map((item) => (
+            <div
+              key={item}
+              className="flex gap-3 text-sm text-slate-600"
+            >
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+              <span>{item}</span>
+            </div>
+          ))
+        ) : (
+          <p className="text-sm text-slate-500">
+            No specific advantages have been recorded yet.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FAQItem({
+  question,
+  answer,
+}: {
+  question: string;
+  answer: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="flex w-full items-center justify-between gap-5 px-5 py-5 text-left"
+      >
+        <span className="text-sm font-bold text-slate-900 sm:text-base">
+          {question}
+        </span>
+
+        <ChevronDown
+          className={`h-5 w-5 shrink-0 text-slate-400 transition ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {open && (
+        <div className="border-t border-slate-100 px-5 pb-5 pt-4 text-sm leading-6 text-slate-500">
+          {answer}
+        </div>
       )}
     </div>
   );
 }
 
-function ToolCard({
-  name,
-  slug,
-  rating,
-  pricing,
-  accent,
-  bestFor,
-}: {
-  name: string;
-  slug: string;
-  rating?: number;
-  pricing?: string;
-  accent: "orange" | "blue";
-  bestFor: string;
-}) {
-  const accentClasses =
-    accent === "orange"
-      ? "from-orange-500/10 via-orange-50 to-white text-orange-900"
-      : "from-blue-500/10 via-blue-50 to-white text-blue-900";
+export default function ComparisonPage() {
+  const params = useParams();
 
-  return (
-    <Link
-      href={`/tool/${slug}`}
-      className={`block overflow-hidden rounded-3xl border border-slate-200 bg-linear-to-br ${accentClasses} p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md`}
-    >
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="grid size-12 place-items-center rounded-2xl border border-white/80 bg-white/80 shadow-sm">
-            <ToolLogo name={name} size={28} website={getToolWebsite(slug)} />
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-              {getToolCreator(slug)}
-            </p>
-            <h2 className="mt-1 text-xl font-bold text-slate-900">{name}</h2>
-          </div>
-        </div>
+  const slug = Array.isArray(params?.slug)
+    ? params.slug.join("/")
+    : String(params?.slug || "");
 
-        <div className="rounded-full border border-slate-200 bg-white/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
-          {pricing || "N/A"}
-        </div>
-      </div>
+  const [comparison, setComparison] =
+    useState<Comparison | null>(null);
 
-      <div className="flex items-center justify-between gap-2 border-t border-slate-200/80 pt-3">
-        <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
-          <Star className="size-4 fill-amber-400 text-amber-400" />
-          {rating ?? "N/A"}
-        </div>
-
-        <div className="flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white">
-          Best for
-        </div>
-      </div>
-
-      <p className="mt-3 text-sm leading-relaxed text-slate-600">{bestFor}</p>
-    </Link>
-  );
-}
-
-export default function CompareClient() {
-  const params = useParams<{ slug: string }>();
-  const comparison = useMemo(
-    () => getComparisonBySlug(params.slug ?? ""),
-    [params.slug]
+  const [related, setRelated] = useState<RelatedComparison[]>(
+    []
   );
 
-  const [activeTab, setActiveTab] = useState<Tab>("all");
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [relatedLoading, setRelatedLoading] = useState(true);
+  const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
-  const [userVote, setUserVote] = useState<"a" | "b" | null>(null);
-  const [votesA, setVotesA] = useState(3842);
-  const [votesB, setVotesB] = useState(3195);
+  const [activeCategory, setActiveCategory] =
+    useState("All");
+
+  useEffect(() => {
+    if (!slug) return;
+
+    let cancelled = false;
+
+    async function loadComparison() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(
+          `/api/static/comparisons/${encodeURIComponent(slug)}`,
+          {
+            cache: "no-store",
+          }
+        );
+
+        const data = (await response.json()) as ApiResponse;
+
+        if (!response.ok || !data.comparison) {
+          throw new Error(
+            data.error || "Comparison could not be loaded."
+          );
+        }
+
+        if (!cancelled) {
+          setComparison(data.comparison);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setComparison(null);
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Comparison could not be loaded."
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadComparison();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
+  useEffect(() => {
+    if (!comparison) return;
+
+    const currentComparison = comparison;
+
+    let cancelled = false;
+
+    async function loadRelated() {
+      try {
+        setRelatedLoading(true);
+
+        const response = await fetch(
+          "/api/static/comparisons",
+          {
+            cache: "no-store",
+          }
+        );
+
+        const data = (await response.json()) as RelatedResponse;
+
+        if (!response.ok || !data.comparisons) {
+          return;
+        }
+
+        const currentSlug = `${currentComparison.a.slug}-vs-${currentComparison.b.slug}`;
+
+        const items: RelatedComparison[] = data.comparisons
+          .filter((item) => {
+            const itemSlug = `${item.a.slug}-vs-${item.b.slug}`;
+
+            return itemSlug !== currentSlug;
+          })
+          .slice(0, 6)
+          .map((item) => ({
+            slug: `${item.a.slug}-vs-${item.b.slug}`,
+            title: `${item.a.name} vs ${item.b.name}`,
+            a: {
+              name: item.a.name,
+              slug: item.a.slug,
+              logo: item.a.logo ?? undefined,
+              rating: item.a.rating,
+            },
+            b: {
+              name: item.b.name,
+              slug: item.b.slug,
+              logo: item.b.logo ?? undefined,
+              rating: item.b.rating,
+            },
+          }));
+
+        if (!cancelled) {
+          setRelated(items);
+        }
+      } catch {
+        if (!cancelled) {
+          setRelated([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setRelatedLoading(false);
+        }
+      }
+    }
+
+    loadRelated();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [comparison]);
+
+  const result = useMemo<ComparisonResult | null>(() => {
+    if (!comparison) {
+      return null;
+    }
+
+    return getComparisonResult(comparison);
+  }, [comparison]);
+
+  const categories = useMemo(() => {
+    if (!comparison) {
+      return ["All"];
+    }
+
+    const unique = Array.from(
+      new Set(
+        comparison.rows.map((row) => getCategory(row))
+      )
+    );
+
+    return ["All", ...unique];
+  }, [comparison]);
 
   const filteredRows = useMemo(() => {
     if (!comparison) {
       return [];
     }
 
-    if (activeTab === "all") {
+    if (activeCategory === "All") {
       return comparison.rows;
     }
 
-    return comparison.rows.filter((row) => getCategory(row.label) === activeTab);
-  }, [activeTab, comparison]);
+    return comparison.rows.filter(
+      (row) => getCategory(row) === activeCategory
+    );
+  }, [comparison, activeCategory]);
 
-  const totalVotes = votesA + votesB;
-  const percentA = totalVotes === 0 ? 50 : Math.round((votesA / totalVotes) * 100);
-  const percentB = 100 - percentA;
-
-  const relatedComparisons = useMemo(() => {
-    if (!comparison) {
-      return [];
-    }
-
-    return allComparisons
-      .filter((item) => item.slug !== comparison.slug)
-      .filter((item) => item.category === comparison.category)
-      .slice(0, 3);
-  }, [comparison]);
-
-  const faqs = comparison?.faq?.length
-    ? comparison.faq
-    : [
-        {
-          question: `What is the main difference between ${comparison?.a.name ?? "this tool"} and ${comparison?.b.name ?? "that tool"}?`,
-          answer: `${comparison?.a.name ?? "This tool"} and ${comparison?.b.name ?? "that tool"} each have different strengths across the capabilities shown in this comparison. Review the matrix to decide which tool best matches your workflow.`,
-        },
-        {
-          question: "Which option is better for my use case?",
-          answer: "The right choice depends on the work you do most often, your budget, and the features you rely on every day.",
-        },
-      ];
-
-  if (!comparison) {
-    return null;
-  }
-
-  const handleVote = (choice: "a" | "b") => {
-    if (userVote) {
-      return;
-    }
-
-    setUserVote(choice);
-
-    if (choice === "a") {
-      setVotesA((value) => value + 1);
-    } else {
-      setVotesB((value) => value + 1);
-    }
-
-    if (typeof window !== "undefined") {
-      localStorage.setItem(`comparison-vote-${comparison.slug}`, choice);
-    }
-  };
-
-  const handleCopy = async () => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
+  async function copyLink() {
     try {
       await navigator.clipboard.writeText(window.location.href);
+
       setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
+
+      window.setTimeout(() => {
+        setCopied(false);
+      }, 1800);
     } catch {
-      // no-op
+      setCopied(false);
     }
-  };
+  }
 
-  return (
-    <div className="min-h-screen overflow-x-hidden bg-[#faf8f5] font-sans text-[#1a1a1a] antialiased">
-      <SiteNav />
+  async function sharePage() {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: comparison
+            ? `${comparison.a.name} vs ${comparison.b.name}`
+            : "Tool comparison",
+          url: window.location.href,
+        });
+      } catch {}
+      return;
+    }
 
-      <header className="border-b border-border/60 bg-linear-to-b from-primary/5 via-transparent to-transparent">
-        <div className="mx-auto max-w-5xl px-3 pb-8 pt-4 sm:px-6 sm:pb-12 lg:px-8">
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <Link
-              href="/compare"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-primary sm:text-sm"
-            >
-              <ArrowLeft className="size-4" />
-              All comparisons
-            </Link>
+    await copyLink();
+  }
 
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
-            >
-              {copied ? (
-                <>
-                  <CheckCheck className="size-3.5 text-emerald-600" />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="size-3.5" />
-                  Share
-                </>
-              )}
-            </button>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f8fafc]">
+        <SiteNav />
+
+        <main>
+          <div className="mx-auto max-w-7xl px-4 pb-20 pt-12 sm:px-6 lg:px-8">
+            <div className="animate-pulse">
+              <div className="mx-auto h-5 w-40 rounded-full bg-slate-200" />
+              <div className="mx-auto mt-5 h-12 max-w-2xl rounded-xl bg-slate-200" />
+              <div className="mx-auto mt-3 h-6 max-w-xl rounded-lg bg-slate-200" />
+
+              <div className="mt-12 grid gap-5 lg:grid-cols-2">
+                <div className="h-72 rounded-3xl bg-white shadow-sm" />
+                <div className="h-72 rounded-3xl bg-white shadow-sm" />
+              </div>
+
+              <div className="mt-8 h-80 rounded-[2rem] bg-white shadow-sm" />
+            </div>
           </div>
+        </main>
+      </div>
+    );
+  }
 
-          <div className="mx-auto max-w-3xl text-center">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-primary">
-              <Sparkles className="size-3" />
-              {comparison.category}
-            </span>
+  if (!comparison || !result) {
+    return (
+      <div className="min-h-screen bg-[#f8fafc]">
+        <SiteNav />
 
-            <h1 className="mt-3 text-3xl font-black tracking-tight text-foreground sm:text-5xl">
-              {comparison.a.name}{" "}
-              <span className="font-light text-primary">vs</span>{" "}
-              {comparison.b.name}
+        <main className="mx-auto flex min-h-[70vh] max-w-2xl items-center justify-center px-4 py-16">
+          <div className="w-full rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-xl sm:p-12">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
+              <CircleHelp className="h-8 w-8" />
+            </div>
+
+            <h1 className="mt-6 text-2xl font-black tracking-tight text-slate-950">
+              Comparison not found
             </h1>
 
-            <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Compare features, pricing, capabilities, ratings, and real-world use cases side by side.
+            <p className="mt-3 text-sm leading-6 text-slate-500">
+              {error ||
+                "This comparison is unavailable or one of the tools is no longer published."}
             </p>
+
+            <Link
+              href="/compare"
+              className="mt-7 inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-800"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to comparisons
+            </Link>
           </div>
-        </div>
-      </header>
+        </main>
 
-      <main className="mx-auto max-w-5xl px-3 py-6 sm:px-6 sm:py-10 lg:px-8">
-        <section className="relative mb-8 sm:mb-12">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <ToolCard
-              name={comparison.a.name}
-              slug={comparison.a.slug}
-              rating={comparison.ratingA}
-              pricing={comparison.pricingA}
-              accent="orange"
-              bestFor={comparison.prosA[0] || "Strong everyday use"}
-            />
+        <SiteFooter />
+      </div>
+    );
+  }
 
-            <ToolCard
-              name={comparison.b.name}
-              slug={comparison.b.slug}
-              rating={comparison.ratingB}
-              pricing={comparison.pricingB}
-              accent="blue"
-              bestFor={comparison.prosB[0] || "Strong everyday use"}
-            />
-          </div>
+  const winnerTool =
+    result.winner === "a"
+      ? comparison.a
+      : result.winner === "b"
+        ? comparison.b
+        : null;
 
-          <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 rounded-full border border-border/60 bg-background p-3 shadow-md md:block">
-            <ArrowRight className="size-4 text-muted-foreground" />
+  return (
+    <div className="min-h-screen bg-[#f8fafc] text-slate-950">
+      <SiteNav />
+
+      <main>
+        <section className="relative overflow-hidden border-b border-slate-200 bg-white">
+          <div className="absolute left-1/2 top-0 h-125 w-225 -translate-x-1/2 rounded-full bg-linear-to-r from-violet-200/40 via-indigo-200/30 to-cyan-200/30 blur-3xl" />
+
+          <div className="relative mx-auto max-w-7xl px-4 pb-14 pt-8 sm:px-6 sm:pt-12 lg:px-8">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <Link
+                href="/compare"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-950"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                All comparisons
+              </Link>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={copyLink}
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-950"
+                >
+                  {copied ? (
+                    <Check className="h-4 w-4 text-emerald-600" />
+                  ) : (
+                    <Clipboard className="h-4 w-4" />
+                  )}
+
+                  {copied ? "Copied" : "Copy link"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={sharePage}
+                  className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+                >
+                  <Share2 className="h-4 w-4" />
+                  Share
+                </button>
+              </div>
+            </div>
+
+            <div className="mx-auto mt-12 max-w-4xl text-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-4 py-2 text-xs font-bold uppercase tracking-wider text-violet-700">
+                <Sparkles className="h-4 w-4" />
+                AI tool comparison
+              </div>
+
+              <h1 className="mt-6 text-4xl font-black tracking-[-0.04em] text-slate-950 sm:text-5xl lg:text-6xl">
+                {comparison.a.name}
+                <span className="mx-3 bg-linear-to-r from-violet-600 via-indigo-600 to-cyan-500 bg-clip-text text-transparent">
+                  vs
+                </span>
+                {comparison.b.name}
+              </h1>
+
+              <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-500 sm:text-lg">
+                Compare features, ratings, pricing, capabilities and other
+                available data side by side.
+              </p>
+            </div>
+
+            <div className="mt-12 grid items-stretch gap-5 lg:grid-cols-[1fr_auto_1fr]">
+              <ToolHeroCard
+                tool={comparison.a}
+                featured={result.winner === "a"}
+              />
+
+              <div className="hidden items-center justify-center lg:flex">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-200 bg-white text-sm font-black text-slate-400 shadow-lg">
+                  VS
+                </div>
+              </div>
+
+              <ToolHeroCard
+                tool={comparison.b}
+                featured={result.winner === "b"}
+              />
+            </div>
           </div>
         </section>
 
-        <section className="mb-8 sm:mb-12">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          <ResultCard
+            comparison={comparison}
+            result={result}
+          />
+
+          {winnerTool && (
+            <section className="mt-8 overflow-hidden rounded-3xl border border-violet-200 bg-linear-to-r from-violet-600 via-indigo-600 to-cyan-500 p-px shadow-xl">
+              <div className="rounded-[calc(1.5rem-1px)] bg-white px-6 py-7 sm:px-8">
+                <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+                  <div>
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-violet-600">
+                      <Trophy className="h-4 w-4" />
+                      Current comparison leader
+                    </div>
+
+                    <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">
+                      {winnerTool.name}
+                    </h2>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      Leads across{" "}
+                      {result.aWins + result.bWins} decisive comparison
+                      metrics.
+                    </p>
+                  </div>
+
+                  <Link
+                    href={`/tools/${winnerTool.slug}`}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-800"
+                  >
+                    View tool
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            </section>
+          )}
+
+          <section className="mt-12">
+            <div className="mb-6">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-600">
+                Key differences
+              </p>
+
+              <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                What sets them apart
+              </h2>
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-2">
+              <StrengthCard
+                title={`${comparison.a.name} advantages`}
+                items={result.aAdvantages}
+                tone="green"
+              />
+
+              <StrengthCard
+                title={`${comparison.b.name} advantages`}
+                items={result.bAdvantages}
+                tone="violet"
+              />
+            </div>
+          </section>
+
+          {result.tiedFeatures.length > 0 && (
+            <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <div className="flex items-start gap-4">
+                <div className="rounded-xl bg-slate-100 p-2.5 text-slate-600">
+                  <Minus className="h-5 w-5" />
+                </div>
+
+                <div>
+                  <h3 className="font-bold text-slate-950">
+                    Areas where they match
+                  </h3>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {result.tiedFeatures.map((item) => (
+                      <span
+                        key={item}
+                        className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          <section className="mt-14">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                Feature matrix
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-600">
+                Detailed breakdown
               </p>
-              <h2 className="mt-1 text-2xl font-bold text-slate-900">Detailed comparison</h2>
+
+              <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                Side-by-side comparison
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                Values are taken directly from the comparison data stored
+                for each published tool.
+              </p>
             </div>
 
-            <div className="flex flex-wrap gap-2 rounded-full border border-slate-200 bg-white p-1.5 shadow-sm">
-              {(["all", "core", "multimodal", "pricing"] as Tab[]).map((tab) => (
+            <div className="mt-7 flex flex-wrap gap-2">
+              {categories.map((category) => (
                 <button
-                  key={tab}
+                  key={category}
                   type="button"
-                  onClick={() => setActiveTab(tab)}
-                  className={[
-                    "rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition",
-                    activeTab === tab
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-800",
-                  ].join(" ")}
+                  onClick={() => setActiveCategory(category)}
+                  className={`rounded-full px-4 py-2 text-xs font-bold transition ${
+                    activeCategory === category
+                      ? "bg-slate-950 text-white shadow-sm"
+                      : "border border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-950"
+                  }`}
                 >
-                  {tab}
+                  {category}
                 </button>
               ))}
             </div>
-          </div>
 
-          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="min-w-full border-separate border-spacing-0">
-                <thead>
-                  <tr>
-                    <th className="border-b border-slate-200 bg-slate-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                      Category
-                    </th>
-                    <th className="border-b border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-bold text-slate-900">
-                      {comparison.a.name}
-                    </th>
-                    <th className="border-b border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-bold text-slate-900">
-                      {comparison.b.name}
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {filteredRows.map((row) => {
-                    const winner = getWinner(row);
-
-                    return (
-                      <tr key={row.label} className="group">
-                        <td className="border-b border-slate-200 px-4 py-4 align-top text-sm font-medium text-slate-600">
-                          {row.label}
-                        </td>
-                        <td className="border-b border-slate-200 px-4 py-4 align-top text-center">
-                          {renderValue(row.a, winner === "a")}
-                        </td>
-                        <td className="border-b border-slate-200 px-4 py-4 align-top text-center">
-                          {renderValue(row.b, winner === "b")}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <section className="mb-8 grid gap-6 lg:grid-cols-[1.45fr_0.95fr]">
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-            <div className="mb-5 flex items-center gap-2">
-              <Layers className="size-4 text-primary" />
-              <h3 className="text-lg font-bold text-slate-900">Strengths at a glance</h3>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-orange-100 bg-orange-50/80 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-sm font-bold text-orange-900">{comparison.a.name}</span>
-                  <span className="rounded-full bg-orange-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-orange-700">
-                    Strengths
-                  </span>
+            <div className="mt-5 overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+              <div className="grid grid-cols-[1fr_auto_1fr] gap-3 border-b border-slate-200 bg-slate-50 px-5 py-4 sm:grid-cols-[1fr_180px_1fr] sm:gap-6 sm:px-7">
+                <div className="text-right text-xs font-bold uppercase tracking-wider text-slate-500">
+                  {comparison.a.name}
                 </div>
-                <ul className="space-y-2 text-sm text-slate-700">
-                  {comparison.prosA.map((item) => (
-                    <li key={item} className="flex items-start gap-2">
-                      <Check className="mt-0.5 size-4 shrink-0 text-orange-600" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
 
-              <div className="rounded-2xl border border-blue-100 bg-blue-50/80 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-sm font-bold text-blue-900">{comparison.b.name}</span>
-                  <span className="rounded-full bg-blue-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-blue-700">
-                    Strengths
-                  </span>
+                <div className="text-center text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Metric
                 </div>
-                <ul className="space-y-2 text-sm text-slate-700">
-                  {comparison.prosB.map((item) => (
-                    <li key={item} className="flex items-start gap-2">
-                      <Check className="mt-0.5 size-4 shrink-0 text-blue-600" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
 
-          <aside className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-            <div className="mb-4 flex items-center gap-2">
-              <ThumbsUp className="size-4 text-primary" />
-              <h3 className="text-lg font-bold text-slate-900">Community vote</h3>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-700">
-                  <span>{comparison.a.name}</span>
-                  <span>{percentA}%</span>
-                </div>
-                <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
-                  <div className="h-full rounded-full bg-orange-500" style={{ width: `${percentA}%` }} />
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  {comparison.b.name}
                 </div>
               </div>
 
-              <div>
-                <div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-700">
-                  <span>{comparison.b.name}</span>
-                  <span>{percentB}%</span>
+              {filteredRows.length ? (
+                filteredRows.map((row) => (
+                  <ComparisonRowView
+                    key={row.label}
+                    row={row}
+                  />
+                ))
+              ) : (
+                <div className="px-6 py-12 text-center text-sm text-slate-500">
+                  No comparison attributes are available in this category.
                 </div>
-                <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
-                  <div className="h-full rounded-full bg-blue-500" style={{ width: `${percentB}%` }} />
+              )}
+            </div>
+          </section>
+
+          <section className="mt-14">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <div className="flex items-start gap-4">
+                <div className="rounded-xl bg-indigo-50 p-2.5 text-indigo-600">
+                  <CircleHelp className="h-5 w-5" />
+                </div>
+
+                <div>
+                  <h2 className="text-2xl font-black tracking-tight text-slate-950">
+                    How this comparison works
+                  </h2>
+
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+                    Comparison results are generated from published tool
+                    data. Numeric metrics can contribute to the result,
+                    while descriptive information is presented without
+                    inventing a score.
+                  </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => handleVote("a")}
-                  className="rounded-2xl border border-orange-200 bg-orange-50 px-3 py-2 text-sm font-semibold text-orange-700 transition hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-60"
-                  disabled={Boolean(userVote)}
-                >
-                  Vote {comparison.a.name}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleVote("b")}
-                  className="rounded-2xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
-                  disabled={Boolean(userVote)}
-                >
-                  Vote {comparison.b.name}
-                </button>
-              </div>
-
-              <p className="text-xs text-slate-500">
-                {totalVotes.toLocaleString()} total votes • {userVote ? "Thanks for voting." : "Choose the winner that fits your workflow best."}
-              </p>
-            </div>
-          </aside>
-        </section>
-
-        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-            <div className="mb-4 flex items-center gap-2">
-              <HelpCircle className="size-4 text-primary" />
-              <h3 className="text-lg font-bold text-slate-900">Frequently asked questions</h3>
-            </div>
-
-            <div className="space-y-3">
-              {faqs.map((faq, index) => {
-                const isOpen = openFaq === index;
-
-                return (
-                  <div key={faq.question} className="rounded-2xl border border-slate-200 bg-slate-50/60">
-                    <button
-                      type="button"
-                      onClick={() => setOpenFaq(isOpen ? null : index)}
-                      className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
-                    >
-                      <span className="text-sm font-semibold text-slate-800">{faq.question}</span>
-                      <ChevronDown className={['size-4 text-slate-500 transition-transform', isOpen ? 'rotate-180' : ''].join(' ')} />
-                    </button>
-
-                    {isOpen && (
-                      <div className="border-t border-slate-200 px-4 py-3 text-sm leading-relaxed text-slate-600">
-                        {faq.answer}
-                      </div>
-                    )}
+              <div className="mt-7 grid gap-4 md:grid-cols-3">
+                <div className="rounded-2xl bg-slate-50 p-5">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm">
+                    <Zap className="h-5 w-5 text-violet-600" />
                   </div>
-                );
-              })}
-            </div>
-          </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-            <div className="mb-4 flex items-center gap-2">
-              <ShieldCheck className="size-4 text-primary" />
-              <h3 className="text-lg font-bold text-slate-900">Related comparisons</h3>
-            </div>
+                  <h3 className="mt-4 font-bold text-slate-950">
+                    Structured data
+                  </h3>
 
-            <div className="space-y-3">
-              {relatedComparisons.map((item) => (
+                  <p className="mt-2 text-sm leading-6 text-slate-500">
+                    Scores, booleans, counts and attributes come from
+                    the current tool records.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-slate-50 p-5">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                  </div>
+
+                  <h3 className="mt-4 font-bold text-slate-950">
+                    No fabricated metrics
+                  </h3>
+
+                  <p className="mt-2 text-sm leading-6 text-slate-500">
+                    Missing values remain unavailable instead of being
+                    replaced with made-up numbers.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-slate-50 p-5">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm">
+                    <Sparkles className="h-5 w-5 text-cyan-600" />
+                  </div>
+
+                  <h3 className="mt-4 font-bold text-slate-950">
+                    Always dynamic
+                  </h3>
+
+                  <p className="mt-2 text-sm leading-6 text-slate-500">
+                    Published admin changes are reflected when the
+                    comparison is loaded again.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {comparison.faq && comparison.faq.length > 0 && (
+            <section className="mt-14">
+              <div className="mx-auto max-w-3xl">
+                <div className="text-center">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-600">
+                    FAQ
+                  </p>
+
+                  <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                    Frequently asked questions
+                  </h2>
+                </div>
+
+                <div className="mt-7 space-y-3">
+                  {comparison.faq.map((item) => (
+                    <FAQItem
+                      key={item.question}
+                      question={item.question}
+                      answer={item.answer}
+                    />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {!relatedLoading && related.length > 0 && (
+            <section className="mt-14">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-600">
+                    Explore more
+                  </p>
+
+                  <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                    More comparisons
+                  </h2>
+                </div>
+
                 <Link
-                  key={item.slug}
-                  href={`/compare/${item.slug}`}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-3 transition hover:border-primary/30 hover:bg-primary/5"
+                  href="/compare"
+                  className="hidden items-center gap-1.5 text-sm font-bold text-slate-600 transition hover:text-slate-950 sm:flex"
                 >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-900">
-                      {item.a.name} vs {item.b.name}
-                    </p>
-                    <p className="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-slate-500">
-                      {item.category}
-                    </p>
-                  </div>
-                  <ArrowRight className="size-4 shrink-0 text-slate-500" />
+                  View all
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
-              ))}
+              </div>
+
+              <div className="mt-7 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {related.map((item) => (
+                  <Link
+                    key={item.slug}
+                    href={`/compare/${item.slug}`}
+                    className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-violet-200 hover:shadow-xl"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                        <ToolLogo
+                          name={item.a.name}
+                          logo={item.a.logo}
+                          size={30}
+                        />
+                      </div>
+
+                      <div className="text-xs font-black text-slate-400">
+                        VS
+                      </div>
+
+                      <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                        <ToolLogo
+                          name={item.b.name}
+                          logo={item.b.logo}
+                          size={30}
+                        />
+                      </div>
+                    </div>
+
+                    <h3 className="mt-5 font-bold text-slate-950 transition group-hover:text-violet-700">
+                      {item.title}
+                    </h3>
+
+                    <div className="mt-4 flex items-center justify-between text-xs text-slate-400">
+                      <span>
+                        {formatRating(item.a.rating)} vs{" "}
+                        {formatRating(item.b.rating)}
+                      </span>
+
+                      <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <section className="mt-16 overflow-hidden rounded-[2rem] bg-slate-950 p-8 text-white shadow-2xl sm:p-10">
+            <div className="relative">
+              <div className="absolute -right-20 -top-32 h-64 w-64 rounded-full bg-violet-600/30 blur-3xl" />
+              <div className="absolute -bottom-32 -left-20 h-64 w-64 rounded-full bg-cyan-500/20 blur-3xl" />
+
+              <div className="relative flex flex-col justify-between gap-7 lg:flex-row lg:items-center">
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-bold text-slate-300">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Vault of Tools
+                  </div>
+
+                  <h2 className="mt-4 max-w-2xl text-2xl font-black tracking-tight sm:text-3xl">
+                    Compare more AI tools with real directory data.
+                  </h2>
+
+                  <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
+                    Browse published tools and create side-by-side
+                    comparisons whenever you need them.
+                  </p>
+                </div>
+
+                <Link
+                  href="/compare"
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-slate-100"
+                >
+                  Explore comparisons
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </main>
 
       <SiteFooter />

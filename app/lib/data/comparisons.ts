@@ -1,717 +1,698 @@
+import type { PublicTool } from "@/app/lib/data/public-tools";
+
+export type ComparisonWinner = "a" | "b" | "tie";
+
+export type ComparisonRowType =
+  | "higher"
+  | "lower"
+  | "number"
+  | "boolean"
+  | "text";
+
 export type ComparisonRow = {
   label: string;
   a: string;
   b: string;
-  type?: "text" | "number" | "boolean" | "higher" | "lower";
+  type: ComparisonRowType;
 };
 
-export type ComparisonFAQ = {
- question: string;
+export type ComparisonTool = {
+  slug: string;
+  name: string;
+  logo?: string | null;
+  logoUrl?: string | null;
+  imageUrl?: string | null;
+  website?: string | null;
+  category: string;
+  pricing: string;
+  rating: number | null;
+  reviews: number;
+  features: string[];
+  pros: string[];
+  cons: string[];
+  useCases: string[];
+  tags: string[];
+};
+
+export type ComparisonFaq = {
+  question: string;
   answer: string;
 };
 
 export type Comparison = {
   slug: string;
-  a: {
-    name: string;
-    slug: string;
-  };
-  b: {
-    name: string;
-    slug: string;
-  };
   category: string;
   votes: number;
-  ratingA?: number;
-  ratingB?: number;
-  pricingA?: string;
-  pricingB?: string;
+  ratingA: number | null;
+  ratingB: number | null;
+  pricingA: string;
+  pricingB: string;
+  a: ComparisonTool;
+  b: ComparisonTool;
   rows: ComparisonRow[];
   prosA: string[];
   prosB: string[];
-  faq: ComparisonFAQ[];
+  faq: ComparisonFaq[];
 };
 
-export const allComparisons: Comparison[] = [
-  {
-    slug: "chatgpt-vs-claude",
-    a: {
-      name: "ChatGPT",
-      slug: "chatgpt",
-    },
-    b: {
-      name: "Claude",
-      slug: "claude",
-    },
-    category: "AI Chatbots",
-    votes: 4821,
-    ratingA: 4.8,
-    ratingB: 4.9,
-    pricingA: "Freemium",
-    pricingB: "Freemium",
-    rows: [
-      {
-        label: "Overall Rating",
-        a: "4.8",
-        b: "4.9",
-        type: "higher",
-      },
-      {
-        label: "Coding & Reasoning",
-        a: "9.3 / 10",
-        b: "9.8 / 10",
-        type: "higher",
-      },
-      {
-        label: "Context Window",
-        a: "128,000 tokens",
-        b: "200,000 tokens",
-        type: "higher",
-      },
-      {
-        label: "Starting Price",
-        a: "Free / $20 mo",
-        b: "Free / $20 mo",
-        type: "text",
-      },
-      {
-        label: "Free Plan",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "API Available",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "Image Generation",
-        a: "Yes",
-        b: "No",
-        type: "boolean",
-      },
-      {
-        label: "Advanced Voice",
-        a: "Yes",
-        b: "No",
-        type: "boolean",
-      },
-      {
-        label: "Web Browsing",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "Document Analysis",
-        a: "Excellent",
-        b: "Excellent",
-        type: "text",
-      },
-      {
-        label: "Team Plans",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-    ],
-    prosA: [
-      "Strong multimodal capabilities",
-      "Native image generation",
-      "Real-time voice interaction",
-      "Web browsing and research features",
-    ],
-    prosB: [
-      "Strong coding and reasoning performance",
-      "Large context window",
-      "Excellent long-document analysis",
-      "Artifacts and structured workspace features",
-    ],
-    faq: [
-      {
-        question: "Which tool is better for coding?",
-        answer:
-          "Both tools support software development and code generation. Claude is particularly useful for long codebases and structured reasoning, while ChatGPT provides a broader set of multimodal and interactive capabilities.",
-      },
-      {
-        question: "Which tool has the larger context window?",
-        answer:
-          "In this comparison dataset, Claude is listed with a 200,000-token context window while ChatGPT is listed with 128,000 tokens.",
-      },
-      {
-        question: "Do both tools offer free plans?",
-        answer:
-          "Yes. Both tools are represented as having free access options in this comparison.",
-      },
-      {
-        question: "Can both tools generate images?",
-        answer:
-          "ChatGPT is represented as supporting native image generation in this comparison, while Claude is not.",
-      },
-    ],
-  },
-  {
-    slug: "midjourney-vs-dalle",
-    a: {
-      name: "Midjourney",
-      slug: "midjourney",
-    },
-    b: {
-      name: "DALL·E",
-      slug: "dalle",
-    },
-    category: "Image Generation",
-    votes: 3102,
-    ratingA: 4.8,
-    ratingB: 4.6,
-    pricingA: "Paid",
-    pricingB: "Usage Based",
-    rows: [
-      {
-        label: "Overall Rating",
-        a: "4.8",
-        b: "4.6",
-        type: "higher",
-      },
-      {
-        label: "Image Generation",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "Text Rendering",
-        a: "Excellent",
-        b: "Excellent",
-        type: "text",
-      },
-      {
-        label: "API Available",
-        a: "No",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "Free Plan",
-        a: "No",
-        b: "Limited",
-        type: "text",
-      },
-      {
-        label: "Web App",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-    ],
-    prosA: [
-      "Strong artistic image generation",
-      "Detailed visual styles",
-      "Excellent creative exploration",
-      "Large creative community",
-    ],
-    prosB: [
-      "Easy natural-language prompting",
-      "Strong text integration",
-      "API access",
-      "Works well inside broader AI workflows",
-    ],
-    faq: [
-      {
-        question: "Which tool is designed for image generation?",
-        answer:
-          "Both Midjourney and DALL·E are image-generation systems. Their workflows, interfaces and available capabilities differ.",
-      },
-      {
-        question: "Does DALL·E provide API access?",
-        answer:
-          "The comparison dataset lists DALL·E as supporting API access.",
-      },
-    ],
-  },
-  {
-    slug: "copilot-vs-cursor",
-    a: {
-      name: "GitHub Copilot",
-      slug: "github-copilot",
-    },
-    b: {
-      name: "Cursor",
-      slug: "cursor",
-    },
-    category: "Coding",
-    votes: 2874,
-    ratingA: 4.7,
-    ratingB: 4.8,
-    pricingA: "Freemium",
-    pricingB: "Freemium",
-    rows: [
-      {
-        label: "Overall Rating",
-        a: "4.7",
-        b: "4.8",
-        type: "higher",
-      },
-      {
-        label: "Code Completion",
-        a: "Excellent",
-        b: "Excellent",
-        type: "text",
-      },
-      {
-        label: "Codebase Understanding",
-        a: "Excellent",
-        b: "Superior",
-        type: "text",
-      },
-      {
-        label: "Free Plan",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "API Available",
-        a: "Yes",
-        b: "No",
-        type: "boolean",
-      },
-      {
-        label: "IDE Integration",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-    ],
-    prosA: [
-      "Deep GitHub ecosystem integration",
-      "Broad IDE support",
-      "Strong autocomplete",
-      "Useful for everyday development",
-    ],
-    prosB: [
-      "AI-first coding environment",
-      "Strong codebase context",
-      "Agentic coding workflows",
-      "Integrated AI editing experience",
-    ],
-    faq: [
-      {
-        question: "What is the main difference between Copilot and Cursor?",
-        answer:
-          "GitHub Copilot focuses heavily on AI-assisted development across supported editors, while Cursor is an AI-first coding environment with deeper integrated editing workflows.",
-      },
-      {
-        question: "Do both tools have free access?",
-        answer:
-          "The comparison dataset lists free access options for both products.",
-      },
-    ],
-  },
-  {
-    slug: "notion-ai-vs-mem",
-    a: {
-      name: "Notion AI",
-      slug: "notion-ai",
-    },
-    b: {
-      name: "Mem",
-      slug: "mem",
-    },
-    category: "Productivity",
-    votes: 1954,
-    ratingA: 4.5,
-    ratingB: 4.3,
-    pricingA: "Paid",
-    pricingB: "Paid",
-    rows: [
-      {
-        label: "Overall Rating",
-        a: "4.5",
-        b: "4.3",
-        type: "higher",
-      },
-      {
-        label: "AI Writing",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "Knowledge Management",
-        a: "Excellent",
-        b: "Excellent",
-        type: "text",
-      },
-      {
-        label: "Team Collaboration",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "Templates",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-    ],
-    prosA: [
-      "Strong workspace ecosystem",
-      "Documents and databases in one platform",
-      "Excellent collaboration features",
-      "Large template ecosystem",
-    ],
-    prosB: [
-      "AI-focused personal knowledge management",
-      "Fast capture workflows",
-      "Automatic organization",
-      "Strong memory-oriented workflow",
-    ],
-    faq: [
-      {
-        question: "What are Notion AI and Mem used for?",
-        answer:
-          "Both products can support knowledge management and AI-assisted productivity, but their workflows and workspace models differ.",
-      },
-    ],
-  },
-  {
-    slug: "jasper-vs-copyai",
-    a: {
-      name: "Jasper",
-      slug: "jasper",
-    },
-    b: {
-      name: "Copy.ai",
-      slug: "copy-ai",
-    },
-    category: "AI Writing",
-    votes: 1432,
-    ratingA: 4.5,
-    ratingB: 4.4,
-    pricingA: "Paid",
-    pricingB: "Freemium",
-    rows: [
-      {
-        label: "Overall Rating",
-        a: "4.5",
-        b: "4.4",
-        type: "higher",
-      },
-      {
-        label: "AI Writing",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "Marketing Workflows",
-        a: "Excellent",
-        b: "Excellent",
-        type: "text",
-      },
-      {
-        label: "Team Collaboration",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "Free Plan",
-        a: "No",
-        b: "Yes",
-        type: "boolean",
-      },
-    ],
-    prosA: [
-      "Marketing-focused AI workflows",
-      "Brand voice controls",
-      "Strong content creation features",
-      "Team-oriented workflows",
-    ],
-    prosB: [
-      "Workflow automation",
-      "Flexible AI writing tools",
-      "Strong sales and marketing use cases",
-      "Accessible entry-level plan",
-    ],
-    faq: [
-      {
-        question: "Are Jasper and Copy.ai writing tools?",
-        answer:
-          "Yes. Both platforms provide AI-powered writing and marketing workflows.",
-      },
-    ],
-  },
-  {
-    slug: "runway-vs-pika",
-    a: {
-      name: "Runway",
-      slug: "runway",
-    },
-    b: {
-      name: "Pika",
-      slug: "pika",
-    },
-    category: "Video",
-    votes: 1287,
-    ratingA: 4.7,
-    ratingB: 4.4,
-    pricingA: "Freemium",
-    pricingB: "Freemium",
-    rows: [
-      {
-        label: "Overall Rating",
-        a: "4.7",
-        b: "4.4",
-        type: "higher",
-      },
-      {
-        label: "Text-to-Video",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "Image-to-Video",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "Video Editing",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "Free Plan",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-    ],
-    prosA: [
-      "Advanced generative video workflows",
-      "Professional creative controls",
-      "Video editing tools",
-      "Strong production workflow",
-    ],
-    prosB: [
-      "Simple generative video workflow",
-      "Fast creative experimentation",
-      "Accessible interface",
-      "Useful image-to-video features",
-    ],
-    faq: [
-      {
-        question: "Can both tools generate video from text?",
-        answer:
-          "The comparison dataset lists text-to-video support for both platforms.",
-      },
-    ],
-  },
-  {
-    slug: "gemini-vs-chatgpt",
-    a: {
-      name: "Google Gemini",
-      slug: "gemini",
-    },
-    b: {
-      name: "ChatGPT",
-      slug: "chatgpt",
-    },
-    category: "AI Chatbots",
-    votes: 3341,
-    ratingA: 4.7,
-    ratingB: 4.8,
-    pricingA: "Freemium",
-    pricingB: "Freemium",
-    rows: [
-      {
-        label: "Overall Rating",
-        a: "4.7",
-        b: "4.8",
-        type: "higher",
-      },
-      {
-        label: "Multimodal",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "Image Generation",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "Web Search",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "Free Plan",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "API Available",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-    ],
-    prosA: [
-      "Strong Google ecosystem integration",
-      "Multimodal capabilities",
-      "Useful research workflows",
-      "Large-context workflows",
-    ],
-    prosB: [
-      "Broad multimodal capabilities",
-      "Strong conversational workflows",
-      "Image generation",
-      "Large ecosystem of AI features",
-    ],
-    faq: [
-      {
-        question: "Do Gemini and ChatGPT support multimodal workflows?",
-        answer:
-          "Yes. Both platforms provide multimodal capabilities, although their exact features and integrations can differ by plan and model.",
-      },
-    ],
-  },
-  {
-    slug: "perplexity-vs-you",
-    a: {
-      name: "Perplexity",
-      slug: "perplexity",
-    },
-    b: {
-      name: "You.com",
-      slug: "you",
-    },
-    category: "AI Search",
-    votes: 987,
-    ratingA: 4.6,
-    ratingB: 4.2,
-    pricingA: "Freemium",
-    pricingB: "Freemium",
-    rows: [
-      {
-        label: "Overall Rating",
-        a: "4.6",
-        b: "4.2",
-        type: "higher",
-      },
-      {
-        label: "Web Search",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "Citations",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "AI Answers",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-      {
-        label: "Free Plan",
-        a: "Yes",
-        b: "Yes",
-        type: "boolean",
-      },
-    ],
-    prosA: [
-      "Search-first AI experience",
-      "Strong citation workflow",
-      "Research-focused interface",
-      "Fast answers with sources",
-    ],
-    prosB: [
-      "AI-powered search",
-      "Multiple search modes",
-      "Research workflows",
-      "Customizable AI experience",
-    ],
-    faq: [
-      {
-        question: "Are Perplexity and You.com AI search platforms?",
-        answer:
-          "Yes. Both platforms combine web search with AI-generated responses and research-oriented workflows.",
-      },
-    ],
-  },
-];
+export type ComparisonResult = {
+  winner: ComparisonWinner;
+  winnerName: string | null;
+  loserName: string | null;
+  aWins: number;
+  bWins: number;
+  ties: number;
+  totalDecidable: number;
+  aPercentage: number;
+  bPercentage: number;
+  reasons: string[];
+  aAdvantages: string[];
+  bAdvantages: string[];
+  tiedFeatures: string[];
+};
 
-export const alternatives = [
-  { name: "ChatGPT", slug: "chatgpt", count: 12 },
-  { name: "Midjourney", slug: "midjourney", count: 8 },
-  { name: "GitHub Copilot", slug: "github-copilot", count: 9 },
-  { name: "Notion AI", slug: "notion-ai", count: 7 },
-  { name: "Jasper", slug: "jasper", count: 11 },
-  { name: "Runway", slug: "runway", count: 6 },
-];
+export type ComparisonFilterTab = {
+  label: string;
+  icon: "Search" | "Check" | "Zap";
+};
 
-export const filterTabs = [
-  "All",
-  "AI Chatbots",
-  "Image Generation",
-  "Coding",
-  "Productivity",
-  "AI Writing",
-  "Video",
-  "AI Search",
+export type ComparisonAlternative = {
+  slug: string;
+  name: string;
+  category: string;
+};
+
+export const filterTabs: ComparisonFilterTab[] = [
+  {
+    label: "All",
+    icon: "Search",
+  },
+  {
+    label: "AI",
+    icon: "Sparkles" as never,
+  },
+  {
+    label: "Productivity",
+    icon: "Check",
+  },
+  {
+    label: "Developer",
+    icon: "Zap",
+  },
 ];
 
 export const howItWorks = [
   {
-    icon: "Search",
     title: "Choose two tools",
-    desc: "Select two tools from the comparison directory.",
+    description:
+      "Select any two published tools from the directory.",
   },
   {
-    icon: "Check",
-    title: "Compare capabilities",
-    desc: "Review pricing, features, capabilities and important differences.",
+    title: "Compare the data",
+    description:
+      "Tool information is loaded directly from the latest published data.",
   },
   {
-    icon: "Zap",
-    title: "Make an informed decision",
-    desc: "Use the comparison data to identify which capabilities match your needs.",
+    title: "Review the differences",
+    description:
+      "See ratings, features, pricing, strengths, and measurable differences side by side.",
   },
 ];
 
-export function getComparisonBySlug(slug: string) {
-  return allComparisons.find((comparison) => comparison.slug === slug);
+function cleanString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function cleanNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value.trim());
+
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
+function cleanArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => cleanString(item))
+    .filter(Boolean);
+}
+
+function formatBoolean(value: boolean | undefined): string {
+  return value ? "Yes" : "No";
+}
+
+function formatNumber(value: number | null): string {
+  return value === null ? "—" : String(value);
+}
+
+function formatCount(value: string[]): string {
+  return String(value.length);
+}
+
+function getToolCategory(tool: PublicTool): string {
+  return (
+    cleanString(tool.category) ||
+    cleanString(tool.subcategory) ||
+    "AI Tools"
+  );
+}
+
+function getToolWebsite(tool: PublicTool): string | null {
+  return (
+    cleanString(tool.website) ||
+    cleanString(tool.url) ||
+    null
+  );
+}
+
+function getToolLogo(tool: PublicTool): string | null {
+  return (
+    cleanString(tool.logoUrl) ||
+    cleanString(tool.logo) ||
+    cleanString(tool.imageUrl) ||
+    null
+  );
+}
+
+function buildComparisonTool(tool: PublicTool): ComparisonTool {
+  const features = cleanArray(tool.features);
+  const pros = cleanArray(tool.pros);
+  const cons = cleanArray(tool.cons);
+  const useCases = cleanArray(tool.useCases);
+  const tags = cleanArray(tool.tags);
+
+  return {
+    slug: cleanString(tool.slug),
+    name: cleanString(tool.name),
+    logo: cleanString(tool.logo) || null,
+    logoUrl: cleanString(tool.logoUrl) || null,
+    imageUrl: cleanString(tool.imageUrl) || null,
+    website: getToolWebsite(tool),
+    category: getToolCategory(tool),
+    pricing: cleanString(tool.pricing) || "—",
+    rating: cleanNumber(tool.rating),
+    reviews:
+      typeof tool.reviews === "number" && Number.isFinite(tool.reviews)
+        ? tool.reviews
+        : 0,
+    features,
+    pros,
+    cons,
+    useCases,
+    tags,
+  };
+}
+
+function buildRows(
+  a: PublicTool,
+  b: PublicTool
+): ComparisonRow[] {
+  const compareA = a.compare;
+  const compareB = b.compare;
+
+  const rows: ComparisonRow[] = [];
+
+  const overallA = cleanNumber(
+    compareA?.overallRating ?? a.rating
+  );
+
+  const overallB = cleanNumber(
+    compareB?.overallRating ?? b.rating
+  );
+
+  rows.push({
+    label: "Overall Rating",
+    a: formatNumber(overallA),
+    b: formatNumber(overallB),
+    type: "higher",
+  });
+
+  const easeA = cleanNumber(compareA?.easeOfUse);
+  const easeB = cleanNumber(compareB?.easeOfUse);
+
+  if (easeA !== null || easeB !== null) {
+    rows.push({
+      label: "Ease of Use",
+      a: formatNumber(easeA),
+      b: formatNumber(easeB),
+      type: "higher",
+    });
+  }
+
+  const featuresScoreA = cleanNumber(
+    compareA?.featuresScore
+  );
+
+  const featuresScoreB = cleanNumber(
+    compareB?.featuresScore
+  );
+
+  if (
+    featuresScoreA !== null ||
+    featuresScoreB !== null
+  ) {
+    rows.push({
+      label: "Features Score",
+      a: formatNumber(featuresScoreA),
+      b: formatNumber(featuresScoreB),
+      type: "higher",
+    });
+  }
+
+  const valueA = cleanNumber(
+    compareA?.valueForMoney
+  );
+
+  const valueB = cleanNumber(
+    compareB?.valueForMoney
+  );
+
+  if (valueA !== null || valueB !== null) {
+    rows.push({
+      label: "Value for Money",
+      a: formatNumber(valueA),
+      b: formatNumber(valueB),
+      type: "higher",
+    });
+  }
+
+  if (
+    compareA?.aiPowered !== undefined ||
+    compareB?.aiPowered !== undefined
+  ) {
+    rows.push({
+      label: "AI Powered",
+      a: formatBoolean(compareA?.aiPowered),
+      b: formatBoolean(compareB?.aiPowered),
+      type: "boolean",
+    });
+  }
+
+  if (
+    compareA?.apiAvailable !== undefined ||
+    compareB?.apiAvailable !== undefined
+  ) {
+    rows.push({
+      label: "API Available",
+      a: formatBoolean(compareA?.apiAvailable),
+      b: formatBoolean(compareB?.apiAvailable),
+      type: "boolean",
+    });
+  }
+
+  if (
+    compareA?.teamCollaboration !== undefined ||
+    compareB?.teamCollaboration !== undefined
+  ) {
+    rows.push({
+      label: "Team Collaboration",
+      a: formatBoolean(compareA?.teamCollaboration),
+      b: formatBoolean(compareB?.teamCollaboration),
+      type: "boolean",
+    });
+  }
+
+  const platformsA = cleanArray(compareA?.platforms);
+  const platformsB = cleanArray(compareB?.platforms);
+
+  if (platformsA.length || platformsB.length) {
+    rows.push({
+      label: "Platforms",
+      a: formatCount(platformsA),
+      b: formatCount(platformsB),
+      type: "higher",
+    });
+  }
+
+  const integrationsA = cleanArray(
+    compareA?.integrations
+  );
+
+  const integrationsB = cleanArray(
+    compareB?.integrations
+  );
+
+  if (
+    integrationsA.length ||
+    integrationsB.length
+  ) {
+    rows.push({
+      label: "Integrations",
+      a: formatCount(integrationsA),
+      b: formatCount(integrationsB),
+      type: "higher",
+    });
+  }
+
+  rows.push({
+    label: "Reviews",
+    a: String(a.reviews ?? 0),
+    b: String(b.reviews ?? 0),
+    type: "number",
+  });
+
+  rows.push({
+    label: "Features",
+    a: String(cleanArray(a.features).length),
+    b: String(cleanArray(b.features).length),
+    type: "number",
+  });
+
+  const supportA = cleanString(
+    compareA?.customerSupport
+  );
+
+  const supportB = cleanString(
+    compareB?.customerSupport
+  );
+
+  if (supportA || supportB) {
+    rows.push({
+      label: "Customer Support",
+      a: supportA || "—",
+      b: supportB || "—",
+      type: "text",
+    });
+  }
+
+  const customA = Array.isArray(
+    compareA?.attributes
+  )
+    ? compareA.attributes
+    : [];
+
+  const customB = Array.isArray(
+    compareB?.attributes
+  )
+    ? compareB.attributes
+    : [];
+
+  const attributeLabels = new Set<string>();
+
+  customA.forEach((attribute) => {
+    const label = cleanString(attribute?.label);
+
+    if (label) {
+      attributeLabels.add(label);
+    }
+  });
+
+  customB.forEach((attribute) => {
+    const label = cleanString(attribute?.label);
+
+    if (label) {
+      attributeLabels.add(label);
+    }
+  });
+
+  attributeLabels.forEach((label) => {
+    const aAttribute = customA.find(
+      (attribute) =>
+        cleanString(attribute?.label).toLowerCase() ===
+        label.toLowerCase()
+    );
+
+    const bAttribute = customB.find(
+      (attribute) =>
+        cleanString(attribute?.label).toLowerCase() ===
+        label.toLowerCase()
+    );
+
+    rows.push({
+      label,
+      a: cleanString(aAttribute?.value) || "—",
+      b: cleanString(bAttribute?.value) || "—",
+      type: "text",
+    });
+  });
+
+  return rows;
+}
+
+function buildFaq(
+  a: PublicTool,
+  b: PublicTool
+): ComparisonFaq[] {
+  return [
+    {
+      question: `What is the main difference between ${a.name} and ${b.name}?`,
+      answer: `${a.name} and ${b.name} are compared using their current published tool data, including ratings, pricing, features, capabilities, and comparison fields configured in the admin dashboard.`,
+    },
+    {
+      question: `Which tool has the higher rating?`,
+      answer: `The current ratings are ${a.name}: ${formatNumber(cleanNumber(a.rating))} and ${b.name}: ${formatNumber(cleanNumber(b.rating))}.`,
+    },
+    {
+      question: `Where can I check the latest pricing?`,
+      answer: `Pricing shown on this comparison comes from the current published tool records. Check the official website of each tool for the latest pricing details.`,
+    },
+  ];
+}
+
+export function createComparison(
+  a: PublicTool,
+  b: PublicTool
+): Comparison {
+  const first = buildComparisonTool(a);
+  const second = buildComparisonTool(b);
+
+  const slug = `${first.slug}-vs-${second.slug}`;
+
+  return {
+    slug,
+    category:
+      first.category === second.category
+        ? first.category
+        : "AI Tools",
+    votes: 0,
+    ratingA: first.rating,
+    ratingB: second.rating,
+    pricingA: first.pricing,
+    pricingB: second.pricing,
+    a: first,
+    b: second,
+    rows: buildRows(a, b),
+    prosA:
+      first.pros.length > 0
+        ? first.pros
+        : first.features.slice(0, 5),
+    prosB:
+      second.pros.length > 0
+        ? second.pros
+        : second.features.slice(0, 5),
+    faq: buildFaq(a, b),
+  };
+}
+
+export function parseComparisonNumber(
+  value: string
+): number | null {
+  const match = value.match(/[\d,.]+/);
+
+  if (!match) {
+    return null;
+  }
+
+  const number = Number(
+    match[0].replace(/,/g, "")
+  );
+
+  return Number.isFinite(number) ? number : null;
+}
+
+export function getComparisonRowWinner(
+  row: ComparisonRow
+): ComparisonWinner {
+  const aValue = row.a.trim();
+  const bValue = row.b.trim();
+
+  if (!aValue || !bValue) {
+    return "tie";
+  }
+
+  if (
+    aValue === "—" ||
+    bValue === "—" ||
+    aValue === "-" ||
+    bValue === "-"
+  ) {
+    return "tie";
+  }
+
+  if (
+    aValue.toLowerCase() ===
+    bValue.toLowerCase()
+  ) {
+    return "tie";
+  }
+
+  if (
+    row.type === "higher" ||
+    row.type === "lower"
+  ) {
+    const a = parseComparisonNumber(aValue);
+    const b = parseComparisonNumber(bValue);
+
+    if (a === null || b === null || a === b) {
+      return "tie";
+    }
+
+    if (row.type === "higher") {
+      return a > b ? "a" : "b";
+    }
+
+    return a < b ? "a" : "b";
+  }
+
+  if (row.type === "number") {
+    const a = parseComparisonNumber(aValue);
+    const b = parseComparisonNumber(bValue);
+
+    if (a === null || b === null || a === b) {
+      return "tie";
+    }
+
+    return a > b ? "a" : "b";
+  }
+
+  if (row.type === "boolean") {
+    const aYes = /^yes\b/i.test(aValue);
+    const bYes = /^yes\b/i.test(bValue);
+
+    if (aYes && !bYes) {
+      return "a";
+    }
+
+    if (bYes && !aYes) {
+      return "b";
+    }
+
+    return "tie";
+  }
+
+  return "tie";
+}
+
+export function getComparisonResult(
+  comparison: Comparison
+): ComparisonResult {
+  let aWins = 0;
+  let bWins = 0;
+  let ties = 0;
+
+  const aAdvantages: string[] = [];
+  const bAdvantages: string[] = [];
+  const tiedFeatures: string[] = [];
+
+  comparison.rows.forEach((row) => {
+    const winner = getComparisonRowWinner(row);
+
+    if (winner === "a") {
+      aWins += 1;
+      aAdvantages.push(
+        `${row.label}: ${row.a}`
+      );
+      return;
+    }
+
+    if (winner === "b") {
+      bWins += 1;
+      bAdvantages.push(
+        `${row.label}: ${row.b}`
+      );
+      return;
+    }
+
+    ties += 1;
+    tiedFeatures.push(row.label);
+  });
+
+  const totalDecidable = aWins + bWins;
+
+  const aPercentage =
+    totalDecidable > 0
+      ? Math.round(
+          (aWins / totalDecidable) * 100
+        )
+      : 50;
+
+  const bPercentage =
+    totalDecidable > 0
+      ? Math.round(
+          (bWins / totalDecidable) * 100
+        )
+      : 50;
+
+  let winner: ComparisonWinner = "tie";
+
+  if (aWins > bWins) {
+    winner = "a";
+  } else if (bWins > aWins) {
+    winner = "b";
+  }
+
+  const winnerName =
+    winner === "a"
+      ? comparison.a.name
+      : winner === "b"
+        ? comparison.b.name
+        : null;
+
+  const loserName =
+    winner === "a"
+      ? comparison.b.name
+      : winner === "b"
+        ? comparison.a.name
+        : null;
+
+  const reasons =
+    winner === "a"
+      ? aAdvantages.slice(0, 5)
+      : winner === "b"
+        ? bAdvantages.slice(0, 5)
+        : [
+            "Both tools have the same number of deciding feature wins.",
+            "The detailed feature matrix shows where each tool differs.",
+          ];
+
+  return {
+    winner,
+    winnerName,
+    loserName,
+    aWins,
+    bWins,
+    ties,
+    totalDecidable,
+    aPercentage,
+    bPercentage,
+    reasons,
+    aAdvantages,
+    bAdvantages,
+    tiedFeatures,
+  };
+}
+
+export function getComparisonBySlug(
+  slug: string
+): undefined {
+  return undefined;
 }
 
 export function getComparisonByTools(
   toolASlug: string,
   toolBSlug: string
-) {
-  const normalizedA = toolASlug.toLowerCase();
-  const normalizedB = toolBSlug.toLowerCase();
-
-  return allComparisons.find(
-    (comparison) =>
-      (comparison.a.slug === normalizedA &&
-        comparison.b.slug === normalizedB) ||
-      (comparison.a.slug === normalizedB &&
-        comparison.b.slug === normalizedA)
-  );
+): undefined {
+  return undefined;
 }

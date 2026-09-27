@@ -34,21 +34,74 @@ import Link from "next/link";
 import { api } from "../lib/api";
 import { HeroSection } from "../components/HeroSection";
 
-const AIToolsDirectory = dynamic(() => import("../components/AIToolsDirectory"), {
-  loading: () => (
-    <div className="mx-auto max-w-7xl min-h-80 px-4 sm:px-6 lg:px-8 py-8">
-      <div className="h-64 animate-pulse rounded-2xl bg-muted/60" />
-    </div>
-  ),
-});
+const AIToolsDirectory = dynamic(
+  () => import("../components/AIToolsDirectory"),
+  {
+    loading: () => (
+      <div className="mx-auto min-h-80 max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="h-64 animate-pulse rounded-2xl bg-muted/60" />
+      </div>
+    ),
+  }
+);
 
 const SiteFooter = dynamic(() => import("../components/ui/Footer"), {
-  loading: () => <div className="mt-24 h-40 border-t border-border bg-muted/30" />,
+  loading: () => (
+    <div className="mt-24 h-40 border-t border-border bg-muted/30" />
+  ),
 });
 
 export { SiteFooter };
 
 type Pricing = "Free" | "Freemium" | "Paid";
+
+type ToolExtras = {
+  upvotes?: number;
+  clicks?: number;
+  tag?: string;
+};
+
+type ToolItem = Omit<
+  (typeof fallbackTrending)[number],
+  "logo" | "pricing"
+> &
+  ToolExtras & {
+    logo: unknown;
+    pricing: Pricing;
+  };
+
+type PromotedTool = ToolItem & {
+  sponsored?: boolean;
+  featured?: boolean;
+};
+
+type ApiTool = {
+  slug: string;
+  name: string;
+  category: string;
+  pricing?: string;
+  rating?: number;
+  reviews?: number;
+  desc?: string;
+  website?: string;
+  logo?: unknown;
+  upvotes?: number;
+  clicks?: number;
+  sponsored?: boolean;
+  featured?: boolean;
+};
+
+type Comparison = {
+  slug: string;
+  a: string;
+  b: string;
+  category: string;
+};
+
+type FAQ = {
+  q: string;
+  a: string;
+};
 
 const fallbackTrending = [
   {
@@ -119,96 +172,238 @@ const fallbackTrending = [
   },
 ];
 
-export let trending = fallbackTrending;
+export let trending: ToolItem[] = fallbackTrending as ToolItem[];
 
 export const categories = [
-  { slug: "ai-writing", name: "AI Writing", icon: Sparkles, count: 312 },
-  { slug: "ai-image-generator", name: "Image Generation", icon: ImageIcon, count: 248 },
-  { slug: "ai-video", name: "Video", icon: Video, count: 156 },
-  { slug: "ai-coding", name: "Coding", icon: Code, count: 184 },
-  { slug: "ai-productivity", name: "Productivity", icon: Zap, count: 421 },
-  { slug: "ai-marketing", name: "Marketing", icon: Megaphone, count: 198 },
-  { slug: "chatbots", name: "Chatbots", icon: MessageSquare, count: 142 },
-  { slug: "ai-voice", name: "Voice & Audio", icon: Mic, count: 96 },
+  {
+    slug: "ai-writing",
+    name: "AI Writing",
+    icon: Sparkles,
+    count: 312,
+  },
+  {
+    slug: "ai-image-generator",
+    name: "Image Generation",
+    icon: ImageIcon,
+    count: 248,
+  },
+  {
+    slug: "ai-video",
+    name: "Video",
+    icon: Video,
+    count: 156,
+  },
+  {
+    slug: "ai-coding",
+    name: "Coding",
+    icon: Code,
+    count: 184,
+  },
+  {
+    slug: "ai-productivity",
+    name: "Productivity",
+    icon: Zap,
+    count: 421,
+  },
+  {
+    slug: "ai-marketing",
+    name: "Marketing",
+    icon: Megaphone,
+    count: 198,
+  },
+  {
+    slug: "chatbots",
+    name: "Chatbots",
+    icon: MessageSquare,
+    count: 142,
+  },
+  {
+    slug: "ai-voice",
+    name: "Voice & Audio",
+    icon: Mic,
+    count: 96,
+  },
 ];
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getString(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+function getNumber(value: unknown, fallback = 0): number {
+  return typeof value === "number" && Number.isFinite(value)
+    ? value
+    : fallback;
+}
+
+function getBoolean(value: unknown, fallback = false): boolean {
+  return typeof value === "boolean" ? value : fallback;
+}
+
+function toApiTool(value: unknown): ApiTool | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const slug = getString(value.slug);
+
+  if (!slug) {
+    return null;
+  }
+
+  return {
+    slug,
+    name: getString(value.name, "Untitled Tool"),
+    category: getString(value.category, "AI Tools"),
+    pricing: getString(value.pricing, "Free"),
+    rating: getNumber(value.rating),
+    reviews: getNumber(value.reviews),
+    desc: getString(value.desc),
+    website: getString(value.website, "#"),
+    logo: value.logo,
+    upvotes: getNumber(value.upvotes),
+    clicks: getNumber(value.clicks),
+    sponsored: getBoolean(value.sponsored),
+    featured: getBoolean(value.featured),
+  };
+}
+
+function normalizePricing(value: unknown): Pricing {
+  if (value === "Paid") {
+    return "Paid";
+  }
+
+  if (value === "Freemium") {
+    return "Freemium";
+  }
+
+  return "Free";
+}
+
+function logoSrc(logo: unknown): string | undefined {
+  if (typeof logo === "string") {
+    return logo;
+  }
+
+  if (
+    logo &&
+    typeof logo === "object" &&
+    "src" in logo &&
+    typeof logo.src === "string"
+  ) {
+    return logo.src;
+  }
+
+  return undefined;
+}
 
 function PricingBadge({ pricing }: { pricing: Pricing }) {
   const styles =
     pricing === "Free"
       ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
       : pricing === "Paid"
-      ? "bg-amber-50 text-amber-700 border border-amber-200/60"
-      : "bg-indigo-50 text-indigo-700 border border-indigo-200/60";
+        ? "bg-amber-50 text-amber-700 border border-amber-200/60"
+        : "bg-indigo-50 text-indigo-700 border border-indigo-200/60";
+
   return (
-    <span className={`inline-flex items-center rounded-md px-1.5 sm:px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-semibold tracking-wide shrink-0 ${styles}`}>
+    <span
+      className={`inline-flex shrink-0 items-center rounded-md px-1.5 py-0.5 text-[9.5px] font-semibold tracking-wide sm:px-2 sm:text-[10.5px] ${styles}`}
+    >
       {pricing}
     </span>
   );
 }
 
-function logoSrc(logo: unknown): string | undefined {
-  if (typeof logo === "string") return logo;
-  if (logo && typeof logo === "object" && "src" in (logo as { src?: string })) {
-    return (logo as { src: string }).src;
-  }
-  return undefined;
-}
+export function ToolCard({ tool }: { tool: ToolItem }) {
+  const upvotes = Number(tool.upvotes ?? 0);
+  const clicks = Number(tool.clicks ?? 0);
 
-export function ToolCard({ tool }: { tool: (typeof fallbackTrending)[number] & { upvotes?: number; clicks?: number } }) {
-  const upvotes = Number((tool as any).upvotes || 0);
-  const clicks = Number((tool as any).clicks || 0);
-  const tag = (tool as any).tag as string | undefined;
+  const formatCount = (value: number) => {
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(1).replace(/\.0$/, "")}k`;
+    }
+
+    return value;
+  };
 
   return (
     <Link
       href={`/tool/${tool.slug}`}
-      className="group flex flex-col justify-between h-full min-w-0 rounded-2xl border border-gray-200/80 bg-white p-2.5 sm:p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-lg hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-200"
+      className="group flex h-full min-w-0 flex-col justify-between rounded-2xl border border-gray-200/80 bg-white p-2.5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg sm:p-4"
     >
       <div>
-        <div className="flex items-start justify-between gap-1.5 mb-2 sm:mb-3">
-          <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl overflow-hidden border border-gray-150 bg-gray-50/80 shadow-xs grid place-items-center shrink-0 group-hover:scale-105 transition-transform">
-            <ToolLogo name={tool.name} logo={logoSrc(tool.logo)} website={(tool as any).website} size={24} />
+        <div className="mb-2 flex items-start justify-between gap-1.5 sm:mb-3">
+          <div className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-xl border border-gray-150 bg-gray-50/80 shadow-xs transition-transform group-hover:scale-105 sm:h-12 sm:w-12">
+            <ToolLogo
+              name={tool.name}
+              logo={logoSrc(tool.logo)}
+              website={tool.website}
+              size={24}
+            />
           </div>
+
           <div className="flex flex-col items-end gap-1">
-            {tag && (
+            {tool.tag && (
               <span
-                className={`inline-flex items-center gap-0.5 rounded-full px-1.5 sm:px-2 py-0.5 text-[8.5px] sm:text-[9.5px] font-bold uppercase tracking-wider shrink-0 ${
-                  tag === "Sponsored"
-                    ? "bg-amber-100 text-amber-700 border border-amber-200/60"
-                    : "bg-violet-100 text-violet-700 border border-violet-200/60"
+                className={`inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-wider sm:px-2 sm:text-[9.5px] ${
+                  tool.tag === "Sponsored"
+                    ? "border border-amber-200/60 bg-amber-100 text-amber-700"
+                    : "border border-violet-200/60 bg-violet-100 text-violet-700"
                 }`}
               >
-                {tag === "Sponsored" && <Megaphone className="h-2.5 w-2.5" />}
-                {tag}
+                {tool.tag === "Sponsored" && (
+                  <Megaphone className="h-2.5 w-2.5" />
+                )}
+                {tool.tag}
               </span>
             )}
-            <PricingBadge pricing={tool.pricing} />
+
+            <PricingBadge pricing={normalizePricing(tool.pricing)} />
           </div>
         </div>
+
         <div className="min-w-0">
-          <h3 className="font-semibold text-gray-900 text-xs sm:text-sm md:text-[15px] leading-snug truncate group-hover:text-primary transition-colors" title={tool.name}>
+          <h3
+            className="truncate text-xs font-semibold leading-snug text-gray-900 transition-colors group-hover:text-primary sm:text-sm md:text-[15px]"
+            title={tool.name}
+          >
             {tool.name}
           </h3>
-          <p className="text-[10px] sm:text-xs text-gray-500 truncate mt-0.5 font-normal" title={tool.category}>
+
+          <p
+            className="mt-0.5 truncate text-[10px] font-normal text-gray-500 sm:text-xs"
+            title={tool.category}
+          >
             {tool.category}
           </p>
         </div>
       </div>
 
-      <div className="mt-2.5 pt-2 border-t border-gray-100/90 flex items-center justify-between gap-1">
-        <div className="flex items-center gap-1 min-w-0">
-          <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-amber-400 text-amber-400 shrink-0" />
-          <span className="text-[11px] sm:text-xs font-bold text-gray-800">{tool.rating}</span>
-          <span className="hidden min-[380px]:inline text-[9.5px] sm:text-[10.5px] text-gray-400 truncate">({tool.reviews})</span>
+      <div className="mt-2.5 flex items-center justify-between gap-1 border-t border-gray-100/90 pt-2">
+        <div className="flex min-w-0 items-center gap-1">
+          <Star className="h-3 w-3 shrink-0 fill-amber-400 text-amber-400 sm:h-3.5 sm:w-3.5" />
+
+          <span className="text-[11px] font-bold text-gray-800 sm:text-xs">
+            {tool.rating}
+          </span>
+
+          <span className="hidden truncate text-[9.5px] text-gray-400 min-[380px]:inline sm:text-[10.5px]">
+            ({tool.reviews})
+          </span>
         </div>
-        <div className="flex items-center gap-1 text-[9.5px] sm:text-[10.5px] text-gray-500 shrink-0">
+
+        <div className="flex shrink-0 items-center gap-1 text-[9.5px] text-gray-500 sm:text-[10.5px]">
           <span className="inline-flex items-center gap-0.5 rounded-md bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-700">
             <ArrowUp className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-            {upvotes >= 1000 ? `${(upvotes / 1000).toFixed(1).replace(/\.0$/, "")}k` : upvotes}
+            {formatCount(upvotes)}
           </span>
-          <span className="hidden min-[380px]:inline-flex items-center gap-0.5 rounded-md bg-slate-50 px-1.5 py-0.5 font-medium text-slate-600">
+
+          <span className="hidden items-center gap-0.5 rounded-md bg-slate-50 px-1.5 py-0.5 font-medium text-slate-600 min-[380px]:inline-flex">
             <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-            {clicks >= 1000 ? `${(clicks / 1000).toFixed(1).replace(/\.0$/, "")}k` : clicks}
+            {formatCount(clicks)}
           </span>
         </div>
       </div>
@@ -219,112 +414,166 @@ export function ToolCard({ tool }: { tool: (typeof fallbackTrending)[number] & {
 export function SiteNav() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 4);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsOpen(false);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 4);
     };
-    window.addEventListener("keydown", onKeyDown);
+
+    onScroll();
+
+    window.addEventListener("scroll", onScroll, {
+      passive: true,
+    });
+
     return () => {
-      document.body.style.overflow = prev;
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [isOpen]);
 
   return (
     <>
-    <nav
-      className={`sticky top-0 z-50 border-b transition-colors duration-200 ${
-        scrolled
-          ? "border-border bg-white/95 shadow-sm backdrop-blur-md"
-          : "border-border/60 bg-background/90 backdrop-blur-md"
-      }`}
-    >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 lg:px-8">
-        <Link href="/" className="shrink-0 text-base font-bold tracking-tight text-primary sm:text-xl">
-          Vault<span className="text-foreground"> of Tools</span>
-        </Link>
-
-        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
-          <Link href="/" className="hover:text-primary transition-colors font-medium">
-            Home
-          </Link>
-          <Link href="/discover" className="hover:text-primary transition-colors">
-            Discover
-          </Link>
-          <Link href="/categories" className="hover:text-primary transition-colors">
-            Categories
-          </Link>
-          <Link href="/compare" className="hover:text-primary transition-colors">
-            Compare
-          </Link>
-          <Link href="/toolsreview" className="hover:text-primary transition-colors">
-            Tools reviews
-          </Link>
-          <Link href="/blog" className="hover:text-primary transition-colors">
-            Blog
-          </Link>
-          <Link href="/consulting" className="hover:text-primary transition-colors">
-            Consulting
-          </Link>
-        </div>
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+      <nav
+        className={`sticky top-0 z-50 border-b transition-colors duration-200 ${
+          scrolled
+            ? "border-border bg-white/95 shadow-sm backdrop-blur-md"
+            : "border-border/60 bg-background/90 backdrop-blur-md"
+        }`}
+      >
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 lg:px-8">
           <Link
-            href="/submit"
-            className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground md:block"
+            href="/"
+            className="shrink-0 text-base font-bold tracking-tight text-primary sm:text-xl"
           >
-            Submit Tool
+            Vault
+            <span className="text-foreground"> of Tools</span>
           </Link>
-          <AuthMenu />
-          <button
-            type="button"
-            className="grid size-9 shrink-0 place-items-center rounded-lg transition-colors hover:bg-muted md:hidden"
-            aria-label={isOpen ? "Close menu" : "Open menu"}
-            aria-expanded={isOpen}
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+
+          <div className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
+            <Link
+              href="/"
+              className="font-medium transition-colors hover:text-primary"
+            >
+              Home
+            </Link>
+
+            <Link
+              href="/discover"
+              className="transition-colors hover:text-primary"
+            >
+              Discover
+            </Link>
+
+            <Link
+              href="/categories"
+              className="transition-colors hover:text-primary"
+            >
+              Categories
+            </Link>
+
+            <Link
+              href="/compare"
+              className="transition-colors hover:text-primary"
+            >
+              Compare
+            </Link>
+
+            <Link
+              href="/toolsreview"
+              className="transition-colors hover:text-primary"
+            >
+              Tools reviews
+            </Link>
+
+            <Link
+              href="/blog"
+              className="transition-colors hover:text-primary"
+            >
+              Blog
+            </Link>
+
+            <Link
+              href="/consulting"
+              className="transition-colors hover:text-primary"
+            >
+              Consulting
+            </Link>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <Link
+              href="/submit"
+              className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground md:block"
+            >
+              Submit Tool
+            </Link>
+
+            <AuthMenu />
+
+            <button
+              type="button"
+              className="grid size-9 shrink-0 place-items-center rounded-lg transition-colors hover:bg-muted md:hidden"
+              aria-label={isOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isOpen}
+              onClick={() => setIsOpen((value) => !value)}
+            >
+              {isOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
+          </div>
         </div>
-      </div>
-    </nav>
-      {mounted &&
-        isOpen &&
+      </nav>
+
+      {isOpen &&
+        typeof document !== "undefined" &&
         createPortal(
-          <div className="fixed inset-x-0 bottom-0 top-16 z-60 md:hidden">
+          <div className="fixed inset-x-0 bottom-0 top-16 z-[60] md:hidden">
             <button
               type="button"
               aria-label="Close navigation menu"
               className="absolute inset-0 bg-black/25"
               onClick={() => setIsOpen(false)}
             />
+
             <div
               data-testid="mobile-nav-panel"
               className="relative z-10 max-h-full overflow-y-auto overscroll-contain border-t border-border bg-background shadow-xl"
             >
               <div className="flex flex-col space-y-1 px-3 py-3">
-<Link
+                <Link
                   href="/"
                   onClick={() => setIsOpen(false)}
                   className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary"
                 >
                   Home
                 </Link>
+
                 <Link
                   href="/discover"
                   onClick={() => setIsOpen(false)}
@@ -332,6 +581,7 @@ export function SiteNav() {
                 >
                   Discover
                 </Link>
+
                 <Link
                   href="/categories"
                   onClick={() => setIsOpen(false)}
@@ -339,6 +589,7 @@ export function SiteNav() {
                 >
                   Categories
                 </Link>
+
                 <Link
                   href="/compare"
                   onClick={() => setIsOpen(false)}
@@ -346,6 +597,7 @@ export function SiteNav() {
                 >
                   Compare
                 </Link>
+
                 <Link
                   href="/toolsreview"
                   onClick={() => setIsOpen(false)}
@@ -353,6 +605,7 @@ export function SiteNav() {
                 >
                   Tools reviews
                 </Link>
+
                 <Link
                   href="/blog"
                   onClick={() => setIsOpen(false)}
@@ -360,6 +613,7 @@ export function SiteNav() {
                 >
                   Blog
                 </Link>
+
                 <Link
                   href="/consulting"
                   onClick={() => setIsOpen(false)}
@@ -367,6 +621,7 @@ export function SiteNav() {
                 >
                   Consulting
                 </Link>
+
                 <Link
                   href="/submit"
                   onClick={() => setIsOpen(false)}
@@ -383,34 +638,46 @@ export function SiteNav() {
   );
 }
 
-interface ApiTool {
-  slug: string;
-  name: string;
-  category: string;
-  pricing: string;
-  rating: number;
-  reviews: number;
-  desc: string;
-  website: string;
-}
-
 export function HomePage() {
-  const [tools, setTools] = useState(fallbackTrending);
-  const [promoted, setPromoted] = useState<any[]>([]);
+  const [tools, setTools] = useState<ToolItem[]>(fallbackTrending);
+  const [promoted, setPromoted] = useState<PromotedTool[]>([]);
 
-  const fallbackComparisons = [
-    { slug: "chatgpt-vs-claude", a: "ChatGPT", b: "Claude", category: "AI Chatbots" },
-    { slug: "midjourney-vs-dalle", a: "Midjourney", b: "DALL·E", category: "Image Generation" },
-    { slug: "copilot-vs-cursor", a: "Copilot", b: "Cursor", category: "Coding" },
-    { slug: "notion-ai-vs-mem", a: "Notion AI", b: "Mem", category: "Productivity" },
+  const fallbackComparisons: Comparison[] = [
+    {
+      slug: "chatgpt-vs-claude",
+      a: "ChatGPT",
+      b: "Claude",
+      category: "AI Chatbots",
+    },
+    {
+      slug: "midjourney-vs-dalle",
+      a: "Midjourney",
+      b: "DALL·E",
+      category: "Image Generation",
+    },
+    {
+      slug: "copilot-vs-cursor",
+      a: "Copilot",
+      b: "Cursor",
+      category: "Coding",
+    },
+    {
+      slug: "notion-ai-vs-mem",
+      a: "Notion AI",
+      b: "Mem",
+      category: "Productivity",
+    },
   ];
 
-  const fallbackFaqs = [
+  const fallbackFaqs: FAQ[] = [
     {
       q: "How do you choose which tools to list?",
       a: "Every tool is reviewed by our editorial team and the community. We prioritize tools that are actively maintained, well-documented, and solving real problems.",
     },
-    { q: "Is Vault of Tools free to use?", a: "Yes — discovering, comparing, and reading reviews is completely free." },
+    {
+      q: "Is Vault of Tools free to use?",
+      a: "Yes — discovering, comparing, and reading reviews is completely free.",
+    },
     {
       q: "Can I submit my own AI tool?",
       a: "Absolutely. Use the Submit Tool button in the navigation. Submissions are reviewed within 48 hours.",
@@ -437,8 +704,10 @@ export function HomePage() {
     },
   ];
 
-  const [comparisons, setComparisons] = useState(fallbackComparisons);
-  const [faqs, setFaqs] = useState(fallbackFaqs);
+  const [comparisons, setComparisons] =
+    useState<Comparison[]>(fallbackComparisons);
+
+  const [faqs, setFaqs] = useState<FAQ[]>(fallbackFaqs);
 
   useEffect(() => {
     let cancelled = false;
@@ -448,56 +717,157 @@ export function HomePage() {
       api.getHomePromoted(),
       api.getHomeComparisons(),
       api.getHomeFaqs(),
-    ]).then(([toolsRes, promotedRes, comparisonsRes, faqsRes]) => {
-      if (cancelled) return;
+    ]).then(
+      ([toolsRes, promotedRes, comparisonsRes, faqsRes]) => {
+        if (cancelled) {
+          return;
+        }
 
-      if (toolsRes.status === "fulfilled" && Array.isArray(toolsRes.value) && toolsRes.value.length > 0) {
-        const mapped = toolsRes.value.map((t: any) => {
-          const fallback = fallbackTrending.find((f) => f.slug === t.slug);
-          return {
-            slug: t.slug,
-            name: t.name,
-            category: t.category,
-            logo: t.logo || fallback?.logo || fluxLogo,
-            pricing: t.pricing || "Free",
-            rating: t.rating || 0,
-            reviews: t.reviews || 0,
-            desc: t.desc || "",
-            website: t.website || "#",
-            upvotes: t.upvotes || 0,
-            clicks: t.clicks || 0,
-          } as (typeof fallbackTrending)[number] & { upvotes: number; clicks: number };
-        });
-        setTools(mapped as any);
-        trending = mapped as any;
-      }
+        if (
+          toolsRes.status === "fulfilled" &&
+          Array.isArray(toolsRes.value) &&
+          toolsRes.value.length > 0
+        ) {
+          const mapped: ToolItem[] = toolsRes.value
+            .map((item: unknown): ToolItem | null => {
+              const tool = toApiTool(item);
 
-      if (promotedRes.status === "fulfilled" && Array.isArray(promotedRes.value) && promotedRes.value.length > 0) {
-        setPromoted(
-          promotedRes.value.map((t: any) => ({
-            slug: t.slug,
-            name: t.name,
-            category: t.category,
-            logo: t.logo || fluxLogo,
-            pricing: t.pricing || "Free",
-            rating: t.rating || 0,
-            reviews: t.reviews || 0,
-            desc: t.desc || "",
-            website: t.website || "#",
-            sponsored: t.sponsored,
-            featured: t.featured,
-          }))
-        );
-      }
+              if (!tool) {
+                return null;
+              }
 
-      if (comparisonsRes.status === "fulfilled" && Array.isArray(comparisonsRes.value) && comparisonsRes.value.length > 0) {
-        setComparisons(comparisonsRes.value as unknown as typeof fallbackComparisons);
-      }
+              const fallback = fallbackTrending.find(
+                (entry) => entry.slug === tool.slug
+              );
 
-      if (faqsRes.status === "fulfilled" && Array.isArray(faqsRes.value) && faqsRes.value.length > 0) {
-        setFaqs(faqsRes.value as typeof fallbackFaqs);
+              return {
+                slug: tool.slug,
+                name: tool.name,
+                category: tool.category,
+                logo: tool.logo || fallback?.logo || fluxLogo,
+                pricing: normalizePricing(tool.pricing),
+                rating: tool.rating ?? 0,
+                reviews: tool.reviews ?? 0,
+                desc: tool.desc ?? "",
+                website: tool.website || "#",
+                upvotes: tool.upvotes ?? 0,
+                clicks: tool.clicks ?? 0,
+              };
+            })
+            .filter(
+              (tool): tool is ToolItem => tool !== null
+            );
+
+          if (mapped.length > 0) {
+            setTools(mapped);
+            trending = mapped;
+          }
+        }
+
+        if (
+          promotedRes.status === "fulfilled" &&
+          Array.isArray(promotedRes.value) &&
+          promotedRes.value.length > 0
+        ) {
+          const mappedPromoted: PromotedTool[] = promotedRes.value
+            .map((item: unknown): PromotedTool | null => {
+              const tool = toApiTool(item);
+
+              if (!tool) {
+                return null;
+              }
+
+              const fallback = fallbackTrending.find(
+                (entry) => entry.slug === tool.slug
+              );
+
+              return {
+                slug: tool.slug,
+                name: tool.name,
+                category: tool.category,
+                logo: tool.logo || fallback?.logo || fluxLogo,
+                pricing: normalizePricing(tool.pricing),
+                rating: tool.rating ?? 0,
+                reviews: tool.reviews ?? 0,
+                desc: tool.desc ?? "",
+                website: tool.website || "#",
+                upvotes: tool.upvotes ?? 0,
+                clicks: tool.clicks ?? 0,
+                sponsored: tool.sponsored,
+                featured: tool.featured,
+              };
+            })
+            .filter(
+              (tool): tool is PromotedTool => tool !== null
+            );
+
+          setPromoted(mappedPromoted);
+        }
+
+        if (
+          comparisonsRes.status === "fulfilled" &&
+          Array.isArray(comparisonsRes.value) &&
+          comparisonsRes.value.length > 0
+        ) {
+          const mappedComparisons = comparisonsRes.value
+            .map((item: unknown): Comparison | null => {
+              if (!isRecord(item)) {
+                return null;
+              }
+
+              const slug = getString(item.slug);
+
+              if (!slug) {
+                return null;
+              }
+
+              return {
+                slug,
+                a: getString(item.a),
+                b: getString(item.b),
+                category: getString(item.category),
+              };
+            })
+            .filter(
+              (item): item is Comparison => item !== null
+            );
+
+          if (mappedComparisons.length > 0) {
+            setComparisons(mappedComparisons);
+          }
+        }
+
+        if (
+          faqsRes.status === "fulfilled" &&
+          Array.isArray(faqsRes.value) &&
+          faqsRes.value.length > 0
+        ) {
+          const mappedFaqs = faqsRes.value
+            .map((item: unknown): FAQ | null => {
+              if (!isRecord(item)) {
+                return null;
+              }
+
+              const q = getString(item.q);
+              const a = getString(item.a);
+
+              if (!q || !a) {
+                return null;
+              }
+
+              return {
+                q,
+                a,
+              };
+            })
+            .filter((item): item is FAQ => item !== null);
+
+          if (mappedFaqs.length > 0) {
+            setFaqs(mappedFaqs);
+          }
+        }
       }
-    });
+    );
 
     return () => {
       cancelled = true;
@@ -507,10 +877,12 @@ export function HomePage() {
   return (
     <div className="min-h-screen bg-[#faf8f5] font-sans text-[#1a1a1a] antialiased">
       <SiteNav />
+
       <HeroSection />
+
       <AIToolsDirectory />
 
-{promoted.length > 0 && (
+      {promoted.length > 0 && (
         <section className="mx-auto max-w-7xl px-3 pt-8 sm:px-6 lg:px-8">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900 sm:text-2xl">
@@ -519,19 +891,20 @@ export function HomePage() {
               </span>
               Sponsored & Featured
             </h2>
+
             <span className="text-xs font-medium text-muted-foreground">
               Paid placements — independent of organic trending &amp; popularity
             </span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
-            {promoted.map((t) => (
+
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+            {promoted.map((tool) => (
               <ToolCard
-                key={t.slug}
+                key={tool.slug}
                 tool={{
-                  ...t,
-                  logo: t.logo as never,
-                  tag: t.sponsored ? "Sponsored" : "Featured",
-                } as any}
+                  ...tool,
+                  tag: tool.sponsored ? "Sponsored" : "Featured",
+                }}
               />
             ))}
           </div>
@@ -541,7 +914,14 @@ export function HomePage() {
       <section className="mx-auto max-w-7xl px-3 py-8 sm:px-6 sm:py-12 lg:px-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900 sm:text-2xl">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-indigo-500 shrink-0" aria-hidden="true">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="shrink-0 text-indigo-500"
+              aria-hidden="true"
+            >
               <path
                 d="M5 19L19 5M19 5H9M19 5V15"
                 stroke="currentColor"
@@ -552,113 +932,194 @@ export function HomePage() {
             </svg>
             Trending Tools
           </h2>
-          <Link href="/discover?sort=trending" className="flex shrink-0 items-center gap-1 text-xs sm:text-sm font-medium text-indigo-500 hover:underline">
-            View all <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+
+          <Link
+            href="/discover?sort=trending"
+            className="flex shrink-0 items-center gap-1 text-xs font-medium text-indigo-500 hover:underline sm:text-sm"
+          >
+            View all
+            <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2.5 sm:gap-4">
-          {tools.slice(0, 6).map((t) => (
-            <ToolCard key={t.slug} tool={t} />
+
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4 xl:grid-cols-6">
+          {tools.slice(0, 6).map((tool) => (
+            <ToolCard key={tool.slug} tool={tool} />
           ))}
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-3 py-8 sm:px-6 sm:py-12 lg:px-8">
-        <div className="mb-6 sm:mb-8 flex min-w-0 items-center gap-2">
+        <div className="mb-6 flex min-w-0 items-center gap-2 sm:mb-8">
           <Grid2x2 className="h-5 w-5 shrink-0 text-indigo-600 sm:h-7 sm:w-7" />
-          <h2 className="text-xl font-bold text-foreground sm:text-3xl">All Categories</h2>
+
+          <h2 className="text-xl font-bold text-foreground sm:text-3xl">
+            All Categories
+          </h2>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
-          {categories.map((c) => (
+
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
+          {categories.map((category) => (
             <Link
-              key={c.slug}
-              href={`/category/${c.slug}`}
-              className="group flex items-center gap-3 rounded-xl border border-border bg-card p-3 sm:p-4 transition-all hover:border-primary/30 hover:shadow-md"
+              key={category.slug}
+              href={`/category/${category.slug}`}
+              className="group flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-all hover:border-primary/30 hover:shadow-md sm:p-4"
             >
-              <div className="size-9 sm:size-10 rounded-lg bg-primary-muted text-primary grid place-items-center group-hover:scale-105 transition-transform shrink-0">
-                <c.icon className="size-4 sm:size-5" />
+              <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary-muted text-primary transition-transform group-hover:scale-105 sm:size-10">
+                <category.icon className="size-4 sm:size-5" />
               </div>
+
               <div className="min-w-0">
-                <div className="font-semibold text-foreground text-xs sm:text-sm truncate">{c.name}</div>
-                <div className="text-[11px] sm:text-xs text-muted-foreground">{c.count} tools</div>
+                <div className="truncate text-xs font-semibold text-foreground sm:text-sm">
+                  {category.name}
+                </div>
+
+                <div className="text-[11px] text-muted-foreground sm:text-xs">
+                  {category.count} tools
+                </div>
               </div>
             </Link>
           ))}
         </div>
       </section>
 
-      <section className="bg-surface-soft py-10 mt-6 sm:py-20 sm:mt-8">
+      <section className="mt-6 bg-surface-soft py-10 sm:mt-8 sm:py-20">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
             <div>
-              <span className="text-xs font-semibold uppercase tracking-widest text-primary">Side-by-side</span>
+              <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+                Side-by-side
+              </span>
+
               <h2 className="mt-2 text-xl font-bold tracking-tight text-balance text-foreground sm:text-4xl">
                 Compare AI models head to head
               </h2>
-              <p className="mt-2.5 sm:mt-4 text-sm sm:text-lg text-muted-foreground">
-                Cannot decide? Our comparison engine breaks down pricing, context windows, and feature sets so you
-                choose the right stack the first time.
+
+              <p className="mt-2.5 text-sm text-muted-foreground sm:mt-4 sm:text-lg">
+                Cannot decide? Our comparison engine breaks down pricing,
+                context windows, and feature sets so you choose the right stack
+                the first time.
               </p>
-              <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3">
+
+              <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row">
                 <Link
                   href="/compare"
-                  className="rounded-xl bg-foreground px-5 py-3 text-center text-sm font-semibold text-background shadow-sm hover:bg-foreground/90 transition-all"
+                  className="rounded-xl bg-foreground px-5 py-3 text-center text-sm font-semibold text-background shadow-sm transition-all hover:bg-foreground/90"
                 >
                   Start a Comparison
                 </Link>
+
                 <Link
                   href="/compare#popular-comparisons"
-                  className="rounded-xl border border-border bg-card px-5 py-3 text-center text-sm font-semibold text-foreground hover:bg-surface-soft transition-all"
+                  className="rounded-xl border border-border bg-card px-5 py-3 text-center text-sm font-semibold text-foreground transition-all hover:bg-surface-soft"
                 >
                   View Popular Versus
                 </Link>
               </div>
-              <ul className="mt-6 sm:mt-8 grid grid-cols-2 gap-2">
-                {comparisons.map((c, i) => (
-                  <li key={c.slug || `cmp-${i}`}>
+
+              <ul className="mt-6 grid grid-cols-2 gap-2 sm:mt-8">
+                {comparisons.map((comparison, index) => (
+                  <li
+                    key={
+                      comparison.slug ||
+                      `cmp-${index}`
+                    }
+                  >
                     <Link
-                      href={`/compare/${c.slug}`}
-                      className="block rounded-lg border border-border bg-card px-3 py-2 text-xs sm:text-sm hover:border-primary/30 hover:text-primary transition-colors truncate"
+                      href={`/compare/${comparison.slug}`}
+                      className="block truncate rounded-lg border border-border bg-card px-3 py-2 text-xs transition-colors hover:border-primary/30 hover:text-primary sm:text-sm"
                     >
-                      {c.a} <span className="text-muted-foreground">vs</span> {c.b}
+                      {comparison.a}{" "}
+                      <span className="text-muted-foreground">
+                        vs
+                      </span>{" "}
+                      {comparison.b}
                     </Link>
                   </li>
                 ))}
               </ul>
             </div>
+
             <div className="relative">
-              <div className="rounded-2xl border border-border bg-card p-3.5 sm:p-5 shadow-xl shadow-primary/5">
+              <div className="rounded-2xl border border-border bg-card p-3.5 shadow-xl shadow-primary/5 sm:p-5">
                 <div className="grid grid-cols-2 items-center gap-2 sm:gap-3">
-                  <div className="flex flex-col items-center gap-1.5 sm:gap-2 rounded-xl bg-primary-muted/60 px-2.5 py-3 sm:px-3 sm:py-4">
-                    <ToolLogo name="ChatGPT-4o" size={32} className="rounded-lg" />
-                    <span className="text-center text-xs sm:text-sm font-bold text-primary truncate w-full px-1">ChatGPT-4o</span>
+                  <div className="flex flex-col items-center gap-1.5 rounded-xl bg-primary-muted/60 px-2.5 py-3 sm:gap-2 sm:px-3 sm:py-4">
+                    <ToolLogo
+                      name="ChatGPT-4o"
+                      size={32}
+                      className="rounded-lg"
+                    />
+
+                    <span className="w-full truncate px-1 text-center text-xs font-bold text-primary sm:text-sm">
+                      ChatGPT-4o
+                    </span>
                   </div>
-                  <div className="flex flex-col items-center gap-1.5 sm:gap-2 rounded-xl bg-surface-soft px-2.5 py-3 sm:px-3 sm:py-4">
-                    <ToolLogo name="Claude 3.5 Sonnet" size={32} className="rounded-lg" />
-                    <span className="text-center text-xs sm:text-sm font-bold text-foreground truncate w-full px-1">Claude 3.5 Sonnet</span>
+
+                  <div className="flex flex-col items-center gap-1.5 rounded-xl bg-surface-soft px-2.5 py-3 sm:gap-2 sm:px-3 sm:py-4">
+                    <ToolLogo
+                      name="Claude 3.5 Sonnet"
+                      size={32}
+                      className="rounded-lg"
+                    />
+
+                    <span className="w-full truncate px-1 text-center text-xs font-bold text-foreground sm:text-sm">
+                      Claude 3.5 Sonnet
+                    </span>
                   </div>
                 </div>
-                <div className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
-                  {(
-                    [
-                      { label: "Context Window", a: "128k", b: "200k", win: "b" as "a" | "b" },
-                      { label: "Best For", a: "General", b: "Coding & Long-form", win: "b" as "a" | "b" },
-                    ]
-                  ).map((row) => (
-                    <div key={row.label} className="rounded-xl border border-border p-2.5 sm:p-3">
-                      <div className="text-center text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+
+                <div className="mt-3 space-y-2 sm:mt-4 sm:space-y-3">
+                  {[
+                    {
+                      label: "Context Window",
+                      a: "128k",
+                      b: "200k",
+                      win: "b" as "a" | "b",
+                    },
+                    {
+                      label: "Best For",
+                      a: "General",
+                      b: "Coding & Long-form",
+                      win: "b" as "a" | "b",
+                    },
+                  ].map((row) => (
+                    <div
+                      key={row.label}
+                      className="rounded-xl border border-border p-2.5 sm:p-3"
+                    >
+                      <div className="text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-[11px]">
                         {row.label}
                       </div>
-                      <div className="mt-1.5 sm:mt-2 grid grid-cols-2 gap-2 text-center">
-                        <span className={`text-sm sm:text-base font-bold ${row.win === "a" ? "text-primary" : "text-foreground"}`}>{row.a}</span>
-                        <span className={`text-sm sm:text-base font-bold ${row.win === "b" ? "text-primary" : "text-foreground"}`}>{row.b}</span>
+
+                      <div className="mt-1.5 grid grid-cols-2 gap-2 text-center sm:mt-2">
+                        <span
+                          className={`text-sm font-bold sm:text-base ${
+                            row.win === "a"
+                              ? "text-primary"
+                              : "text-foreground"
+                          }`}
+                        >
+                          {row.a}
+                        </span>
+
+                        <span
+                          className={`text-sm font-bold sm:text-base ${
+                            row.win === "b"
+                              ? "text-primary"
+                              : "text-foreground"
+                          }`}
+                        >
+                          {row.b}
+                        </span>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="mt-3 sm:mt-4 rounded-xl bg-primary/5 p-3 sm:p-4 text-center text-xs sm:text-sm font-bold text-primary">
+
+                <div className="mt-3 rounded-xl bg-primary/5 p-3 text-center text-xs font-bold text-primary sm:mt-4 sm:p-4 sm:text-sm">
                   Winner: Claude 3.5
-                  <span className="mt-0.5 block text-[11px] sm:text-xs font-medium text-muted-foreground">
+
+                  <span className="mt-0.5 block text-[11px] font-medium text-muted-foreground sm:text-xs">
                     for Coding &amp; Long-form Tasks
                   </span>
                 </div>
@@ -669,28 +1130,39 @@ export function HomePage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-3 py-8 sm:px-6 sm:py-12 lg:px-8">
-        <div className="rounded-2xl sm:rounded-3xl border border-purple-100 bg-white p-5 sm:px-10 sm:py-10 shadow-sm">
+        <div className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm sm:rounded-3xl sm:px-10 sm:py-10">
           <div className="flex flex-col gap-6 sm:gap-8 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-col items-center gap-3.5 sm:gap-5 text-center lg:flex-row lg:text-left">
-              <div className="flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-primary shadow-lg shrink-0">
-                <Mail className="size-7 sm:size-10 text-white" />
+            <div className="flex flex-col items-center gap-3.5 text-center sm:gap-5 lg:flex-row lg:text-left">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary shadow-lg sm:h-20 sm:w-20">
+                <Mail className="size-7 text-white sm:size-10" />
               </div>
+
               <div>
                 <h2 className="text-xl font-bold leading-tight text-gray-900 sm:text-3xl">
-                  Stay Updated With <br className="hidden sm:inline" />The Latest AI Tools
+                  Stay Updated With
+                  <br className="hidden sm:inline" />
+                  The Latest AI Tools
                 </h2>
-                <p className="mt-2 sm:mt-3 max-w-md text-xs sm:text-base text-gray-500">
-                  Join our newsletter and get the best AI tools, news, and updates delivered to your inbox.
+
+                <p className="mt-2 max-w-md text-xs text-gray-500 sm:mt-3 sm:text-base">
+                  Join our newsletter and get the best AI tools, news, and
+                  updates delivered to your inbox.
                 </p>
               </div>
             </div>
+
             <div className="w-full max-w-xl">
               <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  const form = e.currentTarget;
-                  const input = form.querySelector("input[type='email']") as HTMLInputElement | null;
-                  const email = input?.value?.trim() ?? "";
+                onSubmit={async (event) => {
+                  event.preventDefault();
+
+                  const form = event.currentTarget;
+
+                  const input = form.querySelector(
+                    "input[type='email']"
+                  ) as HTMLInputElement | null;
+
+                  const email = input?.value.trim() ?? "";
 
                   if (!email) {
                     toast.error("Please enter your email address.");
@@ -698,11 +1170,24 @@ export function HomePage() {
                   }
 
                   try {
-                    const response = await api.subscribeNewsletter(email);
-                    toast.success(response.message || "Subscribed successfully!");
-                    if (input) input.value = "";
-                  } catch (error: any) {
-                    toast.error(error.message || "Unable to subscribe right now.");
+                    const response =
+                      await api.subscribeNewsletter(email);
+
+                    toast.success(
+                      response.message ||
+                        "Subscribed successfully!"
+                    );
+
+                    if (input) {
+                      input.value = "";
+                    }
+                  } catch (error: unknown) {
+                    const message =
+                      error instanceof Error
+                        ? error.message
+                        : "Unable to subscribe right now.";
+
+                    toast.error(message);
                   }
                 }}
                 className="flex flex-col gap-2.5 sm:flex-row"
@@ -712,31 +1197,49 @@ export function HomePage() {
                   placeholder="Enter your email"
                   required
                   aria-label="Email address"
-                  className="w-full sm:flex-1 h-11 sm:h-12 rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition-all focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
+                  className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition-all focus:border-purple-500 focus:ring-4 focus:ring-purple-100 sm:h-12 sm:flex-1"
                 />
+
                 <button
                   type="submit"
-                  className="w-full sm:w-auto h-11 sm:h-12 rounded-xl bg-primary px-8 text-sm font-semibold text-white transition-all hover:opacity-90 shrink-0"
+                  className="h-11 w-full shrink-0 rounded-xl bg-primary px-8 text-sm font-semibold text-white transition-all hover:opacity-90 sm:h-12 sm:w-auto"
                 >
                   Subscribe
                 </button>
               </form>
-              <p className="mt-2 sm:mt-3 text-xs text-gray-400 text-center sm:text-left">No spam, unsubscribe anytime.</p>
+
+              <p className="mt-2 text-center text-xs text-gray-400 sm:mt-3 sm:text-left">
+                No spam, unsubscribe anytime.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-3 pb-16 sm:px-6 sm:pb-20 lg:px-8">
-        <h2 className="text-center text-xl font-bold text-foreground sm:text-3xl">Frequently Asked Questions</h2>
-        <div className="mt-6 sm:mt-8 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
-          {faqs.map((f) => (
-            <details key={f.q} className="group rounded-xl border border-border bg-card p-3.5 sm:p-5 transition-shadow open:shadow-md">
+        <h2 className="text-center text-xl font-bold text-foreground sm:text-3xl">
+          Frequently Asked Questions
+        </h2>
+
+        <div className="mt-6 grid grid-cols-1 gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-2">
+          {faqs.map((faq) => (
+            <details
+              key={faq.q}
+              className="group rounded-xl border border-border bg-card p-3.5 transition-shadow open:shadow-md sm:p-5"
+            >
               <summary className="flex cursor-pointer list-none items-start justify-between gap-3 font-semibold text-foreground sm:items-center">
-                <span className="min-w-0 text-left text-xs sm:text-base">{f.q}</span>
-                <span className="shrink-0 text-lg sm:text-xl leading-none text-primary transition-transform group-open:rotate-45">+</span>
+                <span className="min-w-0 text-left text-xs sm:text-base">
+                  {faq.q}
+                </span>
+
+                <span className="shrink-0 text-lg leading-none text-primary transition-transform group-open:rotate-45 sm:text-xl">
+                  +
+                </span>
               </summary>
-              <p className="mt-2.5 sm:mt-3 text-xs sm:text-sm leading-relaxed text-muted-foreground">{f.a}</p>
+
+              <p className="mt-2.5 text-xs leading-relaxed text-muted-foreground sm:mt-3 sm:text-sm">
+                {faq.a}
+              </p>
             </details>
           ))}
         </div>
@@ -746,3 +1249,4 @@ export function HomePage() {
     </div>
   );
 }
+

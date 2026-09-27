@@ -8,51 +8,127 @@ import {
   ensureAdminUser,
   signAdminToken,
 } from "@/app/lib/admin/session";
-import memoryStore from "@/app/lib/data/memoryStore";
 import { getClientIp, checkRateLimit } from "@/app/lib/data/activity-guard";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request);
-    const rateCheck = checkRateLimit(ip, "admin_login", "auth", { max: 5, windowMs: 60_000 });
+
+    const rateCheck = checkRateLimit(
+      ip,
+      "admin_login",
+      "auth",
+      {
+        max: 5,
+        windowMs: 60_000,
+      }
+    );
+
     if (!rateCheck.allowed) {
       return NextResponse.json(
-        { error: "Too many login attempts. Please wait." },
+        {
+          success: false,
+          error: "Too many login attempts. Please wait and try again.",
+        },
         { status: 429 }
       );
     }
 
-    const { email, password } = await request.json();
-    if (!email || !password) {
-      return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
+    type LoginBody = {
+  email?: unknown;
+  password?: unknown;
+};
+
+let body: LoginBody;
+
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid request body.",
+        },
+        { status: 400 }
+      );
     }
 
-    const normalized = String(email).toLowerCase().trim();
-    const adminPassword = getAdminPassword();
+    const email = String(body?.email || "")
+      .trim()
+      .toLowerCase();
 
-    if (!adminPassword || normalized !== ADMIN_EMAIL.toLowerCase() || String(password) !== adminPassword) {
-      return NextResponse.json({ error: "Invalid admin credentials" }, { status: 401 });
+    const password = String(body?.password || "");
+
+    if (!email || !password) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Email and password are required.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const configuredEmail = ADMIN_EMAIL.toLowerCase().trim();
+    const configuredPassword = getAdminPassword();
+
+    if (!configuredPassword) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Admin credentials are not configured.",
+        },
+        { status: 500 }
+      );
+    }
+
+    if (email !== configuredEmail || password !== configuredPassword) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid admin credentials.",
+        },
+        { status: 401 }
+      );
     }
 
     const user = await ensureAdminUser();
-    const valid =
-      typeof user.comparePassword === "function"
-        ? await user.comparePassword(String(password))
-        : await memoryStore.comparePassword(user, String(password));
 
-    if (!valid) {
-      return NextResponse.json({ error: "Invalid admin credentials" }, { status: 401 });
+    if (!user) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Unable to initialize admin account.",
+        },
+        { status: 500 }
+      );
     }
 
     const token = signAdminToken(user);
+
     return NextResponse.json({
+      success: true,
       token,
       user: adminProfile(user),
     });
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: err.message || "Admin login failed" },
-      { status: err.status || 500 }
-    );
-  }
+  } catch (err: unknown) {
+  const message = err instanceof Error ? err.message : "Admin login failed.";
+  const status =
+    typeof err === "object" &&
+    err !== null &&
+    "status" in err &&
+    typeof (err as { status?: unknown }).status === "number"
+      ? Number((err as { status: number }).status)
+      : 500;
+
+  return NextResponse.json(
+    {
+      success: false,
+      error: message,
+    },
+    { status }
+  );
+}
 }
