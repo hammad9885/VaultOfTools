@@ -69,7 +69,7 @@ const settingsSchema = new mongoose.Schema<ISettings>(
     general: {
       siteName: { type: String, default: "Vault of Tools" },
       tagline: { type: String, default: "Discover the best tools for your workflow" },
-      supportEmail: { type: String, default: "support@vaultoftools.com" },
+      supportEmail: { type: String, default: "vaultoftools@gmail.com" },
       timezone: { type: String, default: "UTC" },
       itemsPerPage: { type: Number, default: 12 },
       maintenanceMode: { type: Boolean, default: false },
@@ -102,7 +102,7 @@ const settingsSchema = new mongoose.Schema<ISettings>(
       username: { type: String, default: "" },
       password: { type: String, default: "" },
       fromName: { type: String, default: "Vault of Tools" },
-      fromEmail: { type: String, default: "no-reply@vaultoftools.com" },
+      fromEmail: { type: String, default: "vaultoftools@gmail.com" },
       secure: { type: Boolean, default: true },
     },
     social: {
@@ -139,7 +139,7 @@ const DEFAULTS = {
   general: {
     siteName: "Vault of Tools",
     tagline: "Discover the best tools for your workflow",
-    supportEmail: "support@vaultoftools.com",
+    supportEmail: "vaultoftools@gmail.com",
     timezone: "UTC",
     itemsPerPage: 12,
     maintenanceMode: false,
@@ -172,7 +172,7 @@ const DEFAULTS = {
     username: "",
     password: "",
     fromName: "Vault of Tools",
-    fromEmail: "no-reply@vaultoftools.com",
+    fromEmail: "vaultoftools@gmail.com",
     secure: true,
   },
   social: {

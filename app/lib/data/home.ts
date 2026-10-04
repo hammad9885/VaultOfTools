@@ -1,8 +1,8 @@
 export const stats = [
-  { value: "10K", suffix: "+", label: "AI Tools", icon: "Cpu" },
-  { value: "250", suffix: "+", label: "Categories", icon: "Layers" },
-  { value: "50K", suffix: "+", label: "Reviews", icon: "Star" },
-  { value: "2M", suffix: "+", label: "Users", icon: "Users" },
+  { value: "10", suffix: "+", label: "AI Tools", icon: "Cpu" },
+  { value: "10", suffix: "+", label: "Categories", icon: "Layers" },
+  { value: "50", suffix: "+", label: "Reviews", icon: "Star" },
+  { value: "1000", suffix: "+", label: "Monthly Traffic", icon: "Users" },
 ];
 
 export const comparisons = [

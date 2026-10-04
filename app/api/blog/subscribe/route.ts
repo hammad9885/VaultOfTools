@@ -3,6 +3,7 @@ import { isDBConnected } from "@/app/lib/config/db";
 import NewsletterSubscriber from "@/app/lib/models/NewsletterSubscriber";
 import memoryStore from "@/app/lib/data/memoryStore";
 import { getClientIp, checkRateLimit } from "@/app/lib/data/activity-guard";
+import { alertNewSubscriber } from "@/app/lib/alerts";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -35,6 +36,8 @@ export async function POST(request: NextRequest) {
       if (existing) return NextResponse.json({ success: true, message: "Already subscribed" });
       await memoryStore.addSubscriber(normalizedEmail);
     }
+
+    void alertNewSubscriber(normalizedEmail).catch(() => {});
 
     return NextResponse.json({ success: true, message: "Subscribed successfully" }, { status: 201 });
   } catch (err: any) {

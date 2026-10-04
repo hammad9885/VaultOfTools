@@ -14,10 +14,10 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 const fallbackStats = [
-  { value: 10, suffix: "K+", label: "AI Tools", icon: Bot },
-  { value: 250, suffix: "+", label: "Categories", icon: Grid3X3 },
-  { value: 50, suffix: "K+", label: "Reviews", icon: Star },
-  { value: 2, suffix: "M+", label: "Users", icon: Users },
+  { value: 10, suffix: "+", label: "AI Tools", icon: Bot },
+  { value: 10, suffix: "+", label: "Categories", icon: Grid3X3 },
+  { value: 50, suffix: "+", label: "Reviews", icon: Star },
+  { value: 1000, suffix: "+", label: "Monthly Traffic", icon: Users },
 ];
 
 type Stat = { value: string; suffix: string; label: string; icon: string };

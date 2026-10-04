@@ -23,6 +23,7 @@ import { OverviewData, ToolRow } from "../lib/admin/types";
 import { Card, StatCard } from "../components/admin/cards";
 import { BarChart, DonutChart } from "../components/admin/charts";
 import { Spinner, StatusBadge } from "../components/admin/ui";
+import { SystemHealthPanel } from "../components/admin/SystemHealthPanel";
 import { ToolLogo } from "../components/ToolLogo";
 
 function formatCount(n: number | undefined) {
@@ -391,6 +392,8 @@ export default function AdminDashboardPage() {
           </ul>
         </Card>
       </div>
+
+      <SystemHealthPanel />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card

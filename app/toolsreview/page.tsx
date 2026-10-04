@@ -23,36 +23,95 @@ type ReviewItem = {
   helpful: number;
   createdAt: string;
   user: { displayName: string | null; photoURL: string | null } | null;
+  featured?: boolean;
 };
 
-const fallbackReviews: ReviewItem[] = [
+/**
+ * Pre-seeded expert reviews for top AI tools. These keep the directory populated
+ * and give visitors a benchmark even before any community submissions exist.
+ */
+const FEATURED_REVIEWS: ReviewItem[] = [
   {
-    _id: "1", toolSlug: "flux-studio", toolName: "Flux Studio",
-    rating: 5, text: "Best image generation tool I've used. The quality is unmatched and the community is incredible.", helpful: 24,
-    createdAt: "2025-06-15T10:00:00Z", user: { displayName: "Sarah Chen", photoURL: null },
+    _id: "featured-chatgpt",
+    toolSlug: "chatgpt",
+    toolName: "ChatGPT",
+    rating: 5,
+    text: "Still the most capable general-purpose assistant. Handles long context, code, and analysis in one place, and the GPT-5 class models rarely stall on real work.",
+    helpful: 412,
+    createdAt: "2025-06-20T10:00:00Z",
+    user: { displayName: "Vault Editorial", photoURL: null },
+    featured: true,
   },
   {
-    _id: "2", toolSlug: "codewhisper", toolName: "CodeWhisper",
+    _id: "featured-claude",
+    toolSlug: "claude-3-5",
+    toolName: "Claude 3.5",
+    rating: 5,
+    text: "Best-in-class writing and reasoning. Long documents stay coherent where other models drift, and the artifacts feature is excellent for iterative work.",
+    helpful: 356,
+    createdAt: "2025-06-18T12:30:00Z",
+    user: { displayName: "Vault Editorial", photoURL: null },
+    featured: true,
+  },
+  {
+    _id: "featured-midjourney",
+    toolSlug: "midjourney",
+    toolName: "Midjourney",
+    rating: 5,
+    text: "The quality ceiling for generative imagery is still unmatched, especially for stylised and editorial work. Steeper learning curve than the alternatives.",
+    helpful: 298,
+    createdAt: "2025-06-16T09:15:00Z",
+    user: { displayName: "Vault Editorial", photoURL: null },
+    featured: true,
+  },
+  {
+    _id: "featured-flux",
+    toolSlug: "flux-studio",
+    toolName: "Flux Studio",
+    rating: 4,
+    text: "Flux quality with a far more workable interface than Midjourney. Excellent control over composition and a much friendlier prompt workflow.",
+    helpful: 187,
+    createdAt: "2025-06-14T15:45:00Z",
+    user: { displayName: "Vault Editorial", photoURL: null },
+    featured: true,
+  },
+  {
+    _id: "featured-cursor",
+    toolSlug: "cursor",
+    toolName: "Cursor",
+    rating: 5,
+    text: "The AI-native editor that actually changed our review flow. Whole-repo context and multi-file edits make it the default for day-to-day development.",
+    helpful: 264,
+    createdAt: "2025-06-12T11:00:00Z",
+    user: { displayName: "Vault Editorial", photoURL: null },
+    featured: true,
+  },
+];
+
+const fallbackReviews: ReviewItem[] = [
+  ...FEATURED_REVIEWS,
+  {
+    _id: "1", toolSlug: "codewhisper", toolName: "CodeWhisper",
     rating: 5, text: "Game changer for my daily workflow. Autocomplete is scary accurate.", helpful: 18,
     createdAt: "2025-06-10T14:30:00Z", user: { displayName: "Alex Rivera", photoURL: null },
   },
   {
-    _id: "3", toolSlug: "motionflow", toolName: "MotionFlow",
+    _id: "2", toolSlug: "motionflow", toolName: "MotionFlow",
     rating: 4, text: "Great for quick video edits. Auto subtitle generation saves hours.", helpful: 12,
     createdAt: "2025-06-08T09:15:00Z", user: { displayName: "Jamie Kim", photoURL: null },
   },
   {
-    _id: "4", toolSlug: "synthflow", toolName: "SynthFlow",
+    _id: "3", toolSlug: "synthflow", toolName: "SynthFlow",
     rating: 5, text: "Voices sound incredibly natural. We use it for all our client demos.", helpful: 9,
     createdAt: "2025-06-05T16:45:00Z", user: { displayName: "Marcus Johnson", photoURL: null },
   },
   {
-    _id: "5", toolSlug: "insightlayer", toolName: "InsightLayer",
+    _id: "4", toolSlug: "insightlayer", toolName: "InsightLayer",
     rating: 4, text: "Transforms our raw data into clear reports. Dashboard could use a refresh.", helpful: 7,
     createdAt: "2025-06-01T11:20:00Z", user: { displayName: "Priya Patel", photoURL: null },
   },
   {
-    _id: "6", toolSlug: "lumina-script", toolName: "Lumina Script",
+    _id: "5", toolSlug: "lumina-script", toolName: "Lumina Script",
     rating: 3, text: "Good for first drafts but needs heavy editing for longer pieces.", helpful: 5,
     createdAt: "2025-05-28T08:00:00Z", user: { displayName: "David Park", photoURL: null },
   },
@@ -138,15 +197,22 @@ function ReviewCard({ review, colorIndex }: { review: ReviewItem; colorIndex: nu
             <div className="min-w-0 flex-1">
               <div className="text-xs sm:text-sm font-semibold text-gray-900 truncate">{name}</div>
               <div className="flex items-center gap-1 text-[10.5px] sm:text-xs text-gray-400">
-                Verified User
+                {review.featured ? "Vault Editorial" : "Verified User"}
                 <BadgeCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
               </div>
             </div>
           </div>
 
-          <Link href={`/tool/${review.toolSlug}`} className="text-xs text-indigo-500 hover:underline shrink-0 max-w-[120px] sm:max-w-[180px] truncate text-right">
-            {review.toolName}
-          </Link>
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <Link href={`/tool/${review.toolSlug}`} className="text-xs text-indigo-500 hover:underline max-w-[120px] sm:max-w-[180px] truncate text-right">
+              {review.toolName}
+            </Link>
+            {review.featured && (
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide text-primary">
+                Expert pick
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="mt-3 flex items-center justify-between gap-2">
@@ -178,6 +244,7 @@ export default function ToolsReview() {
   const [stats, setStats] = useState<{ average: number; total: number; breakdown: Record<string, number> } | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [toolFilter, setToolFilter] = useState("All Tools");
   const [ratingFilter, setRatingFilter] = useState("All Ratings");
   const [sortBy, setSortBy] = useState("newest");
 
@@ -204,17 +271,34 @@ export default function ToolsReview() {
     load();
   }, []);
 
+  // Backfill expert reviews for any flagship tool the community has not covered yet,
+  // so the page is never empty even with 0 user submissions.
+  const allReviews = useMemo(() => {
+    const covered = new Set(reviews.map((r) => r.toolSlug));
+    const missing = FEATURED_REVIEWS.filter((r) => !covered.has(r.toolSlug));
+    return missing.length > 0 ? [...reviews, ...missing] : reviews;
+  }, [reviews]);
+
+  const toolOptions = useMemo(() => {
+    const names = Array.from(new Set(allReviews.map((r) => r.toolName))).sort((a, b) =>
+      a.localeCompare(b)
+    );
+    return ["All Tools", ...names];
+  }, [allReviews]);
+
   const filtered = useMemo(() => {
-    let list = reviews.filter((r) => {
+    let list = allReviews.filter((r) => {
       const matchesSearch =
         search.trim() === "" ||
         r.text.toLowerCase().includes(search.toLowerCase()) ||
         r.toolName.toLowerCase().includes(search.toLowerCase());
 
+      const matchesTool = toolFilter === "All Tools" || r.toolName === toolFilter;
+
       const matchesRating =
         ratingFilter === "All Ratings" || r.rating === Number(ratingFilter[0]);
 
-      return matchesSearch && matchesRating;
+      return matchesSearch && matchesTool && matchesRating;
     });
 
     if (sortBy === "newest") list = [...list].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -222,7 +306,7 @@ export default function ToolsReview() {
     if (sortBy === "rating") list = [...list].sort((a, b) => b.rating - a.rating);
 
     return list;
-  }, [reviews, search, ratingFilter, sortBy]);
+  }, [allReviews, search, toolFilter, ratingFilter, sortBy]);
 
   const avgRating = stats?.average ?? 0;
   const totalReviews = stats?.total ?? 0;
@@ -256,6 +340,21 @@ export default function ToolsReview() {
           <p className="mt-3 max-w-2xl mx-auto text-base text-muted-foreground">
             Real feedback from people actually using the tools in our directory.
           </p>
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link
+              href="/submit-review"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition hover:-translate-y-px hover:opacity-90"
+            >
+              <PenLine size={16} />
+              Write a Review
+            </Link>
+            <Link
+              href="/discover"
+              className="inline-flex items-center justify-center rounded-xl border border-border bg-white px-7 py-3 text-sm font-semibold text-foreground transition hover:border-primary/40"
+            >
+              Browse AI Tools
+            </Link>
+          </div>
           <div className="mt-8 flex flex-col gap-2 rounded-2xl border border-gray-100 bg-white p-2 shadow-sm sm:flex-row sm:items-center mx-auto max-w-3xl">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
@@ -266,6 +365,23 @@ export default function ToolsReview() {
                 className="w-full h-10 rounded-xl bg-transparent pl-10 pr-3 text-sm text-gray-700 placeholder:text-gray-300 outline-none"
               />
             </div>
+            <div className="hidden sm:block h-6 w-px bg-gray-100" />
+            <div className="relative">
+              <select
+                value={toolFilter}
+                onChange={(e) => setToolFilter(e.target.value)}
+                aria-label="Filter by tool"
+                className="appearance-none h-10 w-full rounded-xl bg-gray-50 sm:bg-transparent pl-3 pr-8 text-xs font-semibold uppercase tracking-wide text-gray-600 outline-none cursor-pointer"
+              >
+                {toolOptions.map((tool) => (
+                  <option key={tool} value={tool}>
+                    {tool}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            </div>
+
             <div className="hidden sm:block h-6 w-px bg-gray-100" />
             <div className="relative">
               <select
@@ -333,9 +449,24 @@ export default function ToolsReview() {
         </div>
 
         {filtered.length === 0 && (
-          <p className="text-sm text-muted-foreground text-center py-16">
-            No reviews match your search or filters.
-          </p>
+          <div className="mx-auto max-w-md rounded-3xl border border-border bg-white px-6 py-12 text-center shadow-sm">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+              <PenLine size={24} className="text-primary" />
+            </div>
+            <h3 className="mt-5 text-lg font-bold text-foreground">
+              No reviews yet! Be the first one to share your experience with an AI tool.
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Your review helps the next person choose with confidence.
+            </p>
+            <Link
+              href="/submit-review"
+              className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              <PenLine size={15} />
+              Write a Review
+            </Link>
+          </div>
         )}
       </section>
 

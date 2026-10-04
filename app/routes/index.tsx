@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
-import { toast } from "sonner";
 import {
   ArrowRight,
   Star,
@@ -15,7 +14,6 @@ import {
   MessageSquare,
   Megaphone,
   Mic,
-  Mail,
   Menu,
   X,
   Grid2x2,
@@ -1129,92 +1127,6 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-3 py-8 sm:px-6 sm:py-12 lg:px-8">
-        <div className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm sm:rounded-3xl sm:px-10 sm:py-10">
-          <div className="flex flex-col gap-6 sm:gap-8 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-col items-center gap-3.5 text-center sm:gap-5 lg:flex-row lg:text-left">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary shadow-lg sm:h-20 sm:w-20">
-                <Mail className="size-7 text-white sm:size-10" />
-              </div>
-
-              <div>
-                <h2 className="text-xl font-bold leading-tight text-gray-900 sm:text-3xl">
-                  Stay Updated With
-                  <br className="hidden sm:inline" />
-                  The Latest AI Tools
-                </h2>
-
-                <p className="mt-2 max-w-md text-xs text-gray-500 sm:mt-3 sm:text-base">
-                  Join our newsletter and get the best AI tools, news, and
-                  updates delivered to your inbox.
-                </p>
-              </div>
-            </div>
-
-            <div className="w-full max-w-xl">
-              <form
-                onSubmit={async (event) => {
-                  event.preventDefault();
-
-                  const form = event.currentTarget;
-
-                  const input = form.querySelector(
-                    "input[type='email']"
-                  ) as HTMLInputElement | null;
-
-                  const email = input?.value.trim() ?? "";
-
-                  if (!email) {
-                    toast.error("Please enter your email address.");
-                    return;
-                  }
-
-                  try {
-                    const response =
-                      await api.subscribeNewsletter(email);
-
-                    toast.success(
-                      response.message ||
-                        "Subscribed successfully!"
-                    );
-
-                    if (input) {
-                      input.value = "";
-                    }
-                  } catch (error: unknown) {
-                    const message =
-                      error instanceof Error
-                        ? error.message
-                        : "Unable to subscribe right now.";
-
-                    toast.error(message);
-                  }
-                }}
-                className="flex flex-col gap-2.5 sm:flex-row"
-              >
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  required
-                  aria-label="Email address"
-                  className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition-all focus:border-purple-500 focus:ring-4 focus:ring-purple-100 sm:h-12 sm:flex-1"
-                />
-
-                <button
-                  type="submit"
-                  className="h-11 w-full shrink-0 rounded-xl bg-primary px-8 text-sm font-semibold text-white transition-all hover:opacity-90 sm:h-12 sm:w-auto"
-                >
-                  Subscribe
-                </button>
-              </form>
-
-              <p className="mt-2 text-center text-xs text-gray-400 sm:mt-3 sm:text-left">
-                No spam, unsubscribe anytime.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <section className="mx-auto max-w-6xl px-3 pb-16 sm:px-6 sm:pb-20 lg:px-8">
         <h2 className="text-center text-xl font-bold text-foreground sm:text-3xl">

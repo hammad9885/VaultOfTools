@@ -25,6 +25,7 @@ type InfoPageProps = {
   ctaHref?: string;
   secondaryCtaLabel?: string;
   secondaryCtaHref?: string;
+  children?: ReactNode;
 };
 
 export function InfoPage({
@@ -38,6 +39,7 @@ export function InfoPage({
   ctaHref = "/discover",
   secondaryCtaLabel,
   secondaryCtaHref,
+  children,
 }: InfoPageProps) {
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 antialiased">
@@ -185,6 +187,8 @@ export function InfoPage({
             ))}
           </div>
         </section>
+
+        {children}
 
         <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:px-8 lg:pb-24">
           <div className="rounded-[28px] border border-slate-200 bg-linear-to-r from-[#111827] via-[#1f2937] to-[#312e81] p-8 text-white shadow-xl sm:p-10">

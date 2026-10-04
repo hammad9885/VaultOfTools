@@ -4,6 +4,7 @@ import Review from "@/app/lib/models/Review";
 import Submission from "@/app/lib/models/Submission";
 import { requireSuperAdmin, errorResponse } from "@/app/lib/admin/auth";
 import { logActivity } from "@/app/lib/admin/activity";
+import { alertNewAdmin, isPrivilegedRole } from "@/app/lib/alerts";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,7 @@ export async function PATCH(request: Request, { params }: Ctx) {
 
     const body = await request.json();
     const patch: Record<string, any> = {};
+    const previousRole = String(target.role || "user");
     if (body.role !== undefined) {
       if (!ROLES.includes(body.role)) return Response.json({ error: "Invalid role" }, { status: 400 });
       patch.role = body.role;
@@ -40,6 +42,18 @@ export async function PATCH(request: Request, { params }: Ctx) {
 
     Object.assign(target, patch);
     await target.save();
+
+    // Alert on role upgrade into an admin tier (promotion), not demotions.
+    if (patch.role && patch.role !== previousRole && isPrivilegedRole(patch.role)) {
+      void alertNewAdmin({
+        email: target.email,
+        role: patch.role,
+        displayName: target.displayName || undefined,
+        createdBy: user.email,
+        event: "promoted",
+        previousRole,
+      }).catch(() => {});
+    }
 
     await logActivity(user.email, "updated", `user:${target.email}`, { patch });
     return Response.json(target.toProfile());

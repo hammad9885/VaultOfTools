@@ -65,7 +65,7 @@ function DiscoverContent() {
   const urlQuery = searchParams.get("q") || "";
   const urlSort = (searchParams.get("sort") as SortOption) || "trending";
   const urlPricing = searchParams.get("pricing") || "All";
-  const urlCategory = searchParams.get("category") || "All";
+  const urlCategory = searchParams.get("category") || "";
   const urlFreePlan = searchParams.get("freePlan") === "true";
   const urlFreeTrial = searchParams.get("freeTrial") === "true";
   const urlApiAvailable = searchParams.get("apiAvailable") === "true";
@@ -78,7 +78,9 @@ function DiscoverContent() {
   const [sort, setSort] = useState<SortOption>(urlSort);
   const [pricing, setPricing] = useState<PricingFilter>(urlPricing as PricingFilter);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    urlCategory ? urlCategory.split(",").filter(Boolean) : []
+    urlCategory && urlCategory !== "All"
+      ? urlCategory.split(",").filter((c) => Boolean(c) && c !== "All")
+      : []
   );
   const [freePlan, setFreePlan] = useState(urlFreePlan);
   const [freeTrial, setFreeTrial] = useState(urlFreeTrial);
@@ -101,7 +103,14 @@ function DiscoverContent() {
 
   useEffect(() => {
     if (urlQuery !== queryRef.current) setQuery(urlQuery);
-  }, [urlQuery]);
+    setSort(urlSort);
+    const cat = searchParams.get("category") || "";
+    setSelectedCategories(
+      cat && cat !== "All"
+        ? cat.split(",").filter((c) => Boolean(c) && c !== "All")
+        : []
+    );
+  }, [urlQuery, urlSort, searchParams]);
 
   useEffect(() => {
     if (!sidebarOpen) return;
@@ -210,7 +219,11 @@ function DiscoverContent() {
     }
 
     if (selectedCategories.length > 0) {
-      result = result.filter((t) => selectedCategories.includes(t.category));
+      result = result.filter((t) =>
+        selectedCategories.some(
+          (c) => c.toLowerCase() === (t.category || "").toLowerCase()
+        )
+      );
     }
 
     if (freePlan) result = result.filter((t) => t.freePlan);

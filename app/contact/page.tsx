@@ -1,21 +1,22 @@
 import { InfoPage } from "../components/ui/InfoPage";
+import { ContactQueryForm } from "../components/ContactQueryForm";
 import { ArrowUpRight, Mail, Send } from "lucide-react";
 
 export default function ContactPage() {
   return (
     <InfoPage
-      eyebrow="Contact"
+      eyebrow="Contact & Inquiries"
       title="Let’s connect about tools, partnerships, and collaborations."
-      description="Whether you're looking to submit a tool, discuss a partnership, or ask a platform question, we’d love to hear from you."
+      description="Whether you're looking to submit a tool, discuss a partnership, or ask a platform question, reach our team directly at vaultoftools@gmail.com."
       highlights={[
-        "Partnerships and collaborations",
-        "Tool submissions and updates",
-        "General questions and feedback",
+        "Official: vaultoftools@gmail.com",
+        "Partnerships & collaborations",
+        "Fast response within 24 hours",
       ]}
       features={[
         {
-          title: "Email us",
-          description: "Use the contact channel to send questions, suggestions, and partnership ideas to the VaultOfTools team.",
+          title: "Official Email",
+          description: "Reach our core team directly at vaultoftools@gmail.com for partnerships, platform queries, and editorial updates.",
           icon: <Mail className="h-5 w-5" />,
         },
         {
@@ -30,15 +31,17 @@ export default function ContactPage() {
         },
       ]}
       stats={[
-        { value: "Email", label: "Response" },
-        { value: "Partnerships", label: "Open" },
-        { value: "Fast", label: "Response" },
-        { value: "Helpful", label: "Team" },
+        { value: "vaultoftools@gmail.com", label: "Official Email" },
+        { value: "< 24h", label: "Response Time" },
+        { value: "Open", label: "Partnerships" },
+        { value: "Helpful", label: "Support Team" },
       ]}
-      ctaLabel="Submit a tool"
-      ctaHref="/submit"
+      ctaLabel="Email Us Directly"
+      ctaHref="mailto:vaultoftools@gmail.com"
       secondaryCtaLabel="Explore directory"
       secondaryCtaHref="/discover"
-    />
+    >
+      <ContactQueryForm />
+    </InfoPage>
   );
 }

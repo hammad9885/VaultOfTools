@@ -4,6 +4,7 @@ import { requireSuperAdmin, errorResponse } from "@/app/lib/admin/auth";
 import { clampPage } from "@/app/lib/admin/utils";
 import { ensureAdminUser } from "@/app/lib/admin/session";
 import memoryStore from "@/app/lib/data/memoryStore";
+import { alertNewAdmin, isPrivilegedRole } from "@/app/lib/alerts";
 
 export const dynamic = "force-dynamic";
 
@@ -132,6 +133,9 @@ export async function POST(request: Request) {
         displayName: displayName || email.split("@")[0],
         role,
       });
+      if (isPrivilegedRole(role)) {
+        void alertNewAdmin({ email, role, displayName }).catch(() => {});
+      }
       user.status = status;
       const { password: _pw, ...rest } = user;
       return Response.json(rest, { status: 201 });
@@ -149,6 +153,9 @@ export async function POST(request: Request) {
         role,
         status,
       });
+      if (isPrivilegedRole(role)) {
+        void alertNewAdmin({ email, role, displayName }).catch(() => {});
+      }
       const raw = user.toObject ? user.toObject() : { ...user };
       if (raw.password) delete raw.password;
       return Response.json(raw, { status: 201 });
@@ -167,6 +174,9 @@ export async function POST(request: Request) {
         displayName: displayName || email.split("@")[0],
         role,
       });
+      if (isPrivilegedRole(role)) {
+        void alertNewAdmin({ email, role, displayName }).catch(() => {});
+      }
       user.status = status;
       const { password: _pw, ...rest } = user;
       return Response.json(rest, { status: 201 });

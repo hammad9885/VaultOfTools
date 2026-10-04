@@ -128,6 +128,46 @@ export const adminApi = {
   getActivity: (params?: { page?: number; limit?: number }) =>
     request<Paged<ActivityRow>>(`/activity${qs(params)}`),
 
+  // System health & alerts
+  getSystemHealth: () =>
+    request<{
+      diagnostics: {
+        vercelHosting: { status: string; message: string; latencyMs?: number };
+        database: { status: string; message: string; latencyMs?: number };
+        cloudApi: { status: string; message: string; latencyMs?: number };
+        domainSsl: { status: string; message: string; latencyMs?: number };
+        alertTarget?: string;
+        lastChecked: string;
+      };
+      alerts: Array<{
+        id: string;
+        type: string;
+        title: string;
+        message: string;
+        recipient: string;
+        timestamp: string;
+        status: string;
+      }>;
+      officialEmail: string;
+    }>("/health-check"),
+  sendTestAlert: () =>
+    request<{
+      success: boolean;
+      message: string;
+      alert: {
+        id: string;
+        type: string;
+        title: string;
+        message: string;
+        recipient: string;
+        timestamp: string;
+        status: string;
+      };
+    }>("/health-check", {
+      method: "POST",
+      body: JSON.stringify({ action: "test_alert" }),
+    }),
+
   // Data tools
   exportCSV: async (type: "tools" | "users" | "subscribers" | "reviews") => {
     const res = await fetch(`${BASE}/export?type=${type}`, {

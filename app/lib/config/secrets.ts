@@ -39,7 +39,7 @@ export function getJwtSecret(): string {
 
 export function getAdminCredentials() {
   const email = (
-    process.env.ADMIN_EMAIL || "mrhammadghg@gmail.com"
+    process.env.ADMIN_EMAIL || "vaultoftools@gmail.com"
   )
     .toLowerCase()
     .trim();
