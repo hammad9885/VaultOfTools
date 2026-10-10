@@ -201,6 +201,9 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
+      {/* System Health & Infrastructure Alerts Panel */}
+      <SystemHealthPanel />
+
       <div className="grid gap-6 lg:grid-cols-2">
         <Card title="Tools by category" description="Top categories from the live site catalog">
           <BarChart data={data.categoryChart} dataKey="count" />
