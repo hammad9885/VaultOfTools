@@ -31,6 +31,7 @@ export type PublicTool = {
   shortDescription?: string;
   description?: string;
   website?: string;
+  affiliateUrl?: string;
   url?: string;
   features: string[];
   pros: string[];
@@ -173,6 +174,7 @@ export function normalizePublicTool(raw: any): PublicTool {
     shortDescription: raw?.shortDescription || desc,
     description: raw?.description || raw?.fullDescription || desc,
     website,
+    affiliateUrl: raw?.affiliateUrl ? String(raw.affiliateUrl).trim() : undefined,
     url: raw?.url || website,
     features: asArray(raw?.features),
     pros: asArray(raw?.pros),

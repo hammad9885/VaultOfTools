@@ -61,14 +61,13 @@ export function HeroSection() {
 
       <div className="relative z-0 mx-auto max-w-7xl px-3 text-center sm:px-6">
         <h1 className="mt-2 text-2xl font-bold leading-tight tracking-tight text-balance sm:text-4xl lg:text-5xl lg:leading-snug">
-          Discover The Best{" "}
+          Discover the Best{" "}
           <br className="hidden sm:block" />
-          <span className="text-primary">AI Tools</span> For Every Need
+          <span className="text-primary">Tools</span> for Every Need
         </h1>
 
         <p className="mx-auto mt-2.5 max-w-xl text-xs sm:text-base text-muted-foreground sm:mt-4">
-          Find, compare and review the world best AI tools all in one smart
-          directory.
+          Find, compare, and discover the best tools for work, business, creativity, productivity, and more.
         </p>
 
         <div className="mx-auto mt-5 max-w-4xl sm:mt-8">

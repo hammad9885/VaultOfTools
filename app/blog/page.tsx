@@ -206,14 +206,12 @@ export default function BlogLanding() {
               <SectionTag>Blog &amp; Resources</SectionTag>
 
               <h1 className="mt-4 sm:mt-6 text-2xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-[#0F172A]">
-                Insights, Reviews &amp;{" "}
-                <span className="text-[#4F46E5]">AI</span> Industry Trends
+                Tools, Reviews &amp;{" "}
+                <span className="text-[#4F46E5]">Industry Insights</span>
               </h1>
 
               <p className="mt-3 sm:mt-5 max-w-lg text-sm leading-relaxed text-[#475569] sm:text-lg">
-                Stay updated with the latest AI tools, software trends,
-                productivity tips and expert insights to help your business
-                grow.
+                Discover useful tools, reviews, guides, trends, and insights.
               </p>
 
               <div className="mt-6 sm:mt-8 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:gap-4">

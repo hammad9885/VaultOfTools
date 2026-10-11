@@ -887,7 +887,7 @@ export function HomePage() {
               <span className="grid size-7 place-items-center rounded-lg bg-amber-100 text-amber-600">
                 <Megaphone className="h-4 w-4" />
               </span>
-              Sponsored & Featured
+              Featured Tools
             </h2>
 
             <span className="text-xs font-medium text-muted-foreground">
@@ -952,7 +952,7 @@ export function HomePage() {
           <Grid2x2 className="h-5 w-5 shrink-0 text-indigo-600 sm:h-7 sm:w-7" />
 
           <h2 className="text-xl font-bold text-foreground sm:text-3xl">
-            All Categories
+            Explore Tools by Category
           </h2>
         </div>
 

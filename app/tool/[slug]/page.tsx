@@ -19,6 +19,7 @@ type ToolRecord = {
   reviews: number;
   desc?: string;
   website?: string;
+  affiliateUrl?: string;
   url?: string;
   logo?: string | unknown;
   features?: string[];
@@ -372,9 +373,9 @@ export default function ToolPage() {
           </div>
 
           <a
-            href={tool.website}
+            href={tool.affiliateUrl || tool.website}
             target="_blank"
-            rel="noreferrer"
+            rel={tool.affiliateUrl ? "nofollow sponsored noopener noreferrer" : "noreferrer"}
             onClick={() => {
               const visitKey = `vot_visited_${tool.slug}`;
               let visited = false;

@@ -53,6 +53,7 @@ export interface ITool {
   /** Community upvotes — drives trending. */
   upvotes: number;
   website?: string;
+  affiliateUrl?: string;
   features: string[];
   pros: string[];
   cons: string[];
@@ -118,6 +119,7 @@ const toolSchema = new mongoose.Schema<ITool>(
     clicks: { type: Number, default: 0 },
     upvotes: { type: Number, default: 0 },
     website: { type: String, trim: true },
+    affiliateUrl: { type: String, trim: true, default: "" },
     features: [{ type: String, trim: true }],
     pros: [{ type: String, trim: true }],
     cons: [{ type: String, trim: true }],

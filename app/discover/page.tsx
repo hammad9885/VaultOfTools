@@ -745,12 +745,15 @@ function DiscoverContent() {
             <div className="flex items-center justify-between gap-2 sm:block">
               <div className="flex items-center gap-2 min-w-0">
                 <h1 className="text-base sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground truncate">
-                  Discover AI tools
+                  Discover Tools
                 </h1>
                 <span className="inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs font-semibold shrink-0">
                   {filteredTools.length}
                 </span>
               </div>
+              <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
+                Find the right tools for your needs.
+              </p>
               {hasActiveFilters && (
                 <button
                   type="button"

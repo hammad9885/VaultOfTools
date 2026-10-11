@@ -376,10 +376,10 @@ export default function AIToolsDirectory() {
       <div className="mx-auto max-w-7xl px-3 py-8 sm:px-6 lg:px-8 lg:py-10">
         <div className="mb-6 text-center lg:mb-8 lg:text-left">
           <h2 className="text-xl font-bold tracking-tight text-balance text-[#111827] sm:text-2xl lg:text-[28px]">
-            Find The Best AI Tools & Software
+            Tools Directory
           </h2>
           <p className="mt-1.5 text-sm text-[#6B7280]">
-            Explore top AI tools by category — curated for every workflow.
+            Explore useful tools across different categories.
           </p>
         </div>
 

@@ -197,9 +197,7 @@ function Footer() {
             </Link>
 
             <p className="mt-5 max-w-sm text-sm leading-7 text-slate-600 dark:text-slate-400">
-              VaultOfTools is a curated AI tools directory helping developers,
-              founders, creators, and businesses discover powerful tools,
-              automate workflows, and stay ahead in the AI ecosystem.
+              VaultOfTools is a curated platform for discovering, comparing, and exploring useful tools.
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500 dark:text-slate-500">

@@ -142,6 +142,10 @@ export const recentTools = [
   { name: "Ideogram", isNew: false, desc: "AI image generator with typography", tags: ["Image", "Typography"], logo: "https://www.google.com/s2/favicons?domain=ideogram.ai&sz=128", upvotes: 198, saves: 65 },
   { name: "Pika Labs", isNew: false, desc: "AI video creation platform", tags: ["Video", "Creative"], logo: "https://www.google.com/s2/favicons?domain=pika.art&sz=128", upvotes: 176, saves: 54 },
   { name: "Gamma", isNew: false, desc: "AI presentation maker", tags: ["Presentation", "Design"], logo: "https://www.google.com/s2/favicons?domain=gamma.app&sz=128", upvotes: 154, saves: 43 },
+  { name: "v0 by Vercel", isNew: true, desc: "Generative UI and full frontend code builder", tags: ["Coding", "UI"], logo: "https://www.google.com/s2/favicons?domain=v0.dev&sz=128", upvotes: 940, saves: 310 },
+  { name: "Windsurf", isNew: true, desc: "Agentic AI code editor by Codeium", tags: ["Coding", "IDE"], logo: "https://www.google.com/s2/favicons?domain=codeium.com&sz=128", upvotes: 820, saves: 245 },
+  { name: "Luma Dream Machine", isNew: true, desc: "High-quality video and camera motion AI", tags: ["Video", "Creative"], logo: "https://www.google.com/s2/favicons?domain=lumalabs.ai&sz=128", upvotes: 750, saves: 215 },
+  { name: "Supabase", isNew: false, desc: "Open-source Firebase alternative with AI vector database", tags: ["Database", "Backend"], logo: "https://www.google.com/s2/favicons?domain=supabase.com&sz=128", upvotes: 890, saves: 270 },
 ];
 
 export const popularSearchTerms = ["AI Writing", "AI Image", "AI Video", "AI Coding", "Chatbots"];

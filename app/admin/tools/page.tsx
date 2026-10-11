@@ -296,6 +296,7 @@ const EMPTY_FORM = {
   imageUrl: "",
   website: "",
   url: "",
+  affiliateUrl: "",
   shortDescription: "",
   description: "",
   pricing: "Free",
@@ -403,6 +404,7 @@ export default function AdminToolsPage() {
       imageUrl: tool.imageUrl || tool.bannerUrl || "",
       website: tool.website || tool.url || "",
       url: tool.url || "",
+      affiliateUrl: tool.affiliateUrl || "",
       shortDescription: tool.shortDescription || "",
       description: tool.description || "",
       pricing: tool.pricing,
@@ -467,6 +469,7 @@ export default function AdminToolsPage() {
         ...form,
         url: websiteUrl,
         website: websiteUrl,
+        affiliateUrl: form.affiliateUrl.trim(),
         slug: form.slug.trim() || slugify(form.name),
         features: splitList(form.features),
         pros: splitList(form.pros),
@@ -750,9 +753,14 @@ export default function AdminToolsPage() {
                 </Select>
               </Field>
             </div>
-            <Field label="Website URL" hint="Regular website or affiliate URL">
-              <Input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} placeholder="https://…" />
-            </Field>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Website URL" hint="Official tool homepage">
+                <Input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} placeholder="https://…" />
+              </Field>
+              <Field label="Affiliate URL (optional)" hint="Referral link for monetized clicks">
+                <Input value={form.affiliateUrl} onChange={(e) => setForm({ ...form, affiliateUrl: e.target.value })} placeholder="https://…/?via=vot" />
+              </Field>
+            </div>
             <div className="mt-4">
               <Field label="Short description">
                 <Textarea rows={2} value={form.shortDescription} onChange={(e) => setForm({ ...form, shortDescription: e.target.value })} />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { SiteNav, SiteFooter } from "../routes/index";
@@ -56,7 +57,7 @@ export default function SubmitPage() {
       <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8">
         <header className="mb-10 text-center">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-            Submit an AI tool
+            Submit a Tool
           </h1>
           <p className="mt-3 text-muted-foreground">
             We review every submission within 48 hours. Make sure the link goes
@@ -64,13 +65,30 @@ export default function SubmitPage() {
           </p>
         </header>
 
+        {!user && !done && (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-900">
+            <p className="font-semibold">Sign in required to submit a tool</p>
+            <p className="mt-1 text-xs text-amber-700">
+              Please sign in to submit your tool for editorial review and receive updates.
+            </p>
+            <div className="mt-3 flex items-center gap-2">
+              <Link
+                href="/login"
+                className="inline-flex items-center rounded-lg bg-amber-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-amber-700"
+              >
+                Sign In / Register
+              </Link>
+            </div>
+          </div>
+        )}
+
         {done ? (
           <div className="rounded-2xl border border-border bg-card p-6 text-center sm:p-10">
             <h2 className="text-xl font-bold text-foreground">
               Thanks — we received your submission.
             </h2>
             <p className="mt-2 text-muted-foreground text-sm">
-              You hear back from our editorial team within 48 hours.
+              You will hear back from our editorial team within 48 hours.
             </p>
             <button
               onClick={() => setDone(false)}

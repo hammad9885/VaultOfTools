@@ -587,20 +587,15 @@ export default function CompareLandingPage() {
             <div className="mx-auto max-w-4xl text-center">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-500/15 bg-indigo-500/6 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-indigo-600 dark:border-indigo-400/20 dark:bg-indigo-400/10 dark:text-indigo-300">
                 <Sparkles className="h-4 w-4" />
-                AI Tool Comparison
+                Tool Comparison
               </div>
 
               <h1 className="text-4xl font-black tracking-[-0.04em] sm:text-5xl lg:text-7xl">
-                Find the right AI tool
-                <span className="block bg-linear-to-r from-indigo-600 via-violet-600 to-cyan-500 bg-clip-text text-transparent">
-                  by comparing them.
-                </span>
+                Compare Tools
               </h1>
 
               <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-400 sm:text-lg">
-                Compare published AI tools side by side across
-                features, ratings, pricing, capabilities, and
-                real tool data.
+                Compare tools side by side and find the right one for your needs.
               </p>
             </div>
 

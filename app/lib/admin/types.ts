@@ -44,6 +44,7 @@ export interface ToolRow {
   imageUrl?: string | null;
   url?: string | null;
   website?: string | null;
+  affiliateUrl?: string | null;
   shortDescription?: string;
   fullDescription?: string;
   description?: string;

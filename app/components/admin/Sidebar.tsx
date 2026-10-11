@@ -31,7 +31,7 @@ const GROUPS: { label: string; items: { href: string; label: string; icon: any }
   {
     label: "Content",
     items: [
-      { href: "/admin/tools", label: "AI Tools", icon: Wrench },
+      { href: "/admin/tools", label: "Tools", icon: Wrench },
       { href: "/admin/categories", label: "Categories", icon: FolderTree },
       { href: "/admin/tags", label: "Tags", icon: Tags },
       { href: "/admin/reviews", label: "Reviews & Comments", icon: MessageSquare },
