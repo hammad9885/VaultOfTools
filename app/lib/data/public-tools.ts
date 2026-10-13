@@ -244,10 +244,14 @@ function matchesSearch(tool: PublicTool, search: string) {
 function sortTools(list: PublicTool[], sort?: string | null) {
   const next = list.slice();
   if (sort === "newest") {
-    next.sort(
-      (a, b) =>
-        new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
-    );
+    next.sort((a, b) => {
+      if (a.isNew && !b.isNew) return -1;
+      if (!a.isNew && b.isNew) return 1;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      if (bTime !== aTime) return bTime - aTime;
+      return (b.upvotes || 0) - (a.upvotes || 0);
+    });
   } else if (sort === "name") {
     next.sort((a, b) => a.name.localeCompare(b.name));
   } else if (sort === "trending") {

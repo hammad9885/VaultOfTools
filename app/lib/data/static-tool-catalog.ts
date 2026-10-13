@@ -21,6 +21,8 @@ type SourceTool = {
   features?: string[];
   pros?: string[];
   cons?: string[];
+  isNew?: boolean;
+  createdAt?: string;
 };
 
 export type StaticCatalogTool = {
@@ -40,6 +42,8 @@ export type StaticCatalogTool = {
   features: string[];
   pros: string[];
   cons: string[];
+  isNew?: boolean;
+  createdAt?: string;
 };
 
 function slugify(name: string) {
@@ -51,6 +55,7 @@ function slugify(name: string) {
 }
 
 const sources: Array<{ category: string; tools: SourceTool[] }> = [
+  { category: "Recently Added", tools: recentTools as SourceTool[] },
   {
     category: "Featured",
     tools: homepageFeaturedTools.map((t) => ({
@@ -74,7 +79,6 @@ const sources: Array<{ category: string; tools: SourceTool[] }> = [
     tools: tools as SourceTool[],
   })),
   { category: "Popular AI Tools", tools: popularTools as SourceTool[] },
-  { category: "Recently Added", tools: recentTools as SourceTool[] },
 ];
 
 const seen = new Set<string>();
@@ -104,6 +108,8 @@ export const staticToolCatalog: StaticCatalogTool[] = sources.flatMap(
           features: tool.features || [],
           pros: tool.pros || [],
           cons: tool.cons || [],
+          isNew: Boolean(tool.isNew),
+          createdAt: tool.createdAt || (tool.isNew ? "2026-10-11T16:00:00Z" : undefined),
         },
       ];
     })
