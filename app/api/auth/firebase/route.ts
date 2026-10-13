@@ -4,7 +4,7 @@ import {
   findUserByEmail,
   upsertFirebaseUser,
 } from "@/app/lib/auth-server";
-import { tryGetAdminAuth } from "@/app/lib/config/firebaseAdmin";
+import { tryGetAdminAuth, verifyIdTokenViaRest } from "@/app/lib/config/firebaseAdmin";
 import { getClientIp, checkRateLimit } from "@/app/lib/data/activity-guard";
 
 export async function POST(request: NextRequest) {
@@ -51,23 +51,27 @@ export async function POST(request: NextRequest) {
           { status: 401 }
         );
       }
-    } else if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
-      // In local dev without Firebase service account, support test tokens strictly when configured
-      if (idToken.startsWith("test-token-")) {
-        verifiedUid = idToken.replace("test-token-", "");
-        verifiedEmail = `${verifiedUid}@test.local`;
-        verifiedDisplayName = verifiedUid;
-      } else {
+    } else if (
+      (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") &&
+      idToken.startsWith("test-token-")
+    ) {
+      // Test tokens are only accepted in local dev/test
+      verifiedUid = idToken.replace("test-token-", "");
+      verifiedEmail = `${verifiedUid}@test.local`;
+      verifiedDisplayName = verifiedUid;
+    } else {
+      // No service account configured: verify the token via Google's Identity Toolkit
+      const identity = await verifyIdTokenViaRest(idToken);
+      if (!identity) {
         return NextResponse.json(
-          { error: "Firebase Admin is not configured and token could not be verified." },
+          { error: "Invalid or expired Firebase ID token." },
           { status: 401 }
         );
       }
-    } else {
-      return NextResponse.json(
-        { error: "Server authentication service unavailable." },
-        { status: 503 }
-      );
+      verifiedEmail = identity.email;
+      verifiedUid = identity.uid;
+      verifiedDisplayName = identity.displayName;
+      verifiedPhotoUrl = identity.photoURL;
     }
 
     // Check suspension prior to session creation
