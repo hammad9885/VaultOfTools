@@ -6,6 +6,7 @@ import {
 } from "@/app/lib/auth-server";
 import { tryGetAdminAuth, verifyIdTokenViaRest } from "@/app/lib/config/firebaseAdmin";
 import { getClientIp, checkRateLimit } from "@/app/lib/data/activity-guard";
+import { alertUserLogin } from "@/app/lib/alerts";
 
 export async function POST(request: NextRequest) {
   try {
@@ -89,6 +90,13 @@ export async function POST(request: NextRequest) {
       photoURL: verifiedPhotoUrl,
       firebaseUid: verifiedUid,
     });
+
+    void alertUserLogin({
+      email: verifiedEmail,
+      displayName: verifiedDisplayName,
+      provider: "Google/Firebase",
+      role: user.role,
+    }).catch(() => {});
 
     return NextResponse.json(buildAuthResponse(user));
   } catch (err: any) {

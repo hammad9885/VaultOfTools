@@ -6,6 +6,7 @@ import {
   verifyPassword,
 } from "@/app/lib/auth-server";
 import { getClientIp, checkRateLimit } from "@/app/lib/data/activity-guard";
+import { alertUserLogin } from "@/app/lib/alerts";
 
 const GENERIC_AUTH_ERROR = "Invalid email or password.";
 
@@ -46,6 +47,14 @@ export async function POST(request: NextRequest) {
     }
 
     const token = signAuthToken(user);
+
+    void alertUserLogin({
+      email: user.email,
+      displayName: user.displayName,
+      provider: "Email & Password",
+      role: user.role,
+    }).catch(() => {});
+
     return NextResponse.json({ token, user: toAuthProfile(user) });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });

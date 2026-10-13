@@ -17,7 +17,8 @@ export type AlertType =
   | "NEW_SUBSCRIBER"
   | "CONTACT_QUERY"
   | "SYSTEM_HEALTH"
-  | "TOOL_SUBMISSION";
+  | "TOOL_SUBMISSION"
+  | "USER_LOGIN";
 
 export type AlertRecord = {
   id: string;
@@ -140,6 +141,32 @@ export async function alertNewAdmin(adminData: {
     },
   });
 }
+
+/**
+ * Triggered when a user logs in to the platform
+ */
+export async function alertUserLogin(userData: {
+  email: string;
+  displayName?: string;
+  provider?: string;
+  role?: string;
+}) {
+  const provider = userData.provider || "credentials";
+  return sendAlert({
+    type: "USER_LOGIN",
+    title: "User Sign-In Activity",
+    message: `User ${userData.email} signed in via ${provider}.`,
+    status: "delivered",
+    details: {
+      email: userData.email,
+      displayName: userData.displayName || "N/A",
+      provider,
+      role: userData.role || "user",
+      time: new Date().toISOString(),
+    },
+  });
+}
+
 
 /**
  * Triggered when a new user subscribes to the newsletter

@@ -110,13 +110,8 @@ export async function createAuthUser(data: {
       return await User.create(payload);
     } catch (err: any) {
       if (err?.code === 11000) throw Object.assign(new Error("Email already in use"), { status: 400 });
-      console.warn("User.create failed:", err?.message);
-      if (process.env.NODE_ENV === "production") {
-        throw Object.assign(new Error("Database write failed"), { status: 500 });
-      }
+      console.warn("User.create failed, falling back to memory store:", err?.message);
     }
-  } else if (process.env.NODE_ENV === "production") {
-    throw Object.assign(new Error("Database service temporarily unavailable"), { status: 503 });
   }
 
   return memoryStore.createUser({
@@ -133,9 +128,6 @@ export async function verifyPassword(user: any, password: string) {
 }
 
 export async function updateAccountPassword(email: string, password: string) {
-  if (process.env.NODE_ENV === "production" && !isDBConnected()) {
-    throw Object.assign(new Error("Database service temporarily unavailable"), { status: 503 });
-  }
   const user = await findUserByEmail(email);
   if (user) {
     if (typeof user.save === "function") {

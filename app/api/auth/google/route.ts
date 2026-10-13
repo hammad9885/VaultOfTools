@@ -7,7 +7,7 @@ import {
   signAuthToken,
   toAuthProfile,
 } from "@/app/lib/auth-server";
-import { tryGetAdminAuth } from "@/app/lib/config/firebaseAdmin";
+import { tryGetAdminAuth, verifyIdTokenViaRest } from "@/app/lib/config/firebaseAdmin";
 import { getClientIp, checkRateLimit } from "@/app/lib/data/activity-guard";
 
 export async function POST(request: NextRequest) {
@@ -54,22 +54,25 @@ export async function POST(request: NextRequest) {
           { status: 401 }
         );
       }
-    } else if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
-      if (idToken.startsWith("test-google-")) {
-        verifiedSub = idToken.replace("test-google-", "");
-        verifiedEmail = `${verifiedSub}@google-test.local`;
-        verifiedDisplayName = verifiedSub;
-      } else {
+    } else if (
+      (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") &&
+      idToken.startsWith("test-google-")
+    ) {
+      verifiedSub = idToken.replace("test-google-", "");
+      verifiedEmail = `${verifiedSub}@google-test.local`;
+      verifiedDisplayName = verifiedSub;
+    } else {
+      const identity = await verifyIdTokenViaRest(idToken);
+      if (!identity) {
         return NextResponse.json(
-          { error: "Provider verification unavailable. Valid provider token required." },
+          { error: "Invalid or expired provider token." },
           { status: 401 }
         );
       }
-    } else {
-      return NextResponse.json(
-        { error: "Server authentication service unavailable." },
-        { status: 503 }
-      );
+      verifiedEmail = identity.email;
+      verifiedSub = identity.uid;
+      verifiedDisplayName = identity.displayName;
+      verifiedPhotoUrl = identity.photoURL;
     }
 
     let user =
