@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       email: verifiedEmail,
       displayName: verifiedDisplayName,
       provider: "Google/Firebase",
-      role: user.role,
+      role: user?.role,
     }).catch(() => {});
 
     return NextResponse.json(buildAuthResponse(user));
