@@ -117,6 +117,19 @@ export async function POST(request: NextRequest) {
       // A new review feeds the rating signal for trending.
       await recordRating(toolSlug, rating);
 
+      const { alertNewReview } = await import("@/app/lib/alerts");
+      await alertNewReview({
+        toolName,
+        toolSlug,
+        userName:
+          populated.userId?.displayName ||
+          populated.userId?.email ||
+          user.displayName ||
+          user.email,
+        rating: Number(rating),
+        text,
+      }).catch(() => {});
+
       return NextResponse.json({
         id: populated._id,
         toolSlug: populated.toolSlug,
@@ -145,6 +158,16 @@ export async function POST(request: NextRequest) {
 
     const u = await memoryStore.findUserById(user._id);
     await recordRating(toolSlug, rating);
+
+    const { alertNewReview } = await import("@/app/lib/alerts");
+    await alertNewReview({
+      toolName,
+      toolSlug,
+      userName: u?.displayName || user.displayName || user.email,
+      rating: Number(rating),
+      text,
+    }).catch(() => {});
+
     return NextResponse.json({
       id: review._id,
       toolSlug: review.toolSlug,

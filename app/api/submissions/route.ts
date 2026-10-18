@@ -3,6 +3,7 @@ import { connectDB, isDBConnected } from "@/app/lib/config/db";
 import Submission from "@/app/lib/models/Submission";
 import { authenticate } from "@/app/lib/middleware/auth";
 import memoryStore from "@/app/lib/data/memoryStore";
+import { alertToolSubmission } from "@/app/lib/alerts";
 
 export async function POST(request: NextRequest) {
   await connectDB();
@@ -14,23 +15,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "name, website, category and description are required" }, { status: 400 });
     }
 
+    const submitterEmail = email || user.email;
+
+    let submission;
     if (isDBConnected()) {
-      const submission = await Submission.create({
+      submission = await Submission.create({
         userId: user._id, name, website, category, description,
         pricing, founderName, companyName, launchYear,
-        email: email || user.email,
+        email: submitterEmail,
       });
-      return NextResponse.json(submission, { status: 201 });
+    } else {
+      submission = await memoryStore.createSubmission({
+        userId: user._id, name, website, category, description,
+        pricing, founderName, companyName, launchYear,
+        email: submitterEmail,
+      });
     }
 
-    const submission = await memoryStore.createSubmission({
-      userId: user._id, name, website, category, description,
-      pricing, founderName, companyName, launchYear,
-      email: email || user.email,
-    });
+    await alertToolSubmission({
+      name,
+      website,
+      category,
+      pricing,
+      submitterEmail,
+      description,
+    }).catch(() => {});
+
     return NextResponse.json(submission, { status: 201 });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+    return NextResponse.json({ error: err.message || "Server error" }, { status: err.status || 500 });
   }
 }
 

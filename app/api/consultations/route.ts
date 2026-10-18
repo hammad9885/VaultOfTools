@@ -41,9 +41,6 @@ export async function POST(request: NextRequest) {
         message: cleanMessage,
       });
     } else {
-      if (process.env.NODE_ENV === "production") {
-        return NextResponse.json({ error: "Service temporarily unavailable" }, { status: 503 });
-      }
       await memoryStore.createConsultation({
         name: cleanName,
         email: normalizedEmail,
@@ -51,6 +48,14 @@ export async function POST(request: NextRequest) {
         message: cleanMessage,
       });
     }
+
+    const { alertConsultationRequest } = await import("@/app/lib/alerts");
+    await alertConsultationRequest({
+      fullName: cleanName,
+      workEmail: normalizedEmail,
+      company: cleanCompany,
+      projectDetails: cleanMessage,
+    }).catch(() => {});
 
     return NextResponse.json({ success: true, message: "Consultation request received" }, { status: 201 });
   } catch (err: any) {

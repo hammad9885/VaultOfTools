@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       await memoryStore.addSubscriber(normalizedEmail);
     }
 
-    void alertNewSubscriber(normalizedEmail).catch(() => {});
+    await alertNewSubscriber(normalizedEmail).catch(() => {});
 
     return NextResponse.json({ success: true, message: "Subscribed successfully" }, { status: 201 });
   } catch (err: any) {

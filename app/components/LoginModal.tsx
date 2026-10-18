@@ -2,7 +2,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import Link from "next/link";
+import { signInWithGoogle } from "../lib/auth";
+import { useAuth } from "../lib/auth-context";
 
 interface Props {
   open: boolean;
@@ -10,7 +12,7 @@ interface Props {
 }
 
 export default function LoginModal({ open, onClose }: Props) {
-  const { signIn } = useAuth();
+  const { refresh } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -18,7 +20,8 @@ export default function LoginModal({ open, onClose }: Props) {
     setLoading(true);
     setError("");
     try {
-      await signIn();
+      await signInWithGoogle();
+      await refresh();
       onClose();
     } catch (e: unknown) {
       setError("Sign-in failed. Please try again.");
@@ -60,11 +63,11 @@ export default function LoginModal({ open, onClose }: Props) {
 
               {/* Logo */}
               <div className="text-center mb-6">
-                <div className="w-14 h-14 bg-linear-to-br from-violet-600 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-200">
-                  <span className="text-white font-bold text-xl">AP</span>
+                <div className="w-14 h-14 bg-linear-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200">
+                  <span className="text-white font-bold text-xl">VT</span>
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
-                <p className="text-gray-500 text-sm mt-1">Sign in to access ArtificialPod</p>
+                <p className="text-gray-500 text-sm mt-1">Sign in to access Vault of Tools</p>
               </div>
 
               {/* Error */}
@@ -78,10 +81,10 @@ export default function LoginModal({ open, onClose }: Props) {
               <button
                 onClick={handleGoogle}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-3 border border-gray-200 hover:border-violet-300 hover:bg-violet-50 text-gray-700 font-medium py-3 px-4 rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-3 border border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-700 font-medium py-3 px-4 rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <Loader2 size={18} className="animate-spin text-violet-500" />
+                  <Loader2 size={18} className="animate-spin text-blue-600" />
                 ) : (
                   <svg width="18" height="18" viewBox="0 0 18 18">
                     <path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/>
@@ -93,10 +96,18 @@ export default function LoginModal({ open, onClose }: Props) {
                 {loading ? "Signing in..." : "Continue with Google"}
               </button>
 
+              <Link
+                href="/login"
+                onClick={onClose}
+                className="mt-3 w-full flex items-center justify-center rounded-xl bg-slate-900 py-3 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
+              >
+                Sign in with Email & Password
+              </Link>
+
               <p className="text-xs text-gray-400 text-center mt-4">
                 By signing in, you agree to our{" "}
-                <a href="#" className="text-violet-500 hover:underline">Terms</a> and{" "}
-                <a href="#" className="text-violet-500 hover:underline">Privacy Policy</a>
+                <Link href="/terms" onClick={onClose} className="text-blue-600 hover:underline">Terms</Link> and{" "}
+                <Link href="/privacy" onClick={onClose} className="text-blue-600 hover:underline">Privacy Policy</Link>
               </p>
             </div>
           </motion.div>

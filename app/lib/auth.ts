@@ -21,7 +21,7 @@ googleProvider.setCustomParameters({ prompt: "select_account" });
 googleProvider.addScope("email");
 googleProvider.addScope("profile");
 
-async function syncAppSession(fbUser: User) {
+async function syncAppSession(fbUser: User, explicitDisplayName?: string) {
   if (!fbUser.email) {
     throw new Error("Google account has no email. Use an account with email access.");
   }
@@ -34,7 +34,7 @@ async function syncAppSession(fbUser: User) {
   const data = await api.firebaseAuth({
     idToken,
     email: fbUser.email,
-    displayName: fbUser.displayName || undefined,
+    displayName: explicitDisplayName || fbUser.displayName || undefined,
     photoURL: fbUser.photoURL || googleProfile?.photoURL || undefined,
     firebaseUid: fbUser.uid,
     provider: fbUser.providerData[0]?.providerId || "firebase",
@@ -90,20 +90,48 @@ export async function completeGoogleRedirectIfAny(): Promise<any | null> {
   }
 }
 
-/** Public signup — Firebase Auth is source of truth */
+/** Public signup — Firebase Auth primary with backend API fallback */
 export async function signUpWithEmail(
   email: string,
   password: string,
   displayName?: string
 ): Promise<any> {
   const trimmed = email.trim();
-  const result = await createUserWithEmailAndPassword(auth, trimmed, password);
-  if (displayName) {
+  try {
+    const result = await createUserWithEmailAndPassword(auth, trimmed, password);
+    if (displayName) {
+      try {
+        await updateProfile(result.user, { displayName });
+      } catch {}
+    }
+    return await syncAppSession(result.user, displayName);
+  } catch (fbErr: any) {
+    const code = String(fbErr?.code || "");
+    if (
+      code === "auth/email-already-in-use" ||
+      code === "auth/weak-password" ||
+      code === "auth/invalid-email"
+    ) {
+      throw fbErr;
+    }
+    // Fallback to backend credential registration if Firebase email/password is unavailable
     try {
-      await updateProfile(result.user, { displayName });
-    } catch {}
+      const data = await api.register({
+        email: trimmed,
+        password,
+        displayName: displayName?.trim() || trimmed.split("@")[0],
+      });
+      api.setToken(data.token);
+      if (data.adminToken) {
+        api.setAdminToken(data.adminToken);
+      } else {
+        api.clearAdminToken();
+      }
+      return { ...data.user, adminToken: data.adminToken };
+    } catch {
+      throw fbErr;
+    }
   }
-  return syncAppSession(result.user);
 }
 
 export async function sendPasswordReset(email: string): Promise<void> {
@@ -125,11 +153,27 @@ export async function confirmNewPassword(oobCode: string, newPassword: string): 
   await confirmPasswordReset(auth, oobCode, newPassword);
 }
 
-/** Public sign-in — Firebase Auth is source of truth */
+/** Public sign-in — Firebase Auth primary with backend API fallback */
 export async function signInWithEmail(email: string, password: string): Promise<any> {
   const trimmed = email.trim();
-  const result = await signInWithEmailAndPassword(auth, trimmed, password);
-  return syncAppSession(result.user);
+  try {
+    const result = await signInWithEmailAndPassword(auth, trimmed, password);
+    return await syncAppSession(result.user);
+  } catch (fbErr: any) {
+    // Fallback to backend credential login (e.g. admin account or locally registered/reset user)
+    try {
+      const data = await api.login({ email: trimmed, password });
+      api.setToken(data.token);
+      if (data.adminToken) {
+        api.setAdminToken(data.adminToken);
+      } else {
+        api.clearAdminToken();
+      }
+      return { ...data.user, adminToken: data.adminToken };
+    } catch {
+      throw fbErr;
+    }
+  }
 }
 
 export async function signOut(): Promise<void> {

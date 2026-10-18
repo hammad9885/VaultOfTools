@@ -108,6 +108,14 @@ let body: LoginBody;
 
     const token = signAdminToken(user);
 
+    const { alertUserLogin } = await import("@/app/lib/alerts");
+    await alertUserLogin({
+      email: user.email || configuredEmail,
+      displayName: user.displayName || "Super Admin",
+      provider: "Admin Console",
+      role: user.role || "super_admin",
+    }).catch(() => {});
+
     return NextResponse.json({
       success: true,
       token,

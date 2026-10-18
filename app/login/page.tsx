@@ -263,6 +263,10 @@ function LoginInner() {
       }
 
       const result = await api.resetPassword({ email, password, confirmPassword });
+      api.notifyAdminInbox?.(`Password Updated: ${email}`, {
+        event: "Password Reset",
+        email: email.trim(),
+      });
 
       try {
         const profile = await signInWithEmail(email, password);
@@ -271,15 +275,13 @@ function LoginInner() {
         return;
       } catch {
         if (!(result as any)?.firebaseUpdated) {
-          await sendPasswordReset(email);
+          await sendPasswordReset(email).catch(() => {});
           setResetEmailSent(true);
-          toast.success("New password saved. We also sent a confirmation link to your email.");
-        } else {
-          toast.success("Password updated. Please sign in with your new password.");
-          setMode("signin");
-          setPassword("");
-          setConfirmPassword("");
         }
+        toast.success("Password updated. Please sign in with your new password.");
+        setMode("signin");
+        setPassword("");
+        setConfirmPassword("");
       }
     } catch (err: unknown) {
       const msg = friendlyAuthError(err);

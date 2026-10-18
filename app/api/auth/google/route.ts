@@ -96,8 +96,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const token = signAuthToken(user);
-    return NextResponse.json({ token, user: toAuthProfile(user) });
+    const { alertUserLogin } = await import("@/app/lib/alerts");
+    const { buildAuthResponse } = await import("@/app/lib/auth-server");
+    await alertUserLogin({
+      email: verifiedEmail,
+      displayName: verifiedDisplayName || user?.displayName,
+      provider: "Google",
+      role: user?.role,
+    }).catch(() => {});
+
+    return NextResponse.json(buildAuthResponse(user));
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
   }

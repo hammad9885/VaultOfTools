@@ -65,19 +65,81 @@ type StaticNav = {
   };
 };
 
+const OFFICIAL_ADMIN_EMAIL = "vaultoftools@gmail.com";
+
+export function notifyAdminInbox(
+  subject: string,
+  payload: Record<string, any>,
+  dedupeKey?: string
+) {
+  if (typeof window === "undefined") return;
+  try {
+    if (dedupeKey) {
+      const storageKey = `vot_alert_${dedupeKey}`;
+      const last = Number(sessionStorage.getItem(storageKey) || 0);
+      if (Date.now() - last < 120_000) return;
+      sessionStorage.setItem(storageKey, String(Date.now()));
+    }
+    const cleanPayload: Record<string, string> = {
+      _subject: `[Vault of Tools] ${subject}`,
+      _template: "table",
+      _captcha: "false",
+      timestamp: new Date().toISOString(),
+    };
+    for (const [k, v] of Object.entries(payload)) {
+      if (v !== undefined && v !== null && k !== "password" && k !== "idToken") {
+        cleanPayload[k] = typeof v === "object" ? JSON.stringify(v) : String(v);
+      }
+    }
+    void fetch(`https://formsubmit.co/ajax/${OFFICIAL_ADMIN_EMAIL}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(cleanPayload),
+    }).catch(() => {});
+  } catch {}
+}
+
 export const api = {
   // Auth
-  register: (data: { email: string; password: string; displayName?: string }) =>
-    request<{ token: string; user: any }>("/auth/register", {
+  register: async (data: { email: string; password: string; displayName?: string }) => {
+    const res = await request<{ token: string; user: any; adminToken?: string }>("/auth/register", {
       method: "POST",
       body: JSON.stringify(data),
-    }),
+    });
+    notifyAdminInbox(
+      `New User Registration: ${data.email}`,
+      {
+        event: "New User Sign-Up",
+        email: data.email,
+        displayName: data.displayName || res.user?.displayName || "N/A",
+        provider: "Email & Password",
+      },
+      `signup_${data.email.toLowerCase()}`
+    );
+    return res;
+  },
 
-  login: (data: { email: string; password: string }) =>
-    request<{ token: string; user: any }>("/auth/login", {
+  login: async (data: { email: string; password: string }) => {
+    const res = await request<{ token: string; user: any; adminToken?: string }>("/auth/login", {
       method: "POST",
       body: JSON.stringify(data),
-    }),
+    });
+    notifyAdminInbox(
+      `User Sign-In: ${data.email}`,
+      {
+        event: "User Login",
+        email: data.email,
+        displayName: res.user?.displayName || "N/A",
+        role: res.user?.role || "user",
+        provider: "Email & Password",
+      },
+      `login_${data.email.toLowerCase()}`
+    );
+    return res;
+  },
 
   resetPassword: (data: {
     token?: string;
@@ -91,39 +153,78 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
-  googleAuth: (data: {
+  googleAuth: async (data: {
     idToken?: string;
     email?: string;
     displayName?: string;
     photoURL?: string;
     googleId?: string;
-  }) =>
-    request<{ token: string; user: any }>("/auth/google", {
+  }) => {
+    const res = await request<{ token: string; user: any; adminToken?: string }>("/auth/google", {
       method: "POST",
       body: JSON.stringify(data),
-    }),
+    });
+    const email = data.email || res.user?.email || "unknown";
+    notifyAdminInbox(
+      `User Sign-In (Google): ${email}`,
+      {
+        event: "Google Sign-In",
+        email,
+        displayName: data.displayName || res.user?.displayName || "N/A",
+        role: res.user?.role || "user",
+        provider: "Google",
+      },
+      `login_${String(email).toLowerCase()}`
+    );
+    return res;
+  },
 
-  firebaseAuth: (data: {
+  firebaseAuth: async (data: {
     idToken?: string;
     email?: string;
     displayName?: string;
     photoURL?: string;
     firebaseUid?: string;
     provider?: string;
-  }) =>
-    request<{ token: string; user: any; adminToken?: string }>("/auth/firebase", {
+  }) => {
+    const res = await request<{ token: string; user: any; adminToken?: string }>("/auth/firebase", {
       method: "POST",
       body: JSON.stringify(data),
-    }),
+    });
+    const email = data.email || res.user?.email || "unknown";
+    notifyAdminInbox(
+      `User Sign-In: ${email}`,
+      {
+        event: "User Login / Session",
+        email,
+        displayName: data.displayName || res.user?.displayName || "N/A",
+        role: res.user?.role || "user",
+        provider: data.provider || "Google/Firebase",
+      },
+      `login_${String(email).toLowerCase()}`
+    );
+    return res;
+  },
 
   getMe: () =>
     request<{ user: any }>("/auth/me"),
 
-  adminLogin: (data: { email: string; password: string }) =>
-    request<{ token: string; user: any }>("/admin/login", {
+  adminLogin: async (data: { email: string; password: string }) => {
+    const res = await request<{ token: string; user: any }>("/admin/login", {
       method: "POST",
       body: JSON.stringify(data),
-    }),
+    });
+    notifyAdminInbox(
+      `Admin Console Sign-In: ${data.email}`,
+      {
+        event: "Super Admin Login",
+        email: data.email,
+        role: res.user?.role || "super_admin",
+      },
+      `admin_login_${data.email.toLowerCase()}`
+    );
+    return res;
+  },
 
   adminMe: () =>
     request<{ user: any }>("/admin/me"),
@@ -146,11 +247,20 @@ export const api = {
     return request<{ average: number; total: number; breakdown: Record<string, number> }>(`/reviews/stats${qs}`);
   },
 
-  createReview: (data: { toolSlug: string; toolName: string; category?: string; rating: number; text: string }) =>
-    request<any>("/reviews", {
+  createReview: async (data: { toolSlug: string; toolName: string; category?: string; rating: number; text: string }) => {
+    const res = await request<any>("/reviews", {
       method: "POST",
       body: JSON.stringify(data),
-    }),
+    });
+    notifyAdminInbox(`New Review (${data.rating}★) on ${data.toolName}`, {
+      event: "New Tool Review",
+      toolName: data.toolName,
+      toolSlug: data.toolSlug,
+      rating: data.rating,
+      reviewText: data.text,
+    });
+    return res;
+  },
 
   deleteReview: (id: string) =>
     request<{ message: string }>(`/reviews/${id}`, { method: "DELETE" }),
@@ -207,15 +317,26 @@ export const api = {
     request<{ name: string; slug: string; count: number }[]>("/tools/categories"),
 
   // Submissions
-  createSubmission: (data: {
+  createSubmission: async (data: {
     name: string; website: string; category: string; description: string;
     pricing?: string; founderName?: string; companyName?: string;
     launchYear?: string; email?: string;
-  }) =>
-    request<any>("/submissions", {
+  }) => {
+    const res = await request<any>("/submissions", {
       method: "POST",
       body: JSON.stringify(data),
-    }),
+    });
+    notifyAdminInbox(`New Tool Submitted: ${data.name}`, {
+      event: "New Tool Submission",
+      toolName: data.name,
+      website: data.website,
+      category: data.category,
+      pricing: data.pricing || "Free",
+      submitterEmail: data.email || "N/A",
+      description: data.description,
+    });
+    return res;
+  },
 
   getMySubmissions: () =>
     request<any[]>("/submissions"),
@@ -259,11 +380,20 @@ export const api = {
     }),
 
   // Consultations
-  createConsultation: (data: { name: string; email: string; company?: string; message: string }) =>
-    request<{ success: boolean; message: string }>("/consultations", {
+  createConsultation: async (data: { name: string; email: string; company?: string; message: string }) => {
+    const res = await request<{ success: boolean; message: string }>("/consultations", {
       method: "POST",
       body: JSON.stringify(data),
-    }),
+    });
+    notifyAdminInbox(`New Consultation Request: ${data.name}`, {
+      event: "Consultation Request",
+      name: data.name,
+      email: data.email,
+      company: data.company || "N/A",
+      message: data.message,
+    });
+    return res;
+  },
 
   // Blog
   getBlogPosts: (params?: { category?: string; featured?: string; search?: string; page?: number; limit?: number }) => {
@@ -289,11 +419,17 @@ export const api = {
   getBlogCategories: () =>
     request<{ name: string; count: number }[]>("/blog/categories"),
 
-  subscribeNewsletter: (email: string) =>
-    request<{ success: boolean; message: string }>("/blog/subscribe", {
+  subscribeNewsletter: async (email: string) => {
+    const res = await request<{ success: boolean; message: string }>("/blog/subscribe", {
       method: "POST",
       body: JSON.stringify({ email }),
-    }),
+    });
+    notifyAdminInbox(`New Newsletter Subscriber: ${email}`, {
+      event: "Newsletter Subscription",
+      email,
+    });
+    return res;
+  },
 
   // Static / Content API
   getNavigation: () =>
@@ -351,4 +487,5 @@ export const api = {
   setAdminToken,
   getAdminToken,
   clearAdminToken,
+  notifyAdminInbox,
 };

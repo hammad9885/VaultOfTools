@@ -84,17 +84,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const isNewUser = !existing;
+    const finalDisplayName =
+      verifiedDisplayName ||
+      (body.displayName ? String(body.displayName).trim().slice(0, 100) : undefined);
+
     const user = await upsertFirebaseUser({
       email: verifiedEmail,
-      displayName: verifiedDisplayName,
-      photoURL: verifiedPhotoUrl,
+      displayName: finalDisplayName,
+      photoURL: verifiedPhotoUrl || (body.photoURL ? String(body.photoURL).trim() : undefined),
       firebaseUid: verifiedUid,
     });
 
-    void alertUserLogin({
+    const providerLabel = body.provider ? String(body.provider) : "Google/Firebase";
+
+    if (isNewUser) {
+      const { alertUserSignup } = await import("@/app/lib/alerts");
+      await alertUserSignup({
+        email: verifiedEmail,
+        displayName: finalDisplayName || user?.displayName,
+        provider: providerLabel,
+        role: user?.role,
+      }).catch(() => {});
+    }
+
+    await alertUserLogin({
       email: verifiedEmail,
-      displayName: verifiedDisplayName,
-      provider: "Google/Firebase",
+      displayName: finalDisplayName || user?.displayName,
+      provider: providerLabel,
       role: user?.role,
     }).catch(() => {});
 

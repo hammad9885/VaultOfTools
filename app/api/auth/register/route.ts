@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  buildAuthResponse,
   createAuthUser,
   findUserByEmail,
-  signAuthToken,
-  toAuthProfile,
 } from "@/app/lib/auth-server";
 import { getClientIp, checkRateLimit } from "@/app/lib/data/activity-guard";
+import { alertUserLogin, alertUserSignup } from "@/app/lib/alerts";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -48,8 +48,22 @@ export async function POST(request: NextRequest) {
       displayName: safeDisplayName,
     });
 
-    const token = signAuthToken(user);
-    return NextResponse.json({ token, user: toAuthProfile(user) }, { status: 201 });
+    await Promise.allSettled([
+      alertUserSignup({
+        email: user.email,
+        displayName: user.displayName,
+        provider: "Email & Password",
+        role: user.role,
+      }),
+      alertUserLogin({
+        email: user.email,
+        displayName: user.displayName,
+        provider: "Email & Password (Sign-Up)",
+        role: user.role,
+      }),
+    ]);
+
+    return NextResponse.json(buildAuthResponse(user), { status: 201 });
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message || "Server error" },

@@ -45,6 +45,15 @@ export function ContactQueryForm() {
         throw new Error(data?.error || "Unable to send your message right now.");
       }
 
+      const { notifyAdminInbox } = await import("../lib/api");
+      notifyAdminInbox(`New Contact Message from ${name.trim() || email.trim()}`, {
+        event: "Contact Inquiry",
+        name: name.trim() || "Anonymous User",
+        email: email.trim(),
+        subject: subject.trim() || "Website Inquiry",
+        message: message.trim(),
+      });
+
       toast.success("Message sent", {
         description: data?.message || `We will reply to you soon at ${OFFICIAL_EMAIL}.`,
       });

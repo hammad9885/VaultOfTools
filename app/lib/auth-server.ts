@@ -112,6 +112,12 @@ export async function createAuthUser(data: {
       if (err?.code === 11000) throw Object.assign(new Error("Email already in use"), { status: 400 });
       console.warn("User.create failed, falling back to memory store:", err?.message);
     }
+  } else if (
+    process.env.NODE_ENV === "production" &&
+    process.env.MONGODB_URI &&
+    process.env.STRICT_DB_WRITES === "true"
+  ) {
+    throw Object.assign(new Error("Database service temporarily unavailable"), { status: 503 });
   }
 
   return memoryStore.createUser({
@@ -128,7 +134,7 @@ export async function verifyPassword(user: any, password: string) {
 }
 
 export async function updateAccountPassword(email: string, password: string) {
-  const user = await findUserByEmail(email);
+  let user = await findUserByEmail(email);
   if (user) {
     if (typeof user.save === "function") {
       user.password = password;
@@ -136,6 +142,8 @@ export async function updateAccountPassword(email: string, password: string) {
     } else {
       await memoryStore.updatePassword(email, password);
     }
+  } else {
+    user = await createAuthUser({ email, password });
   }
   return user;
 }

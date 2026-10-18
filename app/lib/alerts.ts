@@ -18,7 +18,10 @@ export type AlertType =
   | "CONTACT_QUERY"
   | "SYSTEM_HEALTH"
   | "TOOL_SUBMISSION"
-  | "USER_LOGIN";
+  | "USER_LOGIN"
+  | "USER_SIGNUP"
+  | "CONSULTATION_REQUEST"
+  | "NEW_REVIEW";
 
 export type AlertRecord = {
   id: string;
@@ -44,6 +47,191 @@ const recentAlerts: AlertRecord[] = [
     details: { services: ["MongoDB", "Vercel Hosting", "Domain DNS", "Newsletter Pipeline"] },
   },
 ];
+
+// Deduplicate rapid repeated login alerts (e.g. token refresh on page reload) within 60 seconds
+const recentLoginTimestamps = new Map<string, number>();
+
+function buildAlertEmailHtml(alert: AlertRecord): string {
+  const detailsRows = Object.entries(alert.details || {})
+    .filter(([, v]) => v !== undefined && v !== null && v !== "")
+    .map(
+      ([k, v]) => `
+        <tr>
+          <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:600;color:#475569;text-transform:capitalize;width:35%;">${String(k)}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#0f172a;word-break:break-word;">${
+            typeof v === "object" ? JSON.stringify(v) : String(v)
+          }</td>
+        </tr>`
+    )
+    .join("");
+
+  return `
+    <div style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+      <div style="background:linear-gradient(135deg,#2563eb,#4f46e5);padding:20px 24px;color:#ffffff;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:0.85;">Vault of Tools • Admin Alert (${alert.type})</div>
+        <h2 style="margin:6px 0 0;font-size:18px;font-weight:700;">${alert.title}</h2>
+      </div>
+      <div style="padding:20px 24px;">
+        <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#334155;">${alert.message}</p>
+        ${
+          detailsRows
+            ? `<table style="width:100%;border-collapse:collapse;font-size:13px;background:#f8fafc;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0;">${detailsRows}</table>`
+            : ""
+        }
+        <div style="margin-top:18px;padding-top:12px;border-top:1px solid #f1f5f9;font-size:11px;color:#94a3b8;">
+          Sent automatically by Vault of Tools Notification Pipeline at ${alert.timestamp}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function dispatchEmailNotification(alert: AlertRecord): Promise<boolean> {
+  const targetEmail =
+    (process.env.ADMIN_EMAIL || OFFICIAL_ALERT_EMAIL).trim() || OFFICIAL_ALERT_EMAIL;
+  const recipients = Array.from(
+    new Set([OFFICIAL_ALERT_EMAIL, targetEmail].filter(Boolean))
+  );
+  const subject = `[Vault of Tools] ${alert.title}`;
+  const html = buildAlertEmailHtml(alert);
+
+  // 1. Try SMTP via Nodemailer (env vars or Admin Settings SMTP)
+  try {
+    let smtpHost = process.env.SMTP_HOST || "";
+    let smtpPort = Number(process.env.SMTP_PORT || 587);
+    let smtpUser =
+      process.env.SMTP_USER ||
+      process.env.GMAIL_USER ||
+      process.env.EMAIL_USER ||
+      "";
+    let smtpPass =
+      process.env.SMTP_PASS ||
+      process.env.GMAIL_APP_PASSWORD ||
+      process.env.EMAIL_PASS ||
+      "";
+    let fromEmail = process.env.SMTP_FROM || smtpUser || OFFICIAL_ALERT_EMAIL;
+    let fromName = "Vault of Tools Alerts";
+
+    if (!smtpPass) {
+      try {
+        const { getSettings } = await import("@/app/lib/admin/settings");
+        const settings = await getSettings();
+        if (settings?.smtp?.password) {
+          smtpHost = settings.smtp.host || smtpHost || "smtp.gmail.com";
+          smtpPort = Number(settings.smtp.port || smtpPort || 587);
+          smtpUser = settings.smtp.username || settings.smtp.fromEmail || smtpUser || OFFICIAL_ALERT_EMAIL;
+          smtpPass = settings.smtp.password;
+          fromEmail = settings.smtp.fromEmail || smtpUser;
+          fromName = settings.smtp.fromName || fromName;
+        }
+      } catch {}
+    }
+
+    if (smtpPass) {
+      if (!smtpHost) smtpHost = "smtp.gmail.com";
+      if (!smtpUser) smtpUser = OFFICIAL_ALERT_EMAIL;
+      const nodemailer = await import("nodemailer");
+      const transporter = nodemailer.default.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpPort === 465,
+        auth: {
+          user: smtpUser,
+          pass: smtpPass,
+        },
+      });
+      await transporter.sendMail({
+        from: `"${fromName}" <${fromEmail}>`,
+        to: recipients.join(", "),
+        subject,
+        text: `${alert.title}\n\n${alert.message}\n\nDetails:\n${JSON.stringify(
+          alert.details || {},
+          null,
+          2
+        )}`,
+        html,
+      });
+      return true;
+    }
+  } catch (err) {
+    console.warn("SMTP email dispatch warning:", err instanceof Error ? err.message : err);
+  }
+
+  // 2. Try Resend API if RESEND_API_KEY is configured
+  const resendKey = process.env.RESEND_API_KEY;
+  if (resendKey) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: process.env.RESEND_FROM_EMAIL || "Vault of Tools <onboarding@resend.dev>",
+          to: recipients,
+          subject,
+          html,
+        }),
+        signal: AbortSignal.timeout(6000),
+      });
+      if (res.ok) return true;
+    } catch {}
+  }
+
+  // 3. Try Web3Forms if WEB3FORMS_ACCESS_KEY is configured
+  const web3Key =
+    process.env.WEB3FORMS_ACCESS_KEY || process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
+  if (web3Key) {
+    try {
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          access_key: web3Key,
+          subject,
+          from_name: "Vault of Tools",
+          message: `${alert.title}\n\n${alert.message}`,
+          ...((alert.details as Record<string, unknown>) || {}),
+        }),
+        signal: AbortSignal.timeout(6000),
+      });
+      if (res.ok) return true;
+    } catch {}
+  }
+
+  // 4. Zero-config fallback via FormSubmit AJAX endpoint to vaultoftools@gmail.com
+  try {
+    const flatDetails: Record<string, string> = {};
+    for (const [k, v] of Object.entries(alert.details || {})) {
+      if (v !== undefined && v !== null) {
+        flatDetails[k] = typeof v === "object" ? JSON.stringify(v) : String(v);
+      }
+    }
+    const res = await fetch(`https://formsubmit.co/ajax/${OFFICIAL_ALERT_EMAIL}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Origin: process.env.BASE_URL || "https://vaultoftools.com",
+        Referer: `${process.env.BASE_URL || "https://vaultoftools.com"}/`,
+      },
+      body: JSON.stringify({
+        _subject: subject,
+        _template: "table",
+        _captcha: "false",
+        alert_type: alert.type,
+        title: alert.title,
+        message: alert.message,
+        ...flatDetails,
+      }),
+      signal: AbortSignal.timeout(5000),
+    });
+    if (res.ok) return true;
+  } catch {}
+
+  return false;
+}
 
 /**
  * Dispatch an alert to vaultoftools@gmail.com
@@ -71,8 +259,27 @@ export async function sendAlert(params: {
     recentAlerts.pop();
   }
 
-  // Persist a durable copy so alerts survive restarts / cold starts.
-  await persistAlert(alert);
+  // Persist a durable copy + record in admin activity + dispatch email concurrently
+  await Promise.allSettled([
+    persistAlert(alert),
+    (async () => {
+      try {
+        const { logActivity } = await import("@/app/lib/admin/activity");
+        const actor = String(
+          params.details?.email ||
+            params.details?.workEmail ||
+            params.details?.submitterEmail ||
+            params.details?.userName ||
+            "system"
+        );
+        await logActivity(actor, params.type.toLowerCase(), params.title, {
+          message: params.message,
+          ...(params.details || {}),
+        });
+      } catch {}
+    })(),
+    dispatchEmailNotification(alert),
+  ]);
 
   // Console log alert event with clear branding
   console.log(`[ALERT NOTIFICATION -> ${OFFICIAL_ALERT_EMAIL}] [${alert.type}]: ${alert.title} - ${alert.message}`);
@@ -151,11 +358,21 @@ export async function alertUserLogin(userData: {
   provider?: string;
   role?: string;
 }) {
+  const key = String(userData.email || "").toLowerCase().trim();
+  const now = Date.now();
+  const lastSent = recentLoginTimestamps.get(key) || 0;
+  if (key && now - lastSent < 60_000) {
+    return recentAlerts[0];
+  }
+  if (key) {
+    recentLoginTimestamps.set(key, now);
+  }
+
   const provider = userData.provider || "credentials";
   return sendAlert({
     type: "USER_LOGIN",
-    title: "User Sign-In Activity",
-    message: `User ${userData.email} signed in via ${provider}.`,
+    title: `User Sign-In: ${userData.email}`,
+    message: `User ${userData.email} (${userData.displayName || "Member"}) signed in via ${provider}.`,
     status: "delivered",
     details: {
       email: userData.email,
@@ -167,6 +384,114 @@ export async function alertUserLogin(userData: {
   });
 }
 
+/**
+ * Triggered when a new user registers an account
+ */
+export async function alertUserSignup(userData: {
+  email: string;
+  displayName?: string;
+  provider?: string;
+  role?: string;
+}) {
+  const provider = userData.provider || "credentials";
+  return sendAlert({
+    type: "USER_SIGNUP",
+    title: `New User Registration: ${userData.email}`,
+    message: `New user ${userData.displayName || userData.email} registered on Vault of Tools via ${provider}.`,
+    status: "delivered",
+    details: {
+      email: userData.email,
+      displayName: userData.displayName || "N/A",
+      provider,
+      role: userData.role || "user",
+      time: new Date().toISOString(),
+    },
+  });
+}
+
+/**
+ * Triggered when a user submits a new AI tool
+ */
+export async function alertToolSubmission(toolData: {
+  name: string;
+  website: string;
+  category: string;
+  pricing?: string;
+  submitterEmail?: string;
+  description?: string;
+}) {
+  return sendAlert({
+    type: "TOOL_SUBMISSION",
+    title: `New Tool Submitted: ${toolData.name}`,
+    message: `A new tool "${toolData.name}" (${toolData.category}) was submitted for review.`,
+    status: "delivered",
+    details: {
+      toolName: toolData.name,
+      website: toolData.website,
+      category: toolData.category,
+      pricing: toolData.pricing || "Free",
+      submitterEmail: toolData.submitterEmail || "N/A",
+      description: toolData.description || "",
+      time: new Date().toISOString(),
+    },
+  });
+}
+
+/**
+ * Triggered when a user requests an AI consultation
+ */
+export async function alertConsultationRequest(data: {
+  fullName: string;
+  workEmail: string;
+  company?: string;
+  budget?: string;
+  timeline?: string;
+  projectDetails?: string;
+}) {
+  return sendAlert({
+    type: "CONSULTATION_REQUEST",
+    title: `New Consultation Request: ${data.fullName}`,
+    message: `${data.fullName} (${data.workEmail}) submitted a consultation request${
+      data.company ? ` for ${data.company}` : ""
+    }.`,
+    status: "delivered",
+    details: {
+      fullName: data.fullName,
+      workEmail: data.workEmail,
+      company: data.company || "N/A",
+      budget: data.budget || "N/A",
+      timeline: data.timeline || "N/A",
+      projectDetails: data.projectDetails || "",
+      time: new Date().toISOString(),
+    },
+  });
+}
+
+/**
+ * Triggered when a user submits a tool review
+ */
+export async function alertNewReview(data: {
+  toolName: string;
+  toolSlug?: string;
+  userName?: string;
+  rating: number;
+  text: string;
+}) {
+  return sendAlert({
+    type: "NEW_REVIEW",
+    title: `New Review (${data.rating}★) on ${data.toolName}`,
+    message: `${data.userName || "Anonymous"} left a ${data.rating}-star review on ${data.toolName}.`,
+    status: "delivered",
+    details: {
+      toolName: data.toolName,
+      toolSlug: data.toolSlug || "",
+      userName: data.userName || "Anonymous",
+      rating: data.rating,
+      reviewText: data.text,
+      time: new Date().toISOString(),
+    },
+  });
+}
 
 /**
  * Triggered when a new user subscribes to the newsletter
@@ -195,8 +520,8 @@ export async function alertContactQuery(queryData: {
 }) {
   return sendAlert({
     type: "CONTACT_QUERY",
-    title: "New Contact Message / Inquiry",
-    message: `Inquiry received from ${queryData.name} (${queryData.email}): ${queryData.message.slice(0, 100)}...`,
+    title: `New Contact Message from ${queryData.name}`,
+    message: `Inquiry received from ${queryData.name} (${queryData.email}): ${queryData.message.slice(0, 150)}`,
     status: "delivered",
     details: queryData,
   });

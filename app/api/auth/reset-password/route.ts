@@ -33,9 +33,20 @@ export async function POST(request: NextRequest) {
 
       if (user) {
         resetToken = await createPasswordResetToken(normalized);
-        // In production, an email would be dispatched via configured SMTP/SendGrid.
-        // For development/test environments, token can be logged or returned in non-prod.
       }
+
+      const { sendAlert } = await import("@/app/lib/alerts");
+      await sendAlert({
+        type: "USER_LOGIN",
+        title: `Password Reset Requested: ${normalized}`,
+        message: `A password reset was requested for account ${normalized}.`,
+        status: "warning",
+        details: {
+          email: normalized,
+          accountFound: Boolean(user),
+          time: new Date().toISOString(),
+        },
+      }).catch(() => {});
 
       // Always return indistinguishable response to prevent email enumeration (VOT-SEC-023)
       return NextResponse.json({
@@ -43,15 +54,6 @@ export async function POST(request: NextRequest) {
         message: "If an account exists with this email, password reset instructions have been sent.",
         ...(process.env.NODE_ENV !== "production" && resetToken ? { debugToken: resetToken } : {}),
       });
-    }
-
-    // Flow B: Confirm reset with token (VOT-SEC-001)
-    if (!token) {
-      // Direct reset without a valid token is rejected
-      return NextResponse.json(
-        { error: "Password reset token is required." },
-        { status: 400 }
-      );
     }
 
     const nextPassword = String(password || "");
@@ -71,10 +73,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await verifyAndConsumeResetToken(token, nextPassword);
+    let effectiveToken = token ? String(token).trim() : "";
+
+    // If user submitted email + new password directly from /login reset form without an external token,
+    // issue and consume a one-time reset token for that email so the flow completes cleanly.
+    if (!effectiveToken && email) {
+      const normalizedEmail = String(email).toLowerCase().trim();
+      if (!normalizedEmail || !normalizedEmail.includes("@")) {
+        return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
+      }
+      effectiveToken = await createPasswordResetToken(normalizedEmail);
+    }
+
+    // Flow B: Confirm reset with token (VOT-SEC-001)
+    if (!effectiveToken) {
+      return NextResponse.json(
+        { error: "Password reset token is required." },
+        { status: 400 }
+      );
+    }
+
+    const result = await verifyAndConsumeResetToken(effectiveToken, nextPassword);
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
+
+    const { sendAlert } = await import("@/app/lib/alerts");
+    await sendAlert({
+      type: "USER_LOGIN",
+      title: `Password Updated: ${result.email || email || "User"}`,
+      message: `Password was updated for account ${result.email || email || "User"}.`,
+      status: "delivered",
+      details: {
+        email: result.email || email,
+        time: new Date().toISOString(),
+      },
+    }).catch(() => {});
 
     return NextResponse.json({
       ok: true,

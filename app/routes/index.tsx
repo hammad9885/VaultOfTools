@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
 import {
   ArrowRight,
   Star,
@@ -412,6 +413,11 @@ export function ToolCard({ tool }: { tool: ToolItem }) {
 export function SiteNav() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -451,6 +457,31 @@ export function SiteNav() {
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [isOpen]);
+
+  const mobilePrimaryLinks = [
+    { href: "/", label: "Home", subtitle: "Featured & trending AI tools", icon: Sparkles },
+    { href: "/discover", label: "Discover", subtitle: "Browse & filter full directory", icon: Eye },
+    { href: "/categories", label: "Categories", subtitle: "Explore tools by use-case", icon: Grid2x2 },
+    { href: "/compare", label: "Compare", subtitle: "Side-by-side AI benchmarks", icon: Zap },
+    { href: "/toolsreview", label: "Tools reviews", subtitle: "Verified community ratings", icon: Star },
+    { href: "/blog", label: "Blog", subtitle: "Guides, insights & AI news", icon: MessageSquare },
+    { href: "/consulting", label: "Consulting", subtitle: "Custom AI workflow advisory", icon: Megaphone },
+  ];
+
+  const mobileQuickLinks = [
+    { href: "/submit", label: "Submit Tool" },
+    { href: "/submit-review", label: "Write a Review" },
+    { href: "/about", label: "About Us" },
+    { href: "/contact", label: "Contact Support" },
+    { href: "/privacy", label: "Privacy Policy" },
+    { href: "/terms", label: "Terms of Use" },
+  ];
+
+  const isActivePath = (href: string) => {
+    if (!pathname) return false;
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   return (
     <>
@@ -533,15 +564,19 @@ export function SiteNav() {
 
             <button
               type="button"
-              className="grid size-9 shrink-0 place-items-center rounded-lg transition-colors hover:bg-muted md:hidden"
+              className={`grid size-9 shrink-0 place-items-center rounded-xl border transition-all md:hidden ${
+                isOpen
+                  ? "border-primary/30 bg-primary/10 text-primary"
+                  : "border-slate-200/80 bg-white/80 text-slate-700 hover:bg-muted"
+              }`}
               aria-label={isOpen ? "Close menu" : "Open menu"}
               aria-expanded={isOpen}
               onClick={() => setIsOpen((value) => !value)}
             >
               {isOpen ? (
-                <X className="h-6 w-6" />
+                <X className="h-5 w-5" />
               ) : (
-                <Menu className="h-6 w-6" />
+                <Menu className="h-5 w-5" />
               )}
             </button>
           </div>
@@ -555,78 +590,118 @@ export function SiteNav() {
             <button
               type="button"
               aria-label="Close navigation menu"
-              className="absolute inset-0 bg-black/25"
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]"
               onClick={() => setIsOpen(false)}
             />
 
             <div
               data-testid="mobile-nav-panel"
-              className="relative z-10 max-h-full overflow-y-auto overscroll-contain border-t border-border bg-background shadow-xl"
+              className="relative z-10 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain rounded-b-3xl border-b border-t border-slate-200/80 bg-white/98 px-4 pb-6 pt-4 shadow-2xl backdrop-blur-xl"
             >
-              <div className="flex flex-col space-y-1 px-3 py-3">
-                <Link
-                  href="/"
-                  onClick={() => setIsOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary"
-                >
-                  Home
-                </Link>
+              <div className="mb-2 flex items-center justify-between px-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Navigation Menu
+                </span>
+                <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-blue-600">
+                  Vault of Tools
+                </span>
+              </div>
 
-                <Link
-                  href="/discover"
-                  onClick={() => setIsOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary"
-                >
-                  Discover
-                </Link>
+              <div className="flex flex-col space-y-1">
+                {mobilePrimaryLinks.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActivePath(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className={`group flex items-center justify-between rounded-xl px-3 py-2.5 transition-all ${
+                        active
+                          ? "bg-blue-50/90 text-blue-600 shadow-xs ring-1 ring-blue-500/15"
+                          : "text-slate-700 hover:bg-slate-50 hover:text-slate-950"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`grid size-9 shrink-0 place-items-center rounded-lg transition-colors ${
+                            active
+                              ? "bg-blue-600 text-white shadow-xs"
+                              : "bg-slate-100 text-slate-600 group-hover:bg-blue-50 group-hover:text-blue-600"
+                          }`}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold leading-tight">
+                            {item.label}
+                          </span>
+                          <span className="text-[11px] text-slate-500">
+                            {item.subtitle}
+                          </span>
+                        </div>
+                      </div>
+                      <ArrowRight
+                        className={`h-4 w-4 transition-transform group-hover:translate-x-0.5 ${
+                          active ? "text-blue-600" : "text-slate-300 group-hover:text-slate-500"
+                        }`}
+                      />
+                    </Link>
+                  );
+                })}
+              </div>
 
-                <Link
-                  href="/categories"
-                  onClick={() => setIsOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary"
-                >
-                  Categories
-                </Link>
+              <div className="my-4 border-t border-slate-100 pt-3">
+                <span className="mb-2 block px-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Quick Links
+                </span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {mobileQuickLinks.map((item) => {
+                    const active = isActivePath(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setIsOpen(false)}
+                        className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+                          active
+                            ? "bg-blue-50 font-semibold text-blue-600"
+                            : "bg-slate-50/80 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
 
-                <Link
-                  href="/compare"
-                  onClick={() => setIsOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary"
-                >
-                  Compare
-                </Link>
-
-                <Link
-                  href="/toolsreview"
-                  onClick={() => setIsOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary"
-                >
-                  Tools reviews
-                </Link>
-
-                <Link
-                  href="/blog"
-                  onClick={() => setIsOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary"
-                >
-                  Blog
-                </Link>
-
-                <Link
-                  href="/consulting"
-                  onClick={() => setIsOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary"
-                >
-                  Consulting
-                </Link>
-
+              <div className="mt-4 flex flex-col gap-2.5 border-t border-slate-100 pt-4">
                 <Link
                   href="/submit"
                   onClick={() => setIsOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted hover:text-primary md:hidden"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-md shadow-blue-500/20 transition hover:opacity-95"
                 >
+                  <Sparkles className="h-4 w-4" />
                   Submit Tool
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    href="/login"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Sign In / Sign Up
+                  </Link>
+                  <Link
+                    href="/account"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                  >
+                    My Account
+                  </Link>
+                </div>
               </div>
             </div>
           </div>,
