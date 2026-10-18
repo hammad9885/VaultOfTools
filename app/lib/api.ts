@@ -127,14 +127,16 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     });
+    const username = res.user?.displayName || data.email.split("@")[0] || "User";
     notifyAdminInbox(
-      `User Sign-In: ${data.email}`,
+      `User Login: ${username} (${data.email})`,
       {
-        event: "User Login",
-        email: data.email,
-        displayName: res.user?.displayName || "N/A",
-        role: res.user?.role || "user",
-        provider: "Email & Password",
+        Notice: "User ne Vault of Tools par successfully login kiya hai",
+        "Username / Name": username,
+        "User Gmail / Email": data.email,
+        "Login Method": "Email & Password",
+        "Account Role": res.user?.role || "user",
+        "Login Time": new Date().toLocaleString(),
       },
       `login_${data.email.toLowerCase()}`
     );
@@ -165,14 +167,16 @@ export const api = {
       body: JSON.stringify(data),
     });
     const email = data.email || res.user?.email || "unknown";
+    const username = data.displayName || res.user?.displayName || String(email).split("@")[0] || "Google User";
     notifyAdminInbox(
-      `User Sign-In (Google): ${email}`,
+      `User Login: ${username} (${email})`,
       {
-        event: "Google Sign-In",
-        email,
-        displayName: data.displayName || res.user?.displayName || "N/A",
-        role: res.user?.role || "user",
-        provider: "Google",
+        Notice: "User ne Vault of Tools par successfully login kiya hai (Google)",
+        "Username / Name": username,
+        "User Gmail / Email": email,
+        "Login Method": "Google Sign-In",
+        "Account Role": res.user?.role || "user",
+        "Login Time": new Date().toLocaleString(),
       },
       `login_${String(email).toLowerCase()}`
     );
@@ -192,14 +196,16 @@ export const api = {
       body: JSON.stringify(data),
     });
     const email = data.email || res.user?.email || "unknown";
+    const username = data.displayName || res.user?.displayName || String(email).split("@")[0] || "User";
     notifyAdminInbox(
-      `User Sign-In: ${email}`,
+      `User Login: ${username} (${email})`,
       {
-        event: "User Login / Session",
-        email,
-        displayName: data.displayName || res.user?.displayName || "N/A",
-        role: res.user?.role || "user",
-        provider: data.provider || "Google/Firebase",
+        Notice: "User ne Vault of Tools par successfully login kiya hai",
+        "Username / Name": username,
+        "User Gmail / Email": email,
+        "Login Method": data.provider || "Google / Firebase",
+        "Account Role": res.user?.role || "user",
+        "Login Time": new Date().toLocaleString(),
       },
       `login_${String(email).toLowerCase()}`
     );
@@ -214,12 +220,15 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     });
+    const username = res.user?.displayName || "Super Admin";
     notifyAdminInbox(
-      `Admin Console Sign-In: ${data.email}`,
+      `Admin Console Login: ${username} (${data.email})`,
       {
-        event: "Super Admin Login",
-        email: data.email,
-        role: res.user?.role || "super_admin",
+        Notice: "Admin Console sign-in alert",
+        "Username / Name": username,
+        "User Gmail / Email": data.email,
+        "Account Role": res.user?.role || "super_admin",
+        "Login Time": new Date().toLocaleString(),
       },
       `admin_login_${data.email.toLowerCase()}`
     );

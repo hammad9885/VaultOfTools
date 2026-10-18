@@ -368,18 +368,19 @@ export async function alertUserLogin(userData: {
     recentLoginTimestamps.set(key, now);
   }
 
+  const username = userData.displayName || userData.email.split("@")[0] || "User";
   const provider = userData.provider || "credentials";
   return sendAlert({
     type: "USER_LOGIN",
-    title: `User Sign-In: ${userData.email}`,
-    message: `User ${userData.email} (${userData.displayName || "Member"}) signed in via ${provider}.`,
+    title: `User Logged In: ${username} (${userData.email})`,
+    message: `User ${username} has logged in with email: ${userData.email} (via ${provider}).`,
     status: "delivered",
     details: {
-      email: userData.email,
-      displayName: userData.displayName || "N/A",
-      provider,
-      role: userData.role || "user",
-      time: new Date().toISOString(),
+      "Username / Name": username,
+      "User Email": userData.email,
+      "Login Method": provider,
+      "Account Role": userData.role || "user",
+      "Login Time": new Date().toLocaleString(),
     },
   });
 }
@@ -393,18 +394,19 @@ export async function alertUserSignup(userData: {
   provider?: string;
   role?: string;
 }) {
+  const username = userData.displayName || userData.email.split("@")[0] || "New User";
   const provider = userData.provider || "credentials";
   return sendAlert({
     type: "USER_SIGNUP",
-    title: `New User Registration: ${userData.email}`,
-    message: `New user ${userData.displayName || userData.email} registered on Vault of Tools via ${provider}.`,
+    title: `New User Sign-Up: ${username} (${userData.email})`,
+    message: `New account registered by ${username} with email: ${userData.email} (via ${provider}).`,
     status: "delivered",
     details: {
-      email: userData.email,
-      displayName: userData.displayName || "N/A",
-      provider,
-      role: userData.role || "user",
-      time: new Date().toISOString(),
+      "Username / Name": username,
+      "User Email": userData.email,
+      "Registration Method": provider,
+      "Account Role": userData.role || "user",
+      "Registration Time": new Date().toLocaleString(),
     },
   });
 }
