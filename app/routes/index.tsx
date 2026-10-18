@@ -20,8 +20,11 @@ import {
   Grid2x2,
   ArrowUp,
   Eye,
+  LogOut,
+  User as UserIcon,
 } from "lucide-react";
 import { AuthMenu } from "../components/auth-menu";
+import { useAuth } from "../lib/auth-context";
 import { ToolLogo } from "../components/ToolLogo";
 import fluxLogo from "../assets/images/tool-flux.webp";
 import codeLogo from "../assets/images/tool-codewhisper.webp";
@@ -414,6 +417,7 @@ export function SiteNav() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     setIsOpen(false);
@@ -686,22 +690,60 @@ export function SiteNav() {
                   Submit Tool
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-                <div className="grid grid-cols-2 gap-2">
+                {user ? (
+                  <div className="flex flex-col gap-2 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-2.5">
+                    <div className="flex items-center gap-2.5 px-1 py-0.5">
+                      {user.photoURL ? (
+                        <img
+                          src={user.photoURL}
+                          alt={user.displayName || "User"}
+                          className="size-8 rounded-full object-cover ring-1 ring-slate-200"
+                        />
+                      ) : (
+                        <div className="grid size-8 place-items-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-xs">
+                          {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="flex min-w-0 flex-1 flex-col">
+                        <span className="truncate text-xs font-semibold text-slate-800">
+                          {user.displayName || user.email?.split("@")[0] || "My Account"}
+                        </span>
+                        <span className="truncate text-[11px] text-slate-500">
+                          {user.email || "Active User"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/60">
+                      <Link
+                        href="/account"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                      >
+                        <UserIcon className="h-3.5 w-3.5" />
+                        My Account
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await signOut();
+                          setIsOpen(false);
+                        }}
+                        className="flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/80 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+                      >
+                        <LogOut className="h-3.5 w-3.5" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                ) : (
                   <Link
                     href="/login"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                    className="flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                   >
                     Sign In / Sign Up
                   </Link>
-                  <Link
-                    href="/account"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-                  >
-                    My Account
-                  </Link>
-                </div>
+                )}
               </div>
             </div>
           </div>,

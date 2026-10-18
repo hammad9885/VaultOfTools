@@ -137,7 +137,7 @@ export async function signUpWithEmail(
 export async function sendPasswordReset(email: string): Promise<void> {
   const trimmed = email.trim();
   const continueUrl =
-    typeof window !== "undefined" ? `${window.location.origin}/login` : undefined;
+    typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined;
   await sendPasswordResetEmail(
     auth,
     trimmed,

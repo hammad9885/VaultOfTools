@@ -237,10 +237,30 @@ function LoginInner() {
     e.preventDefault();
     setError(null);
 
-    if (!email) {
-      setError("Please enter your email address.");
+    if (!oobCode) {
+      if (!email || !email.includes("@")) {
+        setError("Please enter a valid email address.");
+        return;
+      }
+      setBusy(true);
+      try {
+        await sendPasswordReset(email.trim()).catch(() => {});
+        await api.resetPassword({ email: email.trim(), action: "request" }).catch(() => {});
+        api.notifyAdminInbox?.(`Password Reset Requested: ${email}`, {
+          event: "Password Reset Request",
+          email: email.trim(),
+        });
+        setResetEmailSent(true);
+        toast.success("Password reset link sent to your email!");
+      } catch (err: unknown) {
+        const msg = friendlyAuthError(err);
+        setError(msg);
+      } finally {
+        setBusy(false);
+      }
       return;
     }
+
     if (password.length < 8) {
       setError("New password must be at least 8 characters.");
       return;
@@ -252,37 +272,17 @@ function LoginInner() {
 
     setBusy(true);
     try {
-      if (oobCode) {
-        await confirmNewPassword(oobCode, password);
-        await api.resetPassword({ email, password, confirmPassword }).catch(() => {});
-        toast.success("Password updated. Signing you in…");
-        const profile = await signInWithEmail(email, password);
-        await refresh();
-        finishLogin(profile, "Password updated");
-        return;
-      }
-
-      const result = await api.resetPassword({ email, password, confirmPassword });
+      await confirmNewPassword(oobCode, password);
+      await api.resetPassword({ email, password, confirmPassword, token: oobCode }).catch(() => {});
       api.notifyAdminInbox?.(`Password Updated: ${email}`, {
-        event: "Password Reset",
+        event: "Password Reset Completed",
         email: email.trim(),
       });
-
-      try {
-        const profile = await signInWithEmail(email, password);
-        await refresh();
-        finishLogin(profile, "New password created");
-        return;
-      } catch {
-        if (!(result as any)?.firebaseUpdated) {
-          await sendPasswordReset(email).catch(() => {});
-          setResetEmailSent(true);
-        }
-        toast.success("Password updated. Please sign in with your new password.");
-        setMode("signin");
-        setPassword("");
-        setConfirmPassword("");
-      }
+      toast.success("Password updated. Signing you in…");
+      const profile = await signInWithEmail(email, password);
+      await refresh();
+      finishLogin(profile, "Password updated");
+      return;
     } catch (err: unknown) {
       const msg = friendlyAuthError(err);
       setError(msg);
@@ -301,7 +301,13 @@ function LoginInner() {
   }
 
   const title =
-    mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Create a new password";
+    mode === "signin"
+      ? "Welcome back"
+      : mode === "signup"
+        ? "Create your account"
+        : oobCode
+          ? "Create a new password"
+          : "Forgot password?";
   const subtitle =
     mode === "signin"
       ? "Sign in to write reviews, save tools, and manage your profile."
@@ -309,7 +315,7 @@ function LoginInner() {
         ? "Join Vault of Tools with your email or Google account."
         : oobCode
           ? "Choose a strong password for your account."
-          : "Enter your email and set a new password to regain access.";
+          : "Enter your email address and we'll send you a password reset link to your inbox.";
 
   return (
     <div className="relative min-h-[100dvh] overflow-x-hidden bg-background font-sans">
@@ -390,64 +396,75 @@ function LoginInner() {
 
             {mode === "forgot" ? (
               <form onSubmit={handleForgot} className="mt-6 space-y-4">
-                <label className="block">
-                  <span className="text-sm font-medium text-foreground">Email</span>
-                  <div className="relative mt-1.5">
-                    <Mail size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <input
-                      type="email"
-                      autoComplete="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-primary/50 focus:ring-4 focus:ring-primary/5"
-                      placeholder="you@example.com"
-                    />
-                  </div>
-                </label>
-
-                <PasswordField
-                  label="New password"
-                  value={password}
-                  onChange={setPassword}
-                  autoComplete="new-password"
-                  placeholder="At least 8 characters"
-                />
-
-                {password && (
-                  <div>
-                    <div className="flex gap-1">
-                      {Array.from({ length: 4 }).map((_, i) => (
-                        <span
-                          key={i}
-                          className={`h-1.5 flex-1 rounded-full ${
-                            score > i + 1
-                              ? "bg-emerald-500"
-                              : score > i
-                                ? "bg-amber-400"
-                                : "bg-muted"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <p className="mt-1.5 text-xs text-muted-foreground">
-                      {score <= 2 ? "Weak" : score <= 3 ? "Good" : "Strong"} password
+                {resetEmailSent && !oobCode ? (
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center">
+                    <p className="text-sm font-semibold text-emerald-900">Reset link sent!</p>
+                    <p className="mt-1 text-xs text-emerald-700">
+                      We sent a reset link to <strong>{email}</strong>. Check your inbox and spam folder, then click the link to reset your password.
                     </p>
                   </div>
-                )}
+                ) : (
+                  <>
+                    {!oobCode && (
+                      <label className="block">
+                        <span className="text-sm font-medium text-foreground">Email address</span>
+                        <div className="relative mt-1.5">
+                          <Mail size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                          <input
+                            type="email"
+                            autoComplete="email"
+                            required
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-primary/50 focus:ring-4 focus:ring-primary/5"
+                            placeholder="you@example.com"
+                          />
+                        </div>
+                      </label>
+                    )}
 
-                <PasswordField
-                  label="Confirm new password"
-                  value={confirmPassword}
-                  onChange={setConfirmPassword}
-                  autoComplete="new-password"
-                  placeholder="Re-enter password"
-                />
+                    {oobCode && (
+                      <>
+                        <PasswordField
+                          label="New password"
+                          value={password}
+                          onChange={setPassword}
+                          autoComplete="new-password"
+                          placeholder="At least 8 characters"
+                        />
 
-                {resetEmailSent && (
-                  <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-                    Password saved. If Firebase still has the old password, check your inbox for a reset link.
-                  </p>
+                        {password && (
+                          <div>
+                            <div className="flex gap-1">
+                              {Array.from({ length: 4 }).map((_, i) => (
+                                <span
+                                  key={i}
+                                  className={`h-1.5 flex-1 rounded-full ${
+                                    score > i + 1
+                                      ? "bg-emerald-500"
+                                      : score > i
+                                        ? "bg-amber-400"
+                                        : "bg-muted"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <p className="mt-1.5 text-xs text-muted-foreground">
+                              {score <= 2 ? "Weak" : score <= 3 ? "Good" : "Strong"} password
+                            </p>
+                          </div>
+                        )}
+
+                        <PasswordField
+                          label="Confirm new password"
+                          value={confirmPassword}
+                          onChange={setConfirmPassword}
+                          autoComplete="new-password"
+                          placeholder="Re-enter password"
+                        />
+                      </>
+                    )}
+                  </>
                 )}
 
                 {error && (
@@ -461,8 +478,28 @@ function LoginInner() {
                   disabled={busy}
                   className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-50"
                 >
-                  {busy ? "Updating password…" : "Create new password"}
+                  {busy
+                    ? oobCode
+                      ? "Updating password…"
+                      : "Sending reset link…"
+                    : oobCode
+                      ? "Save New Password"
+                      : "Send Reset Link"}
                 </button>
+
+                <div className="text-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("signin");
+                      setError(null);
+                      setResetEmailSent(false);
+                    }}
+                    className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+                  >
+                    ← Back to Sign In
+                  </button>
+                </div>
               </form>
             ) : (
               <form onSubmit={handleEmail} className="space-y-4">
@@ -499,19 +536,12 @@ function LoginInner() {
                   />
                   {mode === "signin" && (
                     <div className="mt-2 flex justify-end">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMode("forgot");
-                          setError(null);
-                          setPassword("");
-                          setConfirmPassword("");
-                          setResetEmailSent(false);
-                        }}
+                      <Link
+                        href="/forgot-password"
                         className="inline-flex items-center gap-1 rounded-lg px-1 py-1 text-sm font-semibold text-primary underline-offset-2 hover:underline"
                       >
                         Forgot password?
-                      </button>
+                      </Link>
                     </div>
                   )}
                 </div>
