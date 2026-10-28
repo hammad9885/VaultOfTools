@@ -49,7 +49,14 @@ const DEFAULTS: SettingsState = {
   smtp: {
     host: "", port: 587, username: "", password: "", fromName: "Vault of Tools", fromEmail: "vaultoftools@gmail.com", secure: true,
   },
-  social: { twitter: "", facebook: "", instagram: "", linkedin: "", github: "", youtube: "" },
+  social: {
+    twitter: "https://x.com/vaultoftools",
+    facebook: "https://www.facebook.com/share/1Ecj2ytCKZ/",
+    instagram: "https://www.instagram.com/vaultoftools?stkn=MWNxdzQ3NThudWZ5eA==",
+    linkedin: "",
+    github: "",
+    youtube: "https://www.youtube.com/@VaultOfTools",
+  },
   analytics: { googleAnalyticsId: "", googleTagManagerId: "", facebookPixelId: "", hotjarId: "" },
 };
 

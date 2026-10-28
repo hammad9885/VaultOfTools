@@ -176,12 +176,12 @@ const DEFAULTS = {
     secure: true,
   },
   social: {
-    twitter: "",
-    facebook: "",
-    instagram: "",
+    twitter: "https://x.com/vaultoftools",
+    facebook: "https://www.facebook.com/share/1Ecj2ytCKZ/",
+    instagram: "https://www.instagram.com/vaultoftools?stkn=MWNxdzQ3NThudWZ5eA==",
     linkedin: "",
     github: "",
-    youtube: "",
+    youtube: "https://www.youtube.com/@VaultOfTools",
   },
   analytics: {
     googleAnalyticsId: "",

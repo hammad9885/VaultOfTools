@@ -21,18 +21,18 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-import { OFFICIAL_EMAIL } from "./lib/constants";
+import { OFFICIAL_EMAIL, OFFICIAL_SOCIAL_LINKS } from "./lib/constants";
 
 const siteOrigin = process.env.BASE_URL || "https://vaultoftools.com";
 const BRAND_LOGO = `${siteOrigin}/logos/vaultoftools.svg`;
 
 const SOCIAL_PROFILES = [
-  process.env.SOCIAL_TWITTER_URL,
-  process.env.SOCIAL_FACEBOOK_URL,
-  process.env.SOCIAL_INSTAGRAM_URL,
+  process.env.SOCIAL_TWITTER_URL || OFFICIAL_SOCIAL_LINKS.twitter,
+  process.env.SOCIAL_FACEBOOK_URL || OFFICIAL_SOCIAL_LINKS.facebook,
+  process.env.SOCIAL_INSTAGRAM_URL || OFFICIAL_SOCIAL_LINKS.instagram,
+  process.env.SOCIAL_YOUTUBE_URL || OFFICIAL_SOCIAL_LINKS.youtube,
   process.env.SOCIAL_LINKEDIN_URL,
   process.env.SOCIAL_GITHUB_URL,
-  process.env.SOCIAL_YOUTUBE_URL,
 ].filter((url): url is string => Boolean(url && /^https:\/\//.test(url)));
 
 const PRIMARY_SECTIONS = [

@@ -5,12 +5,13 @@ import Link from "next/link";
 import { toast } from "sonner";
 import {
   FaXTwitter,
-  FaLinkedinIn,
-  FaGithub,
-  FaDiscord,
+  FaYoutube,
+  FaFacebookF,
+  FaInstagram,
 } from "react-icons/fa6";
 import { HiMiniBolt } from "react-icons/hi2";
 import { api } from "../../lib/api";
+import { OFFICIAL_SOCIAL_LINKS } from "../../lib/constants";
 
 function Footer() {
   const [email, setEmail] = useState("");
@@ -150,23 +151,23 @@ function Footer() {
   const socials = [
     {
       icon: <FaXTwitter />,
-      href: "https://twitter.com",
-      label: "Twitter",
+      href: OFFICIAL_SOCIAL_LINKS.twitter,
+      label: "X",
     },
     {
-      icon: <FaLinkedinIn />,
-      href: "https://linkedin.com",
-      label: "LinkedIn",
+      icon: <FaYoutube />,
+      href: OFFICIAL_SOCIAL_LINKS.youtube,
+      label: "YouTube",
     },
     {
-      icon: <FaGithub />,
-      href: "https://github.com",
-      label: "GitHub",
+      icon: <FaFacebookF />,
+      href: OFFICIAL_SOCIAL_LINKS.facebook,
+      label: "Facebook",
     },
     {
-      icon: <FaDiscord />,
-      href: "https://discord.com",
-      label: "Discord",
+      icon: <FaInstagram />,
+      href: OFFICIAL_SOCIAL_LINKS.instagram,
+      label: "Instagram",
     },
   ];
 
